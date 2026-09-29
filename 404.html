@@ -2,6 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      var p = location.pathname || "/";
+      var base = "/";
+      if (p.indexOf("/akshatestate/") !== -1) base = "/akshatestate/";
+      else if (p.indexOf("/properties/") !== -1) base = p.split("/properties/")[0] + "/";
+      var b = document.createElement("base");
+      b.href = base;
+      document.head.appendChild(b);
+    })();
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found | Akshat Estate</title>
   <meta name="description" content="The page you are looking for was not found. Browse properties for sale and rent in Gurukul, Memnagar and Ahmedabad with Akshat Estate.">
