@@ -86,12 +86,10 @@
               <label for="search-type">Property Type</label>
               <select id="search-type" name="type">
                 <option value="all">All Types</option>
-                <option value="apartment">Apartment</option>
-                <option value="villa">Villa</option>
+                <option value="apartment">Flat / Apartment</option>
                 <option value="bungalow">Bungalow</option>
                 <option value="office">Office</option>
-                <option value="shop">Shop</option>
-                <option value="plot">Plot</option>
+                <option value="shop">Shop / Godown</option>
               </select>
             </div>
             <div class="search-field">
@@ -108,10 +106,10 @@
               <label for="search-bedrooms">Bedrooms</label>
               <select id="search-bedrooms" name="bedrooms">
                 <option value="all">Any</option>
-                <option value="1">1 BHK</option>
+                <option value="1RK">1 RK</option>
+              <option value="1">1 BHK</option>
                 <option value="2">2 BHK</option>
                 <option value="3">3 BHK</option>
-                <option value="4+">4 BHK+</option>
               </select>
             </div>
             <div class="search-field">
@@ -214,9 +212,8 @@
       <div class="categories-grid">
         <a href="buy.html" class="category-card"><div class="category-icon"><i class="fas fa-key"></i></div><h3>Buy Property</h3><p>Homes for sale</p></a>
         <a href="rent.html" class="category-card"><div class="category-icon"><i class="fas fa-file-contract"></i></div><h3>Rent Property</h3><p>Homes for rent</p></a>
-        <a href="properties.html?type=apartment" class="category-card"><div class="category-icon"><i class="fas fa-building"></i></div><h3>Residential</h3><p>Apartments & villas</p></a>
-        <a href="properties.html?type=office" class="category-card"><div class="category-icon"><i class="fas fa-briefcase"></i></div><h3>Commercial</h3><p>Offices & shops</p></a>
-        <a href="properties.html?type=plot" class="category-card"><div class="category-icon"><i class="fas fa-map"></i></div><h3>Plots & Land</h3><p>Residential plots</p></a>
+        <a href="properties.html" data-filter-type="apartment" class="category-card"><div class="category-icon"><i class="fas fa-building"></i></div><h3>Residential</h3><p>Apartments & villas</p></a>
+        <a href="properties.html" data-filter-type="office" class="category-card"><div class="category-icon"><i class="fas fa-briefcase"></i></div><h3>Commercial</h3><p>Offices & shops</p></a>
       </div>
     </div>
   </section>

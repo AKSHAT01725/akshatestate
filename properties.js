@@ -6,10 +6,8 @@
  */
 
 const PROPERTIES = [
-  // ========== GURUKUL (1 sale + 9 rent) ==========
   {
     id: 1,
-    page: "properties/3bhk-apartment-for-sale-gurukul.html",
     title: "3 BHK Apartment for Sale in Gurukul",
     type: "apartment",
     status: "sale",
@@ -34,7 +32,6 @@ const PROPERTIES = [
   },
   {
     id: 2,
-    page: "properties/2bhk-flat-for-rent-gurukul.html",
     title: "2 BHK Flat for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -58,7 +55,6 @@ const PROPERTIES = [
   },
   {
     id: 3,
-    page: "properties/1bhk-flat-for-rent-gurukul.html",
     title: "1 BHK Apartment for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -81,7 +77,6 @@ const PROPERTIES = [
   },
   {
     id: 4,
-    page: "properties/3bhk-flat-for-rent-gurukul.html",
     title: "3 BHK Furnished Flat for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -105,7 +100,6 @@ const PROPERTIES = [
   },
   {
     id: 5,
-    page: "properties/2bhk-flat-for-rent-gurukul-2.html",
     title: "2 BHK Semi-Furnished for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -128,7 +122,6 @@ const PROPERTIES = [
   },
   {
     id: 6,
-    page: "properties/shop-for-rent-gurukul.html",
     title: "Shop for Rent in Gurukul",
     type: "shop",
     status: "rent",
@@ -150,31 +143,7 @@ const PROPERTIES = [
     featured: false
   },
   {
-    id: 7,
-    page: "properties/4bhk-flat-for-rent-gurukul.html",
-    title: "4 BHK Apartment for Rent in Gurukul",
-    type: "apartment",
-    status: "rent",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 2100,
-    areaUnit: "sq.ft",
-    location: "Gurukul",
-    city: "Ahmedabad",
-    furnishing: "unfurnished",
-    price: 45000,
-    priceDisplay: "₹45,000",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80"
-    ],
-    description: "Large 4 BHK for big families. Corner unit with dual balconies and covered parking.",
-    amenities: ["Parking", "Lift", "Security", "Gym", "Club House"],
-    featured: false
-  },
-  {
     id: 8,
-    page: "properties/office-for-rent-gurukul.html",
     title: "Office Space for Rent in Gurukul",
     type: "office",
     status: "rent",
@@ -197,7 +166,6 @@ const PROPERTIES = [
   },
   {
     id: 9,
-    page: "properties/1bhk-flat-for-rent-gurukul-2.html",
     title: "1 BHK Studio for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -220,7 +188,6 @@ const PROPERTIES = [
   },
   {
     id: 10,
-    page: "properties/2bhk-flat-for-rent-gurukul-3.html",
     title: "2 BHK Unfurnished for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -241,11 +208,8 @@ const PROPERTIES = [
     amenities: ["Parking", "Lift", "Security", "Power Backup"],
     featured: false
   },
-
-  // ========== MEMNAGAR (1 sale + 9 rent) ==========
   {
     id: 11,
-    page: "properties/2bhk-apartment-for-sale-memnagar.html",
     title: "2 BHK Apartment for Sale in Memnagar",
     type: "apartment",
     status: "sale",
@@ -269,7 +233,6 @@ const PROPERTIES = [
   },
   {
     id: 12,
-    page: "properties/3bhk-flat-for-rent-memnagar.html",
     title: "3 BHK Flat for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -292,7 +255,6 @@ const PROPERTIES = [
   },
   {
     id: 13,
-    page: "properties/1bhk-flat-for-rent-memnagar.html",
     title: "1 BHK Flat for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -315,7 +277,6 @@ const PROPERTIES = [
   },
   {
     id: 14,
-    page: "properties/2bhk-flat-for-rent-memnagar.html",
     title: "2 BHK Furnished for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -338,7 +299,6 @@ const PROPERTIES = [
   },
   {
     id: 15,
-    page: "properties/shop-for-rent-memnagar.html",
     title: "Shop for Rent in Memnagar",
     type: "shop",
     status: "rent",
@@ -360,31 +320,7 @@ const PROPERTIES = [
     featured: false
   },
   {
-    id: 16,
-    page: "properties/4bhk-flat-for-rent-memnagar.html",
-    title: "4 BHK Apartment for Rent in Memnagar",
-    type: "apartment",
-    status: "rent",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 2000,
-    areaUnit: "sq.ft",
-    location: "Memnagar",
-    city: "Ahmedabad",
-    furnishing: "unfurnished",
-    price: 48000,
-    priceDisplay: "₹48,000",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"
-    ],
-    description: "Premium 4 BHK with servant room option. Gated community with clubhouse access.",
-    amenities: ["Parking", "Lift", "Security", "Gym", "Club House", "Pool"],
-    featured: false
-  },
-  {
     id: 17,
-    page: "properties/office-for-rent-memnagar.html",
     title: "Office for Rent in Memnagar",
     type: "office",
     status: "rent",
@@ -407,7 +343,6 @@ const PROPERTIES = [
   },
   {
     id: 18,
-    page: "properties/2bhk-flat-for-rent-memnagar-2.html",
     title: "2 BHK Semi-Furnished in Memnagar",
     type: "apartment",
     status: "rent",
@@ -430,7 +365,6 @@ const PROPERTIES = [
   },
   {
     id: 19,
-    page: "properties/3bhk-flat-for-rent-memnagar-2.html",
     title: "3 BHK Unfurnished for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -453,7 +387,6 @@ const PROPERTIES = [
   },
   {
     id: 20,
-    page: "properties/1bhk-flat-for-rent-memnagar-2.html",
     title: "1 BHK Studio for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -474,35 +407,8 @@ const PROPERTIES = [
     amenities: ["Lift", "Security"],
     featured: false
   },
-
-  // ========== SOLA (1 sale + 9 rent) ==========
-  {
-    id: 21,
-    page: "properties/4bhk-villa-for-sale-sola.html",
-    title: "4 BHK Villa for Sale in Sola",
-    type: "villa",
-    status: "sale",
-    bedrooms: 4,
-    bathrooms: 4,
-    area: 3200,
-    areaUnit: "sq.ft",
-    location: "Sola",
-    city: "Ahmedabad",
-    furnishing: "unfurnished",
-    price: 13500000,
-    priceDisplay: "₹1.35 Crore",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80"
-    ],
-    description: "Independent villa with private garden and covered parking for 2 cars. Premium residential pocket of Sola.",
-    amenities: ["Parking", "Garden", "Security", "Power Backup", "Modular Kitchen"],
-    featured: true
-  },
   {
     id: 22,
-    page: "properties/1bhk-flat-for-rent-sola.html",
     title: "1 BHK Flat for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -525,7 +431,6 @@ const PROPERTIES = [
   },
   {
     id: 23,
-    page: "properties/2bhk-flat-for-rent-sola.html",
     title: "2 BHK Flat for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -548,7 +453,6 @@ const PROPERTIES = [
   },
   {
     id: 24,
-    page: "properties/3bhk-flat-for-rent-sola.html",
     title: "3 BHK Furnished for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -571,7 +475,6 @@ const PROPERTIES = [
   },
   {
     id: 25,
-    page: "properties/shop-for-rent-sola.html",
     title: "Shop for Rent in Sola",
     type: "shop",
     status: "rent",
@@ -594,7 +497,6 @@ const PROPERTIES = [
   },
   {
     id: 26,
-    page: "properties/office-for-rent-sola.html",
     title: "Office Space for Rent in Sola",
     type: "office",
     status: "rent",
@@ -617,7 +519,6 @@ const PROPERTIES = [
   },
   {
     id: 27,
-    page: "properties/2bhk-flat-for-rent-sola-2.html",
     title: "2 BHK Semi-Furnished in Sola",
     type: "apartment",
     status: "rent",
@@ -639,31 +540,7 @@ const PROPERTIES = [
     featured: false
   },
   {
-    id: 28,
-    page: "properties/4bhk-flat-for-rent-sola.html",
-    title: "4 BHK Apartment for Rent in Sola",
-    type: "apartment",
-    status: "rent",
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 2200,
-    areaUnit: "sq.ft",
-    location: "Sola",
-    city: "Ahmedabad",
-    furnishing: "unfurnished",
-    price: 52000,
-    priceDisplay: "₹52,000",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80"
-    ],
-    description: "Large 4 BHK penthouse-style unit with terrace access. Premium society amenities.",
-    amenities: ["Parking", "Lift", "Security", "Gym", "Club House", "Pool"],
-    featured: false
-  },
-  {
     id: 29,
-    page: "properties/1bhk-flat-for-rent-sola-2.html",
     title: "1 BHK Unfurnished for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -686,7 +563,6 @@ const PROPERTIES = [
   },
   {
     id: 30,
-    page: "properties/3bhk-flat-for-rent-sola-2.html",
     title: "3 BHK Semi-Furnished for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -707,10 +583,8 @@ const PROPERTIES = [
     amenities: ["Parking", "Lift", "Security", "Power Backup", "Gym"],
     featured: false
   },
-  // ========== 1 RK RENTALS ==========
   {
     id: 31,
-    page: "properties/1rk-flat-for-rent-gurukul.html",
     title: "1 RK Flat for Rent in Gurukul",
     type: "apartment",
     status: "rent",
@@ -732,7 +606,6 @@ const PROPERTIES = [
   },
   {
     id: 32,
-    page: "properties/1rk-flat-for-rent-memnagar.html",
     title: "1 RK Flat for Rent in Memnagar",
     type: "apartment",
     status: "rent",
@@ -754,7 +627,6 @@ const PROPERTIES = [
   },
   {
     id: 33,
-    page: "properties/1rk-flat-for-rent-sola.html",
     title: "1 RK Apartment for Rent in Sola",
     type: "apartment",
     status: "rent",
@@ -809,10 +681,16 @@ function filterProperties(filters) {
       }
     }
     if (filters.bedrooms && filters.bedrooms !== "all" && !filters.bedroomType) {
-      const beds = parseInt(filters.bedrooms, 10);
-      if (filters.bedrooms === "4+") {
-        if (p.bedrooms < 4) return false;
-      } else if (p.bedrooms !== beds) return false;
+      if (filters.bedrooms === "1RK" || filters.bedrooms === "1rk") {
+        if (p.bedroomType !== "1RK") return false;
+      } else {
+        const beds = parseInt(filters.bedrooms, 10);
+        if (filters.bedrooms === "4+") {
+          if (p.bedrooms < 4) return false;
+        } else if (p.bedroomType === "1RK" || p.bedrooms !== beds) {
+          return false;
+        }
+      }
     }
     if (filters.furnishing && filters.furnishing !== "all" && p.furnishing !== filters.furnishing) return false;
     if (filters.minPrice && p.price < parseInt(filters.minPrice, 10)) return false;
@@ -826,7 +704,7 @@ function renderPropertyCard(property) {
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
   const bedsText = property.bedroomType === "1RK" ? "1 RK" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—");
   const bathsText = property.bathrooms > 0 ? property.bathrooms + " Bath" : "—";
-  const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
+  const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
   return `
     <article class="property-card" data-id="${property.id}">
@@ -843,7 +721,7 @@ function renderPropertyCard(property) {
       </div>
       <div class="property-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.25rem">
-          <h3 class="property-title" style="margin:0"><a href="${property.page || ('property-details.html?id=' + property.id)}">${property.title}</a></h3>
+          <h3 class="property-title" style="margin:0"><a href="property-details.html?id=${property.id}">${property.title}</a></h3>
           <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
         </div>
         <div class="property-society" style="font-size:0.8125rem;color:var(--text-light);margin-bottom:0.35rem">${typeLabel}</div>
@@ -860,7 +738,7 @@ function renderPropertyCard(property) {
           <div class="property-spec"><i class="fas fa-couch"></i> ${property.furnishing.charAt(0).toUpperCase() + property.furnishing.slice(1)}</div>
         </div>
         <div class="property-actions">
-          <a href="${property.page || ('property-details.html?id=' + property.id)}" class="btn btn-primary btn-sm">View Details</a>
+          <a href="property-details.html?id=${property.id}" class="btn btn-primary btn-sm">View Details</a>
         </div>
       </div>
     </article>
@@ -871,7 +749,7 @@ function renderPropertyHCard(property) {
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
   const bedsText = property.bedroomType === "1RK" ? "1 RK" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—");
-  const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
+  const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
   return `
     <article class="property-hcard" data-id="${property.id}">
@@ -888,7 +766,7 @@ function renderPropertyHCard(property) {
       </div>
       <div class="property-hcard-body">
         <div class="property-hcard-top">
-          <h3 class="property-hcard-title"><a href="${property.page || ('property-details.html?id=' + property.id)}">${property.title}</a></h3>
+          <h3 class="property-hcard-title"><a href="property-details.html?id=${property.id}">${property.title}</a></h3>
           <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
         </div>
         <div class="property-society">${typeLabel}</div>

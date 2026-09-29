@@ -151,3 +151,15 @@ document.addEventListener("click", function (e) {
   var link = card.querySelector("a[href*='properties/'], a[href*='property-details']");
   if (link && link.href) window.location.href = link.href;
 });
+
+
+/* Category cards: pass type filter without query string in URL */
+document.addEventListener("click", function (e) {
+  var a = e.target.closest("a[data-filter-type]");
+  if (!a) return;
+  e.preventDefault();
+  try {
+    sessionStorage.setItem("ae_filters", JSON.stringify({ type: a.getAttribute("data-filter-type") }));
+  } catch (err) {}
+  window.location.href = a.getAttribute("href") || "properties.html";
+});

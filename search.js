@@ -41,12 +41,14 @@ function initHeroSearch() {
     const location = form.querySelector('[name="location"]')?.value;
     const bedrooms = form.querySelector('[name="bedrooms"]')?.value;
     const maxPrice = form.querySelector('[name="maxPrice"]')?.value;
-    if (status && status !== "all") params.set("status", status);
-    if (type && type !== "all") params.set("type", type);
-    if (location && location !== "all") params.set("location", location);
-    if (bedrooms && bedrooms !== "all") params.set("bedrooms", bedrooms);
-    if (maxPrice) params.set("maxPrice", maxPrice);
-    window.location.href = "properties.html?" + params.toString();
+    const pending = {};
+    if (status && status !== "all") pending.status = status;
+    if (type && type !== "all") pending.type = type;
+    if (location && location !== "all") pending.location = location;
+    if (bedrooms && bedrooms !== "all") pending.bedrooms = bedrooms;
+    if (maxPrice) pending.maxPrice = maxPrice;
+    try { sessionStorage.setItem("ae_filters", JSON.stringify(pending)); } catch (e) {}
+    window.location.href = "properties.html";
   });
 }
 
@@ -64,16 +66,25 @@ function initListingsPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const pageName = window.location.pathname.split("/").pop().toLowerCase();
   const pageBedroomType = pageName.startsWith("1rk-flats-for-rent") ? "1RK" : (pageName.startsWith("1bhk-flats-for-rent") ? "1BHK" : (pageName.startsWith("2bhk-flats-for-rent") ? "2BHK" : ""));
+  var stored = {};
+  try {
+    stored = JSON.parse(sessionStorage.getItem("ae_filters") || "{}") || {};
+    sessionStorage.removeItem("ae_filters");
+  } catch (e) { stored = {}; }
   const filters = {
-    status: urlParams.get("status") || "all",
-    type: urlParams.get("type") || "all",
-    location: urlParams.get("location") || "all",
-    bedrooms: urlParams.get("bedrooms") || "all",
+    status: stored.status || urlParams.get("status") || "all",
+    type: stored.type || urlParams.get("type") || "all",
+    location: stored.location || urlParams.get("location") || "all",
+    bedrooms: stored.bedrooms || urlParams.get("bedrooms") || "all",
     bedroomType: pageBedroomType,
-    furnishing: urlParams.get("furnishing") || "all",
-    minPrice: urlParams.get("minPrice") || "",
-    maxPrice: urlParams.get("maxPrice") || ""
+    furnishing: stored.furnishing || urlParams.get("furnishing") || "all",
+    minPrice: stored.minPrice || urlParams.get("minPrice") || "",
+    maxPrice: stored.maxPrice || urlParams.get("maxPrice") || ""
   };
+  // Strip query string from address bar immediately
+  if (window.location.search) {
+    try { window.history.replaceState({}, "", window.location.pathname); } catch (e) {}
+  }
 
   const filterForm = document.getElementById("filter-form");
   if (filterForm) {
@@ -128,12 +139,10 @@ function initListingsPage() {
       container.innerHTML = '<div class="property-list">' + results.map(renderer).join("") + '</div>';
       rebindWhatsApp(container);
     }
-    const params = new URLSearchParams();
-    Object.keys(current).forEach(function (key) {
-      if (current[key] && current[key] !== "all") params.set(key, current[key]);
-    });
-    const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
-    window.history.replaceState({}, "", newUrl);
+    // Keep URL clean — do not put filter query params in the address bar
+    if (window.location.search) {
+      try { window.history.replaceState({}, "", window.location.pathname); } catch (e) {}
+    }
 
     const favorites = JSON.parse(localStorage.getItem("ae_favorites") || "[]");
     container.querySelectorAll(".property-favorite").forEach(function (btn) {
