@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initMobileNav();
   initFavorites();
   initContactForm();
+  initOwnerForm();
   initSmoothScroll();
   initWhatsAppLinks();
   initPhoneLinks();
@@ -101,6 +102,45 @@ function initContactForm() {
   });
 }
 
+/* "List Your Property" form: no backend yet, so submitting opens WhatsApp with the details pre-filled.
+   (To email submissions instead, point this form at Formspree/EmailJS.) */
+function initOwnerForm() {
+  const form = document.getElementById("owner-form");
+  if (!form) return;
+
+  const listingType = form.querySelector('[name="listingType"]');
+  const priceLabel = form.querySelector('label[for="owner-rent"]');
+  const priceInput = form.querySelector('[name="rent"]');
+  function syncPriceField() {
+    const selling = listingType && listingType.value === "Sell";
+    if (priceLabel) priceLabel.textContent = selling ? "Expected Price (₹) *" : "Expected Rent (₹ / month) *";
+    if (priceInput) priceInput.placeholder = selling ? "e.g. 6500000" : "e.g. 15000";
+  }
+  if (listingType) listingType.addEventListener("change", syncPriceField);
+  syncPriceField();
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const data = new FormData(form);
+    const get = function (k) { return (data.get(k) || "").toString().trim(); };
+    const selling = get("listingType") === "Sell";
+    const lines = [
+      selling ? "Hi, I'd like to list my property for sale on Akshat Estate." : "Hi, I'd like to list my property for rent on Akshat Estate.",
+      "",
+      "Owner name: " + get("name"),
+      "Phone: " + get("phone"),
+      "Property location: " + get("location"),
+      "Property type: " + (get("propertyType") || "-"),
+      "BHK: " + (get("bhk") || "-"),
+      (selling ? "Expected price: ₹" : "Expected rent: ₹") + get("rent") + (selling ? "" : " / month"),
+      "Furnishing: " + (get("furnishing") || "-")
+    ];
+    if (get("message")) lines.push("Notes: " + get("message"));
+    lines.push("", "I will share photos here on WhatsApp.");
+    window.open(getWhatsAppLink(lines.join("\n")), "_blank", "noopener");
+  });
+}
+
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
     anchor.addEventListener("click", function (e) {
@@ -121,7 +161,10 @@ function getWhatsAppLink(message) {
 
 function initWhatsAppLinks() {
   document.querySelectorAll("[data-whatsapp]").forEach(function (el) {
-    const customMsg = el.getAttribute("data-whatsapp-msg") || null;
+    const pageMsg = el.getAttribute("data-wa-page-msg");
+    const customMsg = pageMsg
+      ? window.location.href.split("#")[0] + "\n\n" + pageMsg   /* this page's own link + message */
+      : (el.getAttribute("data-whatsapp-msg") || null);
     el.href = getWhatsAppLink(customMsg);
     el.target = "_blank";
     el.rel = "noopener noreferrer";
@@ -143,9 +186,63 @@ function initPhoneLinks() {
 }
 
 
+/* Share buttons on property cards: copy the property's page link so it can be pasted anywhere (WhatsApp, SMS, email...) */
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function (resolve, reject) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy") ? resolve() : reject(); } catch (err) { reject(err); }
+    document.body.removeChild(ta);
+  });
+}
+
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest("[data-share-url]");
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const url = btn.getAttribute("data-share-url");
+  const original = btn.innerHTML;
+  const iconOnly = btn.classList.contains("btn-share-icon");
+  copyToClipboard(url).then(function () {
+    btn.innerHTML = iconOnly ? '<i class="fas fa-check"></i>' : '<i class="fas fa-check"></i> Link copied';
+    btn.classList.add("is-copied");
+  }, function () {
+    window.prompt("Copy this link:", url);
+  }).then(function () {
+    setTimeout(function () { btn.innerHTML = original; btn.classList.remove("is-copied"); }, 2000);
+  });
+});
+
+/* "Request Image" buttons are <button>s, so open their WhatsApp message on click */
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest("button[data-whatsapp]");
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.open(getWhatsAppLink(btn.getAttribute("data-whatsapp-msg")), "_blank", "noopener");
+});
+
+/* Property photos: block right-click, dragging, long-press save and text selection on the images.
+   (Deterrent only: the browser still has to download the image to show it, so anyone technical can find the file.) */
+(function protectPropertyImages() {
+  const sel = ".property-image, .property-hcard-img, .rental-card-img, .detail-gallery, .gallery-thumbs, .detail-gallery-wrap";
+  const inGallery = function (t) { return t && t.closest && t.closest(sel); };
+  document.addEventListener("contextmenu", function (e) { if (inGallery(e.target)) e.preventDefault(); });
+  document.addEventListener("dragstart", function (e) { if (e.target && e.target.tagName === "IMG" && inGallery(e.target)) e.preventDefault(); });
+  document.addEventListener("selectstart", function (e) { if (inGallery(e.target)) e.preventDefault(); });
+})();
+
 /* Whole property card clickable (except buttons/links inside) */
 document.addEventListener("click", function (e) {
-  var card = e.target.closest(".property-card, .property-hcard");
+  var card = e.target.closest(".property-card, .property-hcard, .rental-card");
   if (!card) return;
   if (e.target.closest("a, button, .request-image-btn, .property-favorite, .icon-btn")) return;
   var link = card.querySelector("a[href*='properties/'], a[href*='property-details']");
@@ -153,13 +250,17 @@ document.addEventListener("click", function (e) {
 });
 
 
-/* Category cards: pass type filter without query string in URL */
+/* Category cards: pass filters (via sessionStorage) without a query string in the URL.
+   Use data-filters='{"status":"rent","bedrooms":"3"}' or the older data-filter-type="apartment". */
 document.addEventListener("click", function (e) {
-  var a = e.target.closest("a[data-filter-type]");
+  var a = e.target.closest("a[data-filter-type], a[data-filters]");
   if (!a) return;
   e.preventDefault();
+  var filters = {};
   try {
-    sessionStorage.setItem("ae_filters", JSON.stringify({ type: a.getAttribute("data-filter-type") }));
+    if (a.hasAttribute("data-filters")) filters = JSON.parse(a.getAttribute("data-filters")) || {};
+    else filters = { type: a.getAttribute("data-filter-type") };
+    sessionStorage.setItem("ae_filters", JSON.stringify(filters));
   } catch (err) {}
   window.location.href = a.getAttribute("href") || "properties.html";
 });

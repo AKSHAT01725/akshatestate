@@ -13,16 +13,25 @@ function rebindWhatsApp(root) {
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  initHeroSearch();
-  initListingsPage();
-  initFeaturedProperties();
-  initPropertyCardClicks();
-  if (document.getElementById("property-detail")) initPropertyDetails();
+  function start() {
+    initHeroSearch();
+    initListingsPage();
+    initFeaturedProperties();
+    initFeaturedRentals();
+    initPropertyCardClicks();
+    if (document.getElementById("property-detail")) initPropertyDetails();
+  }
+  /* properties.js loads the live listings from Firebase first (falls back to built-in data) */
+  if (window.propertiesReady && typeof window.propertiesReady.then === "function") {
+    window.propertiesReady.then(start, start);
+  } else {
+    start();
+  }
 });
 
 function initPropertyCardClicks() {
   document.addEventListener("click", function (e) {
-    const card = e.target.closest(".property-card, .property-hcard");
+    const card = e.target.closest(".property-card, .property-hcard, .rental-card");
     if (!card) return;
     if (e.target.closest("a, button, input, select, textarea")) return;
     const id = card.getAttribute("data-id");
@@ -31,25 +40,32 @@ function initPropertyCardClicks() {
 }
 
 function initHeroSearch() {
-  const form = document.getElementById("hero-search-form");
+  const form = document.getElementById("rental-search-form") || document.getElementById("hero-search-form");
   if (!form) return;
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    const params = new URLSearchParams();
-    const status = form.querySelector('[name="status"]')?.value;
-    const type = form.querySelector('[name="type"]')?.value;
-    const location = form.querySelector('[name="location"]')?.value;
-    const bedrooms = form.querySelector('[name="bedrooms"]')?.value;
-    const maxPrice = form.querySelector('[name="maxPrice"]')?.value;
-    const pending = {};
-    if (status && status !== "all") pending.status = status;
+    const val = function (name) { return form.querySelector('[name="' + name + '"]')?.value; };
+    const pending = { status: "rent" };
+    const type = val("type");
+    const location = val("location");
+    const bedrooms = val("bedrooms");
+    const furnishing = val("furnishing");
+    const maxPrice = val("maxPrice");
     if (type && type !== "all") pending.type = type;
     if (location && location !== "all") pending.location = location;
     if (bedrooms && bedrooms !== "all") pending.bedrooms = bedrooms;
+    if (furnishing && furnishing !== "all") pending.furnishing = furnishing;
     if (maxPrice) pending.maxPrice = maxPrice;
-    try { sessionStorage.setItem("ae_filters", JSON.stringify(pending)); } catch (e) {}
-    window.location.href = "properties.html";
+    try { sessionStorage.setItem("ae_filters", JSON.stringify(pending)); } catch (err) {}
+    window.location.href = "rent.html";
   });
+}
+
+function initFeaturedRentals() {
+  const container = document.getElementById("featured-rentals");
+  if (!container || typeof getFeaturedRentals !== "function") return;
+  container.innerHTML = getFeaturedRentals().map(renderRentalCard).join("");
+  rebindWhatsApp(container);
 }
 
 function initFeaturedProperties() {
@@ -171,6 +187,7 @@ function initPropertyDetails() {
   const bedsText = property.bedrooms > 0 ? property.bedrooms + " BHK" : "N/A";
   const bathsText = property.bathrooms > 0 ? property.bathrooms : "N/A";
   const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
+  const waMessage = getPropertyWhatsAppMessage(property);
   const amenitiesHTML = property.amenities.map(function (a) {
     return '<span class="amenity-pill active"><i class="fas fa-check"></i> ' + a + '</span>';
   }).join("");
@@ -183,7 +200,7 @@ function initPropertyDetails() {
       <div class="detail-main">
         <div class="detail-gallery">
           <img src="${property.gallery[0]}" alt="${property.title}" id="gallery-main-img" class="img-blur">
-          <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="Hello Akshat Estate, please share photos for: ${property.title} in ${property.location} (ID: ${property.id}).">
+          <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
             <i class="fas fa-camera"></i> Request Photos
           </button>
         </div>
@@ -197,12 +214,7 @@ function initPropertyDetails() {
         <div class="detail-loc"><i class="fas fa-map-marker-alt"></i> ${property.location}, ${property.city}</div>
         <div class="detail-price">${property.priceDisplay}</div>
         <div class="specs-card">
-          <div class="spec-item"><div class="spec-label">Built-up Area</div><div class="spec-value">${property.area} ${property.areaUnit}</div></div>
-          <div class="spec-item"><div class="spec-label">Property Type</div><div class="spec-value">${typeLabel}</div></div>
-          <div class="spec-item"><div class="spec-label">Bedrooms</div><div class="spec-value">${bedsText}</div></div>
-          <div class="spec-item"><div class="spec-label">Bathrooms</div><div class="spec-value">${bathsText}</div></div>
-          <div class="spec-item"><div class="spec-label">Transaction</div><div class="spec-value">${badgeText}</div></div>
-          <div class="spec-item"><div class="spec-label">Listed By</div><div class="spec-value">Verified User</div></div>
+          ${renderSpecItems(getPropertyDetailRows(property))}
         </div>
         <div class="detail-section">
           <h3>Description</h3>
@@ -223,19 +235,18 @@ function initPropertyDetails() {
           </div>
         </div>
         <div class="sidebar-card">
-          <h3>Send Inquiry</h3>
-          <p>Interested in ${property.title}?</p>
+          <h3>Interested in this property?</h3>
+          <p>Message us on WhatsApp and we will share details and arrange a visit.</p>
+          <a href="#" data-whatsapp data-whatsapp-msg="${escapeAttr(waMessage)}" class="btn btn-whatsapp btn-block btn-lg"><i class="fab fa-whatsapp"></i> WhatsApp About This Property</a>
+          <a href="tel:+918141293057" class="btn btn-secondary btn-block" style="margin-top:0.5rem"><i class="fas fa-phone"></i> Call +91 81412 93057</a>
+          <div class="sidebar-divider"><span>or send an inquiry</span></div>
           <form id="contact-form">
             <div class="form-group"><input type="text" name="name" required placeholder="Your Name"></div>
             <div class="form-group"><input type="tel" name="phone" required placeholder="Phone Number"></div>
             <div class="form-group"><input type="email" name="email" placeholder="Email (optional)"></div>
             <div class="form-group"><textarea name="message" placeholder="Message"></textarea></div>
-            <button type="submit" class="btn btn-primary btn-block">Send Inquiry</button>
+            <button type="submit" class="btn btn-outline btn-block">Send Inquiry</button>
           </form>
-          <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
-            <a href="#" data-whatsapp data-whatsapp-msg="Hello Akshat Estate, I am interested in ${property.title} in ${property.location} (ID: ${property.id})." class="btn btn-outline btn-block"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-            <a href="tel:+918141293057" class="btn btn-secondary btn-block"><i class="fas fa-phone"></i> Call +91 81412 93057</a>
-          </div>
         </div>
       </div>
     </div>
@@ -263,6 +274,12 @@ function initPropertyDetails() {
     if (similar.length === 0) similar = PROPERTIES.filter(function(p) { return p.id !== property.id; }).slice(0, 3);
     similarEl.innerHTML = similar.map(renderPropertyCard).join("");
   }
+
+  // Floating WhatsApp button sends the same property-specific message
+  document.querySelectorAll(".whatsapp-float").forEach(function (el) {
+    el.setAttribute("data-whatsapp-msg", waMessage);
+    if (typeof getWhatsAppLink === "function") el.href = getWhatsAppLink(waMessage);
+  });
 
   // Re-bind WhatsApp on request image buttons
 

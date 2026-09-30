@@ -711,7 +711,7 @@ function renderPropertyCard(property) {
       <div class="property-image">
         <img src="${property.image}" alt="${property.title} in ${property.location}, Ahmedabad" class="img-blur" loading="lazy" width="400" height="220">
         <span class="property-badge badge ${badgeClass}">${badgeText}</span>
-        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="Hello Akshat Estate, please share photos for: ${property.title} in ${property.location} (ID: ${property.id}).">
+        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
           <i class="fas fa-camera"></i> Request Image
         </button>
         <span class="img-type-label">${typeLabel}</span>
@@ -738,7 +738,9 @@ function renderPropertyCard(property) {
           <div class="property-spec"><i class="fas fa-couch"></i> ${property.furnishing.charAt(0).toUpperCase() + property.furnishing.slice(1)}</div>
         </div>
         <div class="property-actions">
-          <a href="property-details.html?id=${property.id}" class="btn btn-primary btn-sm">View Details</a>
+          <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Details</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <button type="button" class="btn btn-outline btn-sm btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
         </div>
       </div>
     </article>
@@ -756,7 +758,7 @@ function renderPropertyHCard(property) {
       <div class="property-hcard-img">
         <img src="${property.image}" alt="${property.title}" class="img-blur" loading="lazy">
         <span class="property-badge badge ${badgeClass}" style="position:absolute;top:0.75rem;left:0.75rem;z-index:3">${badgeText}</span>
-        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="Hello Akshat Estate, please share photos for: ${property.title} in ${property.location} (ID: ${property.id}).">
+        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
           <i class="fas fa-camera"></i> Request Image
         </button>
         <span class="img-type-label">${typeLabel}</span>
@@ -781,7 +783,311 @@ function renderPropertyHCard(property) {
           <span><span class="property-meta-label">Furnishing</span><strong>${property.furnishing.charAt(0).toUpperCase() + property.furnishing.slice(1)}</strong></span>
           <span><span class="property-meta-label">Posted By</span><strong>Verified User</strong></span>
         </div>
+        <div class="property-hcard-cta">
+          <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Property</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
+          <button type="button" class="btn btn-outline btn-sm btn-share" data-share-url="${escapeAttr(getPropertyUrl(property))}" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i> Share</button>
+        </div>
       </div>
     </article>
   `;
 }
+
+
+/* ==========================================================
+   Rental-first helpers
+   ========================================================== */
+
+/* Homepage "Featured Rental Properties" (edit this list to change what is featured) */
+const FEATURED_RENTAL_IDS = [14, 5, 27, 13, 4, 22, 10, 24, 32];
+
+function escapeAttr(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function getFeaturedRentals() {
+  /* Live listings (admin panel) carry a homeFeatured flag; use it when present */
+  if (PROPERTIES.some(function (p) { return typeof p.homeFeatured === "boolean"; })) {
+    return PROPERTIES
+      .filter(function (p) { return p.homeFeatured === true && p.status === "rent"; })
+      .sort(function (a, b) { return (a.homeRank || 999) - (b.homeRank || 999) || a.id - b.id; });
+  }
+  return FEATURED_RENTAL_IDS
+    .map(function (id) { return getPropertyById(id); })
+    .filter(function (p) { return p && p.status === "rent"; });
+}
+
+function getPropertyLabel(property) {
+  if (property.bedroomType === "1RK") return "1 RK property";
+  if (property.type === "apartment" && property.bedrooms > 0) return property.bedrooms + " BHK property";
+  if (property.type === "shop") return "shop";
+  if (property.type === "office") return "office";
+  return "property";
+}
+
+/* Absolute link to a property's page, built from wherever the site is hosted (no hard-coded domain) */
+function getPropertyUrl(property) {
+  return new URL("property-details.html?id=" + property.id, document.baseURI).href;
+}
+
+/* Pre-filled WhatsApp message for a single property: the property page link, a blank line, then the message, e.g.
+   <site>/property-details.html?id=14
+   Hi, I'm interested in the 2 BHK property in Memnagar listed on Akshat Estate. Please share more details. */
+function getPropertyWhatsAppMessage(property) {
+  return getPropertyUrl(property) + "\n\n" +
+    "Hi, I'm interested in the " + getPropertyLabel(property) +
+    (property.status === "sale" ? " for sale" : "") +
+    " in " + property.location + " listed on Akshat Estate. Please share more details.";
+}
+
+function getPhotoRequestMessage(property) {
+  return getPropertyUrl(property) + "\n\n" +
+    "Hello Akshat Estate, please share photos for: " + property.title + " in " + property.location + ".";
+}
+
+function formatFurnishing(value) {
+  return (value || "").split("-").map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join("-");
+}
+
+/* ----------------------------------------------------------
+   Listing details: Type, Super Built-up Area, Bathrooms, Furnishing, Listed By,
+   Bachelors Allowed, Carpet Area, Floor No, Total Floors, Car Parking.
+   Type, area, bathrooms and furnishing come from each property above.
+   The rest are set here: PROPERTY_DETAIL_DEFAULTS apply to every property, and
+   PROPERTY_EXTRAS overrides them per property ID, e.g.
+     14: { carpetArea: 820, bachelorsAllowed: false, floorNo: 3, totalFloors: 5, carParking: 1 }
+   ---------------------------------------------------------- */
+const PROPERTY_DETAIL_DEFAULTS = { bachelorsAllowed: true, floorNo: 1, totalFloors: 2, carParking: 0 };
+const PROPERTY_EXTRAS = {
+  /* id: { carpetArea, bachelorsAllowed, floorNo, totalFloors, carParking } */
+};
+
+function getPropertyExtras(property) {
+  /* Extras saved on the property itself (from the admin panel) win over the defaults above */
+  var own = {};
+  ["carpetArea", "bachelorsAllowed", "floorNo", "totalFloors", "carParking"].forEach(function (k) {
+    if (property[k] !== undefined && property[k] !== null && property[k] !== "") own[k] = property[k];
+  });
+  return Object.assign({ carpetArea: property.area }, PROPERTY_DETAIL_DEFAULTS, PROPERTY_EXTRAS[property.id] || {}, own);
+}
+
+function formatPropertyType(property) {
+  if (property.type === "apartment") return "Flat / Apartment";
+  return property.type.charAt(0).toUpperCase() + property.type.slice(1);
+}
+
+function getBhkText(property) {
+  if (property.bedroomType === "1RK") return "1 RK";
+  return property.bedrooms > 0 ? property.bedrooms + " BHK" : "";
+}
+
+/* Rows shown on the property detail page, in this order */
+function getPropertyDetailRows(property) {
+  const x = getPropertyExtras(property);
+  const unit = property.areaUnit || "sq.ft";
+  const isHome = property.type === "apartment";
+  const rows = [["Type", formatPropertyType(property)]];
+  if (getBhkText(property)) rows.push(["BHK", getBhkText(property)]);
+  rows.push(["Super Built-up Area", property.area + " " + unit]);
+  if (property.bathrooms > 0) rows.push(["Bathrooms", property.bathrooms]);
+  rows.push(["Furnishing", formatFurnishing(property.furnishing)]);
+  rows.push(["Listed By", "Verified User"]);
+  if (isHome) rows.push(["Bachelors Allowed", x.bachelorsAllowed ? "Yes" : "No"]);
+  rows.push(["Carpet Area", x.carpetArea + " " + unit]);
+  rows.push(["Floor No", x.floorNo]);
+  rows.push(["Total Floors", x.totalFloors]);
+  rows.push(["Car Parking", x.carParking]);
+  return rows;
+}
+
+function renderSpecItems(rows) {
+  return rows.map(function (r) {
+    return '<div class="spec-item"><div class="spec-label">' + r[0] + '</div><div class="spec-value">' + r[1] + '</div></div>';
+  }).join("\n          ");
+}
+
+/* Clean, minimal rental card: clear photo, rent, BHK, area, furnishing, location, short description, 2 actions */
+function renderRentalCard(property) {
+  const bhk = getBhkText(property);
+  const detailUrl = "property-details.html?id=" + property.id;
+  const msg = escapeAttr(getPropertyWhatsAppMessage(property));
+  const facts = [
+    ["fa-ruler-combined", "Built-up Area", property.area + " " + property.areaUnit],
+    ["fa-house", "Type", formatPropertyType(property)]
+  ];
+  if (bhk) facts.push(["fa-bed", "BHK", bhk]);
+  if (property.bathrooms > 0) facts.push(["fa-bath", "Bathrooms", property.bathrooms + " Bath"]);
+  facts.push(["fa-couch", "Furnishing", formatFurnishing(property.furnishing)]);
+  const factsHTML = facts.map(function (f) {
+    return '<li title="' + f[1] + '"><i class="fas ' + f[0] + '" aria-hidden="true"></i><span><span class="sr-only">' + f[1] + ': </span>' + f[2] + '</span></li>';
+  }).join("");
+
+  return `
+    <article class="rental-card" data-id="${property.id}">
+      <div class="rental-card-img">
+        <a class="rental-card-link" href="${detailUrl}" tabindex="-1" aria-hidden="true">
+          <img src="${property.image}" alt="${escapeAttr(property.title)}" class="img-blur" loading="lazy" width="400" height="280" draggable="false">
+        </a>
+        <button type="button" class="request-image-btn" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
+          <i class="fas fa-camera"></i> Request Image
+        </button>
+        <button type="button" class="rental-share btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
+      </div>
+      <div class="rental-card-body">
+        <div class="rental-price">${property.priceDisplay}<span> / month</span></div>
+        <h3 class="rental-title"><a href="${detailUrl}">${property.title}</a></h3>
+        <div class="rental-loc"><i class="fas fa-map-marker-alt"></i> ${property.location}, ${property.city}</div>
+        <ul class="rental-meta">${factsHTML}</ul>
+        <div class="rental-actions">
+          <a href="${detailUrl}" class="btn btn-outline btn-sm">View Property</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${msg}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+
+/* ==========================================================
+   LIVE LISTINGS (Firebase)
+   Listings managed in admin.html are stored in Firestore ("properties").
+   This replaces the built-in PROPERTIES above with the live list before the
+   page renders (search.js waits for window.propertiesReady).
+   If Firebase is unreachable, blocked, still empty, or the page is opened
+   from a file:// path, the built-in listings above are used instead.
+   ========================================================== */
+window.propertiesReady = (function () {
+  var scriptSrc = document.currentScript && document.currentScript.src;
+  if (window.AE_ADMIN || !scriptSrc || location.protocol === "file:") return Promise.resolve(false);
+
+  var CACHE_KEY = "ae_live_properties_v1";
+  var FRESH_MS = 2 * 60 * 1000;        /* reuse the last download for 2 minutes */
+  var STALE_OK_MS = 24 * 60 * 60 * 1000; /* only if Firebase can't be reached */
+  var WAIT_MS = 3500;                  /* give up waiting for Firebase after this */
+  var GS = "https://www.gstatic.com/firebasejs/";
+  var PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="560"><rect width="100%" height="100%" fill="#e8e5f0"/></svg>');
+
+  function str(v, max) { return String(v == null ? "" : v).replace(/[<>]/g, "").trim().slice(0, max || 600); }
+  function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
+  function link(v) { v = str(v, 1500); return (/^https?:\/\//i.test(v) || !/^[a-z][a-z0-9+.\-]*:/i.test(v)) ? v : ""; }
+  function pick(v, list, d) { return list.indexOf(v) > -1 ? v : d; }
+
+  /* Normalise one Firestore document into the shape the site expects */
+  function clean(d) {
+    var id = parseInt(d && d.id, 10);
+    if (!id) return null;
+    var gallery = (Array.isArray(d.gallery) ? d.gallery : []).map(link).filter(Boolean);
+    var image = link(d.image) || gallery[0] || PLACEHOLDER;
+    if (!gallery.length) gallery = [image];
+    var price = num(d.price, 0);
+    var p = {
+      id: id,
+      title: str(d.title, 160) || "Property",
+      type: pick(d.type, ["apartment", "bungalow", "office", "shop"], "apartment"),
+      status: pick(d.status, ["rent", "sale"], "rent"),
+      bedrooms: num(d.bedrooms, 0),
+      bathrooms: num(d.bathrooms, 0),
+      area: num(d.area, 0),
+      areaUnit: str(d.areaUnit, 12) || "sq.ft",
+      location: str(d.location, 60) || "Ahmedabad",
+      city: str(d.city, 60) || "Ahmedabad",
+      furnishing: pick(d.furnishing, ["unfurnished", "semi-furnished", "furnished"], "unfurnished"),
+      price: price,
+      priceDisplay: str(d.priceDisplay, 40) || ("\u20B9" + price.toLocaleString("en-IN")),
+      image: image,
+      gallery: gallery,
+      description: str(d.description, 2000),
+      amenities: (Array.isArray(d.amenities) ? d.amenities : []).map(function (a) { return str(a, 40); }).filter(Boolean),
+      featured: d.featured === true,
+      active: d.active !== false,
+      homeFeatured: d.homeFeatured === true,
+      homeRank: num(d.homeRank, 999)
+    };
+    if (d.bedroomType === "1RK") p.bedroomType = "1RK";
+    ["carpetArea", "floorNo", "totalFloors", "carParking"].forEach(function (k) {
+      if (d[k] !== undefined && d[k] !== null && d[k] !== "") p[k] = num(d[k], 0);
+    });
+    if (typeof d.bachelorsAllowed === "boolean") p.bachelorsAllowed = d.bachelorsAllowed;
+    return p;
+  }
+
+  function apply(list) {
+    PROPERTIES.length = 0;
+    list.forEach(function (p) { PROPERTIES.push(p); });
+  }
+
+  function readCache() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+      if (c && Array.isArray(c.list) && c.t) return { list: c.list, age: Date.now() - c.t };
+    } catch (e) {}
+    return null;
+  }
+  function writeCache(list) {
+    try {
+      if (list) localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), list: list }));
+      else localStorage.removeItem(CACHE_KEY);
+    } catch (e) {}
+  }
+
+  var appPromise = null;
+  function getFirebaseApp() {
+    if (!appPromise) {
+      appPromise = import(new URL("firebase-config.js", scriptSrc).href).then(function (cfg) {
+        var base = GS + cfg.FIREBASE_VERSION + "/";
+        return import(base + "firebase-app.js").then(function (m) {
+          return { base: base, app: m.getApps().length ? m.getApp() : m.initializeApp(cfg.firebaseConfig) };
+        });
+      });
+    }
+    return appPromise;
+  }
+
+  function fetchLive() {
+    return getFirebaseApp().then(function (ctx) {
+      return import(ctx.base + "firebase-firestore.js").then(function (fs) {
+        return fs.getDocs(fs.collection(fs.getFirestore(ctx.app), "properties")).then(function (snap) {
+          if (snap.empty) return null; /* not set up yet: keep the built-in listings */
+          var list = [];
+          snap.forEach(function (doc) {
+            var p = clean(doc.data());
+            if (p && p.active) list.push(p);
+          });
+          list.sort(function (a, b) { return a.id - b.id; });
+          return list;
+        });
+      });
+    });
+  }
+
+  /* Analytics (Firebase), loaded after the page is interactive */
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      getFirebaseApp().then(function (ctx) {
+        return import(ctx.base + "firebase-analytics.js").then(function (an) {
+          return an.isSupported().then(function (ok) { if (ok) an.getAnalytics(ctx.app); });
+        });
+      }).catch(function () {});
+    }, 1500);
+  });
+
+  var cached = readCache();
+  if (cached && cached.age < FRESH_MS) { apply(cached.list); return Promise.resolve(true); }
+
+  var live = fetchLive().then(function (list) { writeCache(list); return list; });
+  var timer = new Promise(function (resolve) { setTimeout(function () { resolve("timeout"); }, WAIT_MS); });
+  var usable = cached && cached.age < STALE_OK_MS;
+
+  return Promise.race([live, timer]).then(function (res) {
+    if (Array.isArray(res)) { apply(res); return true; }
+    if (res === "timeout" && usable) { apply(cached.list); return true; }
+    return false;
+  }).catch(function () {
+    if (usable) { apply(cached.list); return true; }
+    return false;
+  });
+})();

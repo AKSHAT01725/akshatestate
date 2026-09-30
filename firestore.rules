@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Akshat Estate - Firestore security rules
+// Publish these in: Firebase Console > Firestore Database > Rules
+//
+//  - Anyone can READ listings (the public website needs to).
+//  - Only the admin account(s) below can ADD, EDIT or DELETE them.
+//  - Everything else in the database is locked.
+//
+// Replace the email below with the admin email you create under
+// Firebase Console > Authentication > Users > Add user.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['REPLACE-WITH-ADMIN-EMAIL@example.com'];
+    }
+
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
