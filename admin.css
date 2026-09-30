@@ -2,14 +2,14 @@
 :root {
   --purple: #5b4cdb;
   --purple-dark: #4a3cc4;
-  --purple-soft: #f0eefc;
+  --purple-soft: #e7e4f7;
   --navy: #1a1540;
-  --text: #1f1b2e;
-  --text-light: #6b6580;
-  --text-muted: #9a94ad;
-  --border: #e8e5f0;
-  --bg: #f7f6fb;
-  --white: #fff;
+  --text: #26223a;
+  --text-light: #5b566f;
+  --text-muted: #857f9b;
+  --border: #d8d5e5;
+  --bg: #e7e6ee;
+  --white: #f4f3f8;
   --green: #1c8a5b;
   --green-soft: #e6f5ee;
   --amber: #a86a00;
@@ -17,6 +17,7 @@
   --red: #c4364a;
   --red-soft: #fbe9ec;
   --radius: 12px;
+  --field: #f9f8fc;
   --font: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,7 +54,7 @@ code { font-size: .85em; background: var(--purple-soft); color: var(--purple-dar
 .field > span { font-size: .8125rem; font-weight: 600; color: var(--text); }
 .field small { font-size: .75rem; color: var(--text-muted); }
 input[type=text], input[type=email], input[type=password], input[type=url], input[type=number], input[type=search], select, textarea {
-  width: 100%; padding: .65rem .85rem; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; font-size: .9rem; transition: border-color .2s, box-shadow .2s;
+  width: 100%; padding: .65rem .85rem; background: var(--field); border: 1.5px solid var(--border); border-radius: 10px; font-size: .9rem; transition: border-color .2s, box-shadow .2s;
 }
 textarea { resize: vertical; line-height: 1.5; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91, 76, 219, .15); }
@@ -112,7 +113,7 @@ input.is-invalid, select.is-invalid, textarea.is-invalid { border-color: var(--r
 .rows { list-style: none; }
 .row { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto auto auto; align-items: center; gap: 1rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--border); transition: background .15s; }
 .row:last-child { border-bottom: 0; }
-.row:hover { background: #fbfaff; }
+.row:hover { background: #ecebf4; }
 .row.is-hidden .thumb, .row.is-hidden .row-main { opacity: .5; }
 .thumb { width: 72px; height: 54px; border-radius: 8px; object-fit: cover; background: var(--border); }
 .row-title { font-weight: 600; font-size: .9375rem; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -126,7 +127,7 @@ input.is-invalid, select.is-invalid, textarea.is-invalid { border-color: var(--r
 .switch { display: inline-flex; align-items: center; gap: .45rem; font-size: .8125rem; color: var(--text-light); cursor: pointer; user-select: none; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch .track { width: 34px; height: 20px; border-radius: 999px; background: #d3cfe3; position: relative; transition: background .2s; flex: none; }
-.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #f8f7fb; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
 .switch input:checked + .track { background: var(--purple); }
 .switch input:checked + .track::after { transform: translateX(14px); }
 .switch input:focus-visible + .track { outline: 2px solid var(--purple); outline-offset: 2px; }
@@ -158,7 +159,7 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 .photo-preview img { width: 84px; height: 62px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); background: var(--border); }
 .photo-preview img:first-child { outline: 2px solid var(--purple); outline-offset: 1px; }
 
-.chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: .45rem .55rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--white); }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: .45rem .55rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--field); }
 .chips:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(91, 76, 219, .15); }
 .chips input { flex: 1; min-width: 130px; border: 0; padding: .25rem .3rem; box-shadow: none; }
 .chips input:focus { box-shadow: none; }
@@ -218,7 +219,7 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 .enq-rows { list-style: none; }
 .enq { padding: 1.1rem 1.25rem 1rem; border-bottom: 1px solid var(--border); position: relative; }
 .enq:last-child { border-bottom: 0; }
-.enq.is-new { background: #faf9ff; box-shadow: inset 3px 0 0 var(--purple); }
+.enq.is-new { background: #eceaf8; box-shadow: inset 3px 0 0 var(--purple); }
 .enq.is-closed .enq-msg, .enq.is-closed .enq-about { opacity: .6; }
 .enq-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .enq-who { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
@@ -227,7 +228,7 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 .chip.src { background: var(--purple-soft); color: var(--purple-dark); }
 .chip.st-new { background: var(--purple); color: #fff; }
 .chip.st-contacted { background: var(--amber-soft); color: var(--amber); }
-.chip.st-closed { background: #ececf2; color: var(--text-light); }
+.chip.st-closed { background: #dcdae8; color: var(--text-light); }
 .enq-contact { display: flex; gap: .4rem 1.25rem; flex-wrap: wrap; margin-top: .35rem; font-size: .9rem; }
 .enq-contact a { color: var(--purple-dark); font-weight: 500; }
 .enq-contact a:hover { text-decoration: underline; }
@@ -242,3 +243,10 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
   .enq { padding: 1rem .9rem; }
   .enq-actions .btn { flex: 1 1 auto; }
 }
+
+#enq-tabs { gap: 1.1rem; }
+@media (max-width: 860px) { #enq-tabs { width: 100%; } }
+@media (min-width: 861px) { .toolbar .search { margin-left: auto; } }
+
+/* The logo file has a solid white box; blend it into the softer background */
+.topbar-brand img, .login-logo { mix-blend-mode: multiply; }

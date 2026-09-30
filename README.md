@@ -91,7 +91,7 @@ Every website form now saves to Firestore (collection `inquiries`) and appears l
 | "Send Inquiry" box on a property page | Property enquiry (with a link to that property) |
 | List Your Property form | Owner listing request (WhatsApp still opens as before) |
 
-In the admin you can call or WhatsApp the visitor in one tap, mark each enquiry New, Contacted or Closed, search, delete, and download everything as a CSV. New enquiries show a red count on the Enquiries tab and a small notice while the page is open.
+In the admin, tabs split enquiries by type (Property enquiry, Owner listing request, Contact form, Area page enquiry) and by status (New, Contacted, Closed). Tapping **Call** on a new enquiry marks it Contacted automatically; **WhatsApp** opens a blank chat with the visitor. You can also mark enquiries manually, search, delete, and download everything as a CSV. New enquiries show a red count on the Enquiries tab and a small notice while the page is open.
 
 - Visitors can only **create** an enquiry. They can never read, change or delete any (see `firestore.rules`).
 - If saving fails (offline, blocked, or rules not published yet), the visitor sees a message with a WhatsApp link so the lead is not lost.

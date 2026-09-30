@@ -712,8 +712,8 @@ function enqStatus(e) { return STATUS_LABELS[e.status] ? e.status : "new"; }
 
 function renderEnquiries() {
   const list = enq.list;
-  const counts = { all: list.length, new: 0, contacted: 0, closed: 0 };
-  list.forEach((e) => { counts[enqStatus(e)]++; });
+  const counts = { all: list.length, property: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
+  list.forEach((e) => { counts[enqStatus(e)]++; if (e.source in counts) counts[e.source]++; });
   $$("[data-ecount]").forEach((el) => { el.textContent = counts[el.dataset.ecount]; });
 
   const badge = $("#new-badge");
@@ -730,7 +730,7 @@ function renderEnquiries() {
 
   const q = enq.q.trim().toLowerCase();
   const rows = list
-    .filter((e) => enq.filter === "all" || enqStatus(e) === enq.filter)
+    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : e.source === enq.filter))
     .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement].join(" ").toLowerCase().includes(q));
 
   $("#enq-rows").innerHTML = rows.map(enqHTML).join("");
@@ -772,7 +772,6 @@ function enqHTML(e) {
   const st = enqStatus(e);
   const ms = toMs(e.createdAt);
   const num = waNumber(e.phone);
-  const hi = `Hi ${e.name || ""}, this is Akshat Estate. Thank you for your enquiry${e.propertyTitle ? " about " + e.propertyTitle : ""}.`;
   const tel = String(e.phone || "").replace(/[^\d+]/g, "");
   const next = st === "new"
     ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="contacted">Mark contacted</button>`
@@ -798,7 +797,7 @@ function enqHTML(e) {
     ${e.message ? `<p class="enq-msg">${esc(e.message)}</p>` : ""}
     <div class="enq-actions">
       <a class="btn btn-primary btn-sm" href="tel:${esc(tel)}">Call</a>
-      <a class="btn btn-ghost btn-sm" href="https://wa.me/${esc(num)}?text=${encodeURIComponent(hi)}" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn btn-ghost btn-sm" href="https://wa.me/${esc(num)}" target="_blank" rel="noopener">WhatsApp</a>
       ${next}${also}
       <span class="spacer"></span>
       <button type="button" class="icon-btn danger" data-eact="delete" title="Delete enquiry" aria-label="Delete enquiry from ${esc(e.name)}"><i class="fas fa-trash-can"></i></button>
@@ -816,6 +815,16 @@ $("#enq-tabs").addEventListener("click", (ev) => {
 $("#enq-search").addEventListener("input", (ev) => { enq.q = ev.target.value; renderEnquiries(); });
 
 $("#enq-rows").addEventListener("click", async (ev) => {
+  /* Tapping Call (or the phone number) marks a new enquiry as contacted; the call itself still starts */
+  const call = ev.target.closest('a[href^="tel:"]');
+  if (call) {
+    const item = enq.list.find((x) => x.id === call.closest(".enq").dataset.id);
+    if (item && enqStatus(item) === "new") {
+      try { await F.updateDoc(eref(item.id), { status: "contacted" }); toast("Marked as contacted"); }
+      catch (err) { console.error(err); toast(friendlyError(err), true); }
+    }
+    return;
+  }
   const btn = ev.target.closest("[data-eact]");
   if (!btn) return;
   const id = btn.closest(".enq").dataset.id;
