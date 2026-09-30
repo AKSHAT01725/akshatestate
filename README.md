@@ -56,7 +56,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 
 ## Admin panel (Firebase)
 
-Open `admin.html` on the live site (for example `https://akshatestate.com/admin.html`) to add, edit, duplicate, hide or delete listings, feature rentals on the homepage, and download a JSON backup. The page is set to `noindex` and is not linked from the website.
+Open `admin.html` on the live site (for example `https://akshatestate.com/admin.html`) to add, edit, duplicate, hide or delete listings, feature rentals on the homepage, and download a JSON backup. The **Enquiries** tab shows everything visitors send through the website forms. The page is set to `noindex` and is not linked from the website.
 
 The public site reads listings from Firestore (collection `properties`). If Firebase is unreachable or still empty, it falls back to the built-in listings in `properties.js`, so the site never shows a blank page. Visitors get changes within about 2 minutes (listings are cached in the browser briefly to keep Firebase reads low).
 
@@ -65,7 +65,7 @@ The public site reads listings from Firestore (collection `properties`). If Fire
 1. **Authentication > Sign-in method:** turn on **Email/Password**.
 2. **Authentication > Users > Add user:** create the admin email and a strong password.
 3. **Firestore Database:** create the database if it does not exist yet (production mode).
-4. **Firestore Database > Rules:** paste the contents of `firestore.rules`, replace `REPLACE-WITH-ADMIN-EMAIL@example.com` with the admin email from step 2, then **Publish**. This is what actually protects your data.
+4. **Firestore Database > Rules:** paste the contents of `firestore.rules` (it covers both listings and enquiries), replace `REPLACE-WITH-ADMIN-EMAIL@example.com` with the admin email from step 2, then **Publish**. This is what actually protects your data.
 5. **Authentication > Settings > User actions:** untick **Enable create (sign-up)** so nobody else can register an account.
 6. **Authentication > Settings > Authorized domains:** make sure your live domain is listed.
 7. Open `admin.html`, sign in, and click **Import listings** once to copy the listings from `properties.js` into Firebase.
@@ -79,3 +79,21 @@ Optional: in Google Cloud Console > APIs & Services > Credentials, restrict the 
 - The homepage **Featured Rentals** row follows the "Homepage" switch in the admin. Before you import, it follows `FEATURED_RENTAL_IDS` in `properties.js`.
 - The static pages in `properties/` (one file per demo listing) and the "Related Properties" cards inside blog articles are plain HTML and are **not** updated from the admin.
 - The site must be served over http(s). Opening files by double-click still works for the public pages (built-in listings), but the admin panel and live data need a web address or `localhost`.
+
+### Enquiries
+
+Every website form now saves to Firestore (collection `inquiries`) and appears live in **admin.html > Enquiries**:
+
+| Where the visitor sent it | Shown as |
+|---|---|
+| Contact page form | Contact form |
+| Enquiry box on area and listing pages (Gurukul, Memnagar, Sola, rent, buy, 1 BHK pages and so on) | Area page enquiry |
+| "Send Inquiry" box on a property page | Property enquiry (with a link to that property) |
+| List Your Property form | Owner listing request (WhatsApp still opens as before) |
+
+In the admin you can call or WhatsApp the visitor in one tap, mark each enquiry New, Contacted or Closed, search, delete, and download everything as a CSV. New enquiries show a red count on the Enquiries tab and a small notice while the page is open.
+
+- Visitors can only **create** an enquiry. They can never read, change or delete any (see `firestore.rules`).
+- If saving fails (offline, blocked, or rules not published yet), the visitor sees a message with a WhatsApp link so the lead is not lost.
+- Anyone who knows the public API key could still send junk enquiries straight to Firebase. If that ever happens, turn on **Firebase App Check** (reCAPTCHA) for Firestore.
+- Enquiries are personal data (names and phone numbers). Only the admin account can read them; consider deleting old ones from time to time.

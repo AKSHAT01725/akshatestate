@@ -48,7 +48,14 @@
       </div>
     </header>
 
-    <main class="wrap">
+    <nav class="mainnav" aria-label="Admin sections">
+      <div class="mainnav-inner">
+        <button type="button" class="nav-tab is-active" data-view="listings">Listings</button>
+        <button type="button" class="nav-tab" data-view="enquiries">Enquiries <span class="badge" id="new-badge" hidden>0</span></button>
+      </div>
+    </nav>
+
+    <main class="wrap" id="view-listings">
       <div class="page-head">
         <div>
           <h1>Listings</h1>
@@ -92,6 +99,39 @@
       </section>
 
       <p class="foot-note">Changes appear on the website within a couple of minutes. Static pages inside the <code>properties/</code> folder are separate and are not changed from here.</p>
+    </main>
+
+    <main class="wrap" id="view-enquiries" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Enquiries</h1>
+          <p class="page-sub" id="enq-summary">Loading enquiries…</p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn btn-ghost" id="enq-export"><i class="fas fa-download"></i> Download CSV</button>
+        </div>
+      </div>
+
+      <div id="enq-notice" class="notice" role="status" hidden></div>
+
+      <section class="panel">
+        <div class="toolbar">
+          <div class="tabs" role="tablist" aria-label="Filter enquiries" id="enq-tabs">
+            <button type="button" role="tab" class="tab is-active" data-efilter="all">All <span class="count" data-ecount="all">0</span></button>
+            <button type="button" role="tab" class="tab" data-efilter="new">New <span class="count" data-ecount="new">0</span></button>
+            <button type="button" role="tab" class="tab" data-efilter="contacted">Contacted <span class="count" data-ecount="contacted">0</span></button>
+            <button type="button" role="tab" class="tab" data-efilter="closed">Closed <span class="count" data-ecount="closed">0</span></button>
+          </div>
+          <label class="search">
+            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" id="enq-search" placeholder="Search name, phone or message" aria-label="Search enquiries">
+          </label>
+        </div>
+        <ul id="enq-rows" class="enq-rows" aria-live="polite"></ul>
+        <div id="enq-empty" class="empty" hidden></div>
+      </section>
+
+      <p class="foot-note">Enquiries arrive from the contact form, the enquiry boxes on area and property pages, and the List Your Property form. New ones appear here automatically.</p>
     </main>
   </div>
 

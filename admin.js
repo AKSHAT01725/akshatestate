@@ -100,8 +100,10 @@ if (auth) {
       $("#user-email").textContent = user.email || "";
       showApp();
       loadAll();
+      startEnquiries();
     } else {
       state.list = []; state.loaded = false;
+      stopEnquiries();
       showLogin();
     }
   });
@@ -319,8 +321,11 @@ function openDrawer(p = null, asCopy = false) {
   fillForm(p, asCopy);
   showFormError("");
   scrim.hidden = false; drawer.setAttribute("aria-hidden", "false");
-  requestAnimationFrame(() => { scrim.classList.add("is-open"); drawer.classList.add("is-open"); });
-  setTimeout(() => form.elements.title.focus(), 60);
+  requestAnimationFrame(() => {
+    scrim.classList.add("is-open");
+    drawer.classList.add("is-open");
+    form.elements.title.focus({ preventScroll: true }); /* focus right away so it can't steal focus mid-typing */
+  });
 }
 function closeDrawer() {
   scrim.classList.remove("is-open"); drawer.classList.remove("is-open");
@@ -548,25 +553,37 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-/* ---------- Delete ---------- */
+/* ---------- Confirm dialog ---------- */
 const dlg = $("#confirm");
-function askDelete(p) {
-  $("#confirm-text").textContent = `“${p.title}” will be removed from the website and from Firebase. This cannot be undone. To keep it but stop showing it, turn off Live instead.`;
-  dlg.returnValue = "";
-  dlg.onclose = async () => {
-    if (dlg.returnValue !== "ok") return;
-    try {
-      await F.deleteDoc(ref(p.id));
-      state.list = state.list.filter((x) => x.id !== p.id);
-      clearSiteCache();
-      toast("Property deleted");
-      render();
-    } catch (err) {
-      console.error(err);
-      toast(friendlyError(err), true);
-    }
-  };
-  dlg.showModal();
+function confirmBox(title, text, okLabel) {
+  return new Promise((resolve) => {
+    $("#confirm-title").textContent = title;
+    $("#confirm-text").textContent = text;
+    $("#confirm-ok").textContent = okLabel;
+    dlg.returnValue = "";
+    dlg.onclose = () => resolve(dlg.returnValue === "ok");
+    dlg.showModal();
+  });
+}
+
+/* ---------- Delete property ---------- */
+async function askDelete(p) {
+  const ok = await confirmBox(
+    "Delete this property?",
+    `“${p.title}” will be removed from the website and from Firebase. This cannot be undone. To keep it but stop showing it, turn off Live instead.`,
+    "Delete property"
+  );
+  if (!ok) return;
+  try {
+    await F.deleteDoc(ref(p.id));
+    state.list = state.list.filter((x) => x.id !== p.id);
+    clearSiteCache();
+    toast("Property deleted");
+    render();
+  } catch (err) {
+    console.error(err);
+    toast(friendlyError(err), true);
+  }
 }
 
 /* ---------- Import built-in listings (one time) ---------- */
@@ -618,4 +635,238 @@ $("#export-btn").addEventListener("click", () => {
   a.download = `akshat-estate-listings-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* ==========================================================
+   Enquiries
+   Collection "inquiries", created by the website forms. Read live.
+   ========================================================== */
+const enq = { list: [], filter: "all", q: "", unsub: null, ready: false };
+const SOURCE_LABELS = { property: "Property enquiry", contact: "Contact form", enquiry: "Area page enquiry", owner: "Owner listing request" };
+const STATUS_LABELS = { new: "New", contacted: "Contacted", closed: "Closed" };
+
+function toMs(v) {
+  if (!v) return null;
+  if (typeof v.toMillis === "function") return v.toMillis();
+  if (typeof v === "number") return v;
+  return null;
+}
+function whenText(ms) {
+  if (!ms) return "Just now";
+  const diff = Date.now() - ms;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "Just now";
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} hour${hr === 1 ? "" : "s"} ago`;
+  const day = Math.floor(hr / 24);
+  if (day === 1) return "Yesterday";
+  if (day < 7) return `${day} days ago`;
+  return new Date(ms).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+function fullDate(ms) {
+  return ms ? new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+}
+function waNumber(phone) {
+  let d = String(phone || "").replace(/\D/g, "");
+  if (d.length === 11 && d.startsWith("0")) d = d.slice(1);
+  if (d.length === 10) d = "91" + d;
+  return d;
+}
+
+function startEnquiries() {
+  stopEnquiries();
+  enq.ready = false;
+  const q = F.query(col2(), F.orderBy("createdAt", "desc"), F.limit(300));
+  let first = true;
+  enq.unsub = F.onSnapshot(q, (snap) => {
+    enq.list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    enq.ready = true;
+    $("#enq-notice").hidden = true;
+    if (!first) {
+      snap.docChanges().forEach((ch) => {
+        if (ch.type === "added" && !(ch.doc.metadata && ch.doc.metadata.hasPendingWrites)) toast(`New enquiry from ${ch.doc.data().name || "a visitor"}`);
+      });
+    }
+    first = false;
+    renderEnquiries();
+  }, (err) => {
+    console.error(err);
+    enq.ready = false;
+    const n = $("#enq-notice");
+    n.textContent = friendlyError(err);
+    n.className = "notice is-error";
+    n.hidden = false;
+    $("#enq-summary").textContent = "Could not load enquiries.";
+  });
+}
+function stopEnquiries() {
+  if (enq.unsub) { enq.unsub(); enq.unsub = null; }
+  enq.list = [];
+  renderEnquiries();
+}
+function col2() { return F.collection(db, "inquiries"); }
+const eref = (id) => F.doc(db, "inquiries", id);
+
+function enqStatus(e) { return STATUS_LABELS[e.status] ? e.status : "new"; }
+
+function renderEnquiries() {
+  const list = enq.list;
+  const counts = { all: list.length, new: 0, contacted: 0, closed: 0 };
+  list.forEach((e) => { counts[enqStatus(e)]++; });
+  $$("[data-ecount]").forEach((el) => { el.textContent = counts[el.dataset.ecount]; });
+
+  const badge = $("#new-badge");
+  badge.textContent = counts.new;
+  badge.hidden = counts.new === 0;
+  document.title = (counts.new ? `(${counts.new}) ` : "") + "Admin | Akshat Estate";
+  $("#enq-export").disabled = !list.length;
+
+  if (enq.ready) {
+    $("#enq-summary").textContent = list.length
+      ? `${counts.new} new, ${counts.contacted} contacted, ${counts.closed} closed.`
+      : "No enquiries yet.";
+  }
+
+  const q = enq.q.trim().toLowerCase();
+  const rows = list
+    .filter((e) => enq.filter === "all" || enqStatus(e) === enq.filter)
+    .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement].join(" ").toLowerCase().includes(q));
+
+  $("#enq-rows").innerHTML = rows.map(enqHTML).join("");
+  const empty = $("#enq-empty");
+  if (!rows.length && enq.ready) {
+    empty.hidden = false;
+    empty.innerHTML = list.length
+      ? "<strong>No enquiries match</strong>Try a different word or switch tab."
+      : "<strong>No enquiries yet</strong>New ones from your website forms will show up here as they arrive.";
+  } else {
+    empty.hidden = true;
+  }
+}
+
+function enqAbout(e) {
+  const bits = [];
+  if (e.source === "property") {
+    const label = esc(e.propertyTitle || (e.propertyId ? "Property " + e.propertyId : "a property"));
+    bits.push(e.propertyId
+      ? `<span>About <a href="property-details.html?id=${Number(e.propertyId)}" target="_blank" rel="noopener">${label}</a></span>`
+      : `<span>About <b>${label}</b></span>`);
+  }
+  if (e.source === "contact" && e.requirement) bits.push(`<span>Looking to <b>${esc(e.requirement)}</b></span>`);
+  if (e.source === "enquiry" && e.page) bits.push(`<span>Sent from <b>${esc(e.page)}</b></span>`);
+  if (e.source === "owner") {
+    const action = e.listingType === "Sell" ? "sell" : "rent out";
+    const what = [e.bhk, e.propertyType].filter(Boolean).join(" ") || "property";
+    bits.push(`<span>Wants to <b>${action}</b> a ${esc(what)}${e.location ? " in <b>" + esc(e.location) + "</b>" : ""}</span>`);
+    if (e.rent) {
+      const amount = /^\d+$/.test(String(e.rent).trim()) ? Number(e.rent).toLocaleString("en-IN") : e.rent;
+      bits.push(`<span>Expected ${e.listingType === "Sell" ? "price" : "rent"} <b>₹${esc(amount)}</b></span>`);
+    }
+    if (e.furnishing) bits.push(`<span>${esc(e.furnishing)}</span>`);
+  }
+  return bits.length ? `<div class="enq-about">${bits.join("")}</div>` : "";
+}
+
+function enqHTML(e) {
+  const st = enqStatus(e);
+  const ms = toMs(e.createdAt);
+  const num = waNumber(e.phone);
+  const hi = `Hi ${e.name || ""}, this is Akshat Estate. Thank you for your enquiry${e.propertyTitle ? " about " + e.propertyTitle : ""}.`;
+  const tel = String(e.phone || "").replace(/[^\d+]/g, "");
+  const next = st === "new"
+    ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="contacted">Mark contacted</button>`
+    : st === "contacted"
+      ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="closed">Close</button>`
+      : `<button type="button" class="btn btn-ghost btn-sm" data-eact="new">Reopen</button>`;
+  const also = st === "new" ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="closed">Close</button>` : "";
+  return `
+  <li class="enq is-${st}" data-id="${esc(e.id)}">
+    <div class="enq-head">
+      <div class="enq-who">
+        <strong>${esc(e.name)}</strong>
+        <span class="chip src">${esc(SOURCE_LABELS[e.source] || "Enquiry")}</span>
+        <span class="chip st-${st}">${STATUS_LABELS[st]}</span>
+      </div>
+      <time title="${esc(fullDate(ms))}">${esc(whenText(ms))}</time>
+    </div>
+    <div class="enq-contact">
+      <a href="tel:${esc(tel)}">${esc(e.phone)}</a>
+      ${e.email ? `<a href="mailto:${esc(e.email)}">${esc(e.email)}</a>` : ""}
+    </div>
+    ${enqAbout(e)}
+    ${e.message ? `<p class="enq-msg">${esc(e.message)}</p>` : ""}
+    <div class="enq-actions">
+      <a class="btn btn-primary btn-sm" href="tel:${esc(tel)}">Call</a>
+      <a class="btn btn-ghost btn-sm" href="https://wa.me/${esc(num)}?text=${encodeURIComponent(hi)}" target="_blank" rel="noopener">WhatsApp</a>
+      ${next}${also}
+      <span class="spacer"></span>
+      <button type="button" class="icon-btn danger" data-eact="delete" title="Delete enquiry" aria-label="Delete enquiry from ${esc(e.name)}"><i class="fas fa-trash-can"></i></button>
+    </div>
+  </li>`;
+}
+
+$("#enq-tabs").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-efilter]");
+  if (!b) return;
+  enq.filter = b.dataset.efilter;
+  $$("#enq-tabs .tab").forEach((t) => { t.classList.toggle("is-active", t === b); t.setAttribute("aria-selected", t === b); });
+  renderEnquiries();
+});
+$("#enq-search").addEventListener("input", (ev) => { enq.q = ev.target.value; renderEnquiries(); });
+
+$("#enq-rows").addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("[data-eact]");
+  if (!btn) return;
+  const id = btn.closest(".enq").dataset.id;
+  const item = enq.list.find((x) => x.id === id);
+  if (!item) return;
+  const act = btn.dataset.eact;
+  if (act === "delete") {
+    const ok = await confirmBox("Delete this enquiry?", `The enquiry from ${item.name || "this visitor"} will be removed permanently.`, "Delete enquiry");
+    if (!ok) return;
+    try { await F.deleteDoc(eref(id)); toast("Enquiry deleted"); }
+    catch (err) { console.error(err); toast(friendlyError(err), true); }
+    return;
+  }
+  try {
+    await F.updateDoc(eref(id), { status: act });
+    toast(act === "new" ? "Reopened" : act === "contacted" ? "Marked as contacted" : "Enquiry closed");
+  } catch (err) {
+    console.error(err);
+    toast(friendlyError(err), true);
+  }
+});
+
+/* CSV export (cells starting with = + - @ are prefixed so spreadsheets don't run them as formulas) */
+$("#enq-export").addEventListener("click", () => {
+  const cell = (v) => {
+    let t = String(v ?? "");
+    if (/^[=+\-@]/.test(t)) t = "'" + t;
+    return '"' + t.replace(/"/g, '""') + '"';
+  };
+  const head = ["Received", "Status", "Source", "Name", "Phone", "Email", "Message", "Property", "Looking to", "Page"];
+  const lines = [head.map(cell).join(",")].concat(enq.list.map((e) => [
+    fullDate(toMs(e.createdAt)), STATUS_LABELS[enqStatus(e)], SOURCE_LABELS[e.source] || "", e.name, e.phone, e.email, e.message,
+    e.propertyTitle || (e.source === "owner" ? [e.listingType, e.bhk, e.propertyType, e.location, e.rent].filter(Boolean).join(" ") : ""),
+    e.requirement, e.page
+  ].map(cell).join(",")));
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `akshat-estate-enquiries-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* ---------- Section navigation ---------- */
+function showView(name) {
+  $("#view-listings").hidden = name !== "listings";
+  $("#view-enquiries").hidden = name !== "enquiries";
+  $$(".nav-tab").forEach((t) => t.classList.toggle("is-active", t.dataset.view === name));
+  if (name === "enquiries") renderEnquiries();
+}
+$(".mainnav").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-view]");
+  if (b) showView(b.dataset.view);
 });

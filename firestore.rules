@@ -3,9 +3,11 @@ rules_version = '2';
 // Akshat Estate - Firestore security rules
 // Publish these in: Firebase Console > Firestore Database > Rules
 //
-//  - Anyone can READ listings (the public website needs to).
-//  - Only the admin account(s) below can ADD, EDIT or DELETE them.
-//  - Everything else in the database is locked.
+//  properties : anyone can READ (the website needs to); only the admin can write.
+//  inquiries  : anyone can CREATE a well-formed enquiry (website forms);
+//               only the admin can READ, update or delete them.
+//               Visitors can never read other people's enquiries.
+//  everything else is locked.
 //
 // Replace the email below with the admin email you create under
 // Firebase Console > Authentication > Users > Add user.
@@ -17,9 +19,47 @@ service cloud.firestore {
         && request.auth.token.email in ['REPLACE-WITH-ADMIN-EMAIL@example.com'];
     }
 
+    // Optional text field: absent, or a string no longer than max
+    function optText(d, key, max) {
+      return !(key in d) || (d[key] is string && d[key].size() <= max);
+    }
+
+    function validInquiry() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'source', 'name', 'phone', 'email', 'message', 'requirement',
+          'propertyId', 'propertyTitle', 'page',
+          'listingType', 'location', 'propertyType', 'bhk', 'rent', 'furnishing',
+          'status', 'createdAt'
+        ])
+        && d.keys().hasAll(['source', 'name', 'phone', 'status', 'createdAt'])
+        && d.source in ['property', 'contact', 'enquiry', 'owner']
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 200
+        && d.phone is string && d.phone.size() >= 6 && d.phone.size() <= 200
+        && optText(d, 'email', 200)
+        && optText(d, 'message', 2000)
+        && optText(d, 'requirement', 200)
+        && optText(d, 'propertyTitle', 200)
+        && optText(d, 'page', 200)
+        && optText(d, 'listingType', 200)
+        && optText(d, 'location', 200)
+        && optText(d, 'propertyType', 200)
+        && optText(d, 'bhk', 200)
+        && optText(d, 'rent', 200)
+        && optText(d, 'furnishing', 200)
+        && (!('propertyId' in d) || d.propertyId is number)
+        && d.status == 'new'
+        && d.createdAt == request.time;
+    }
+
     match /properties/{propertyId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    match /inquiries/{inquiryId} {
+      allow create: if validInquiry();
+      allow read, update, delete: if isAdmin();
     }
 
     match /{document=**} {

@@ -83,22 +83,107 @@ function initFavorites() {
   });
 }
 
+/* ----------------------------------------------------------
+   Enquiries: saved to Firebase (Firestore "inquiries") and shown in admin.html.
+   Works for every #contact-form on the site (contact page, area pages and the
+   property page). The property-page form is added to the page later by search.js,
+   so submits are handled at document level instead of binding to the form.
+   ---------------------------------------------------------- */
+var AE_MAIN_SRC = document.currentScript && document.currentScript.src;
+
+function aeSaveInquiry(data) {
+  if (!AE_MAIN_SRC || location.protocol === "file:") return Promise.reject(new Error("offline"));
+  var save = import(new URL("firebase-config.js", AE_MAIN_SRC).href).then(function (cfg) {
+    var base = "https://www.gstatic.com/firebasejs/" + cfg.FIREBASE_VERSION + "/";
+    return Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]).then(function (m) {
+      var app = m[0].getApps().length ? m[0].getApp() : m[0].initializeApp(cfg.firebaseConfig);
+      var fs = m[1];
+      var doc = {};
+      Object.keys(data).forEach(function (k) {
+        var v = data[k];
+        if (v === undefined || v === null || v === "") return;
+        doc[k] = typeof v === "string" ? v.slice(0, k === "message" ? 2000 : 200) : v;
+      });
+      doc.status = "new";
+      doc.createdAt = fs.serverTimestamp();
+      return fs.addDoc(fs.collection(fs.getFirestore(app), "inquiries"), doc);
+    });
+  });
+  var timeout = new Promise(function (_, reject) { setTimeout(function () { reject(new Error("timeout")); }, 12000); });
+  return Promise.race([save, timeout]);
+}
+
+function setFormStatus(form, kind, text, linkHref, linkText) {
+  var el = form.querySelector(".form-status");
+  if (!el) {
+    el = document.createElement("p");
+    el.setAttribute("role", "status");
+    form.appendChild(el);
+  }
+  el.className = "form-status is-" + kind;
+  el.textContent = text;
+  if (linkHref) {
+    el.appendChild(document.createTextNode(" "));
+    var a = document.createElement("a");
+    a.href = linkHref; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = linkText;
+    el.appendChild(a);
+  }
+}
+
 function initContactForm() {
-  const form = document.getElementById("contact-form");
-  if (!form) return;
-  form.addEventListener("submit", function (e) {
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!form || form.id !== "contact-form") return;
     e.preventDefault();
-    // TODO: Connect Formspree / EmailJS / backend
-    const btn = form.querySelector('[type="submit"]');
-    const originalText = btn.textContent;
-    btn.textContent = "Sending...";
-    btn.disabled = true;
-    setTimeout(function () {
-      alert("Thank you for your enquiry! We will get back to you shortly.\n\n(Demo form – connect Formspree or EmailJS for real submissions.)");
+
+    var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
+    var name = val("name");
+    var phone = val("phone");
+    if (!name || phone.replace(/\D/g, "").length < 8) {
+      setFormStatus(form, "error", "Please enter your name and a valid phone number.");
+      return;
+    }
+
+    var lastSent = 0;
+    try { lastSent = Number(localStorage.getItem("ae_last_inquiry")) || 0; } catch (err) {}
+    if (Date.now() - lastSent < 20000) {
+      setFormStatus(form, "error", "Your enquiry was just sent. Please wait a few seconds before sending another.");
+      return;
+    }
+
+    var data = { name: name, phone: phone, email: val("email"), message: val("message"), requirement: val("requirement") };
+    data.page = location.pathname.slice(-150);
+    var propertyTitle = "";
+    if (document.getElementById("property-detail")) {
+      data.source = "property";
+      var pid = parseInt(new URLSearchParams(location.search).get("id"), 10);
+      if (pid) {
+        data.propertyId = pid;
+        if (typeof getPropertyById === "function") {
+          var prop = getPropertyById(pid);
+          if (prop) { propertyTitle = prop.title; data.propertyTitle = prop.title; }
+        }
+      }
+    } else {
+      data.source = form.elements.requirement ? "contact" : "enquiry";
+    }
+
+    var btn = form.querySelector('[type="submit"]');
+    var original = btn ? btn.textContent : "";
+    if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
+
+    aeSaveInquiry(data).then(function () {
+      try { localStorage.setItem("ae_last_inquiry", String(Date.now())); } catch (err) {}
       form.reset();
-      btn.textContent = originalText;
-      btn.disabled = false;
-    }, 800);
+      setFormStatus(form, "success", "Thank you, " + name + ". We have received your enquiry and will call you shortly.");
+    }).catch(function () {
+      var wa = "Hi Akshat Estate, I'm " + name + " (" + phone + ")." +
+        (propertyTitle ? " I'm interested in: " + propertyTitle + "." : "") +
+        (data.message ? " " + data.message : "");
+      setFormStatus(form, "error", "We could not send your enquiry right now. Please message us on WhatsApp instead:", getWhatsAppLink(wa), "Open WhatsApp");
+    }).then(function () {
+      if (btn) { btn.textContent = original; btn.disabled = false; }
+    });
   });
 }
 
@@ -138,6 +223,13 @@ function initOwnerForm() {
     if (get("message")) lines.push("Notes: " + get("message"));
     lines.push("", "I will share photos here on WhatsApp.");
     window.open(getWhatsAppLink(lines.join("\n")), "_blank", "noopener");
+    /* Also keep a copy in the admin panel (WhatsApp above still opens as before) */
+    aeSaveInquiry({
+      source: "owner", name: get("name"), phone: get("phone"), listingType: get("listingType"),
+      location: get("location"), propertyType: get("propertyType"), bhk: get("bhk"),
+      rent: get("rent"), furnishing: get("furnishing"), message: get("message"),
+      page: location.pathname.slice(-150)
+    }).catch(function () {});
   });
 }
 

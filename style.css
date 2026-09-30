@@ -627,3 +627,9 @@ p { color: var(--text-light); margin-bottom: 0.75rem; }
 .blog-back:hover{background:var(--purple);color:#fff}
 .blog-back:hover i{transform:translateX(-3px)}
 @media(max-width:700px){.blog-back{font-size:.82rem;padding:.55rem .95rem;margin-bottom:1rem}}
+
+/* Enquiry form feedback */
+.form-status { margin-top: 0.875rem; padding: 0.65rem 0.9rem; border-radius: var(--radius-xs); font-size: 0.8125rem; font-weight: 500; line-height: 1.5; }
+.form-status.is-success { background: #e6f5ee; color: #1c8a5b; }
+.form-status.is-error { background: #fbe9ec; color: #c4364a; }
+.form-status a { font-weight: 600; text-decoration: underline; }

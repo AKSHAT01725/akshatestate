@@ -204,3 +204,41 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* Section navigation */
+.mainnav { background: var(--white); border-bottom: 1px solid var(--border); }
+.mainnav-inner { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem; display: flex; gap: 1.5rem; }
+.nav-tab { padding: .8rem 0 .7rem; font-size: .9375rem; font-weight: 500; color: var(--text-light); border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: .45rem; }
+.nav-tab:hover { color: var(--text); }
+.nav-tab.is-active { color: var(--purple); border-bottom-color: var(--purple); font-weight: 600; }
+.badge { background: var(--red); color: #fff; font-size: .6875rem; font-weight: 700; min-width: 20px; height: 20px; padding: 0 .4rem; border-radius: 999px; display: inline-grid; place-items: center; }
+.topbar { position: static; }
+
+/* Enquiries */
+.enq-rows { list-style: none; }
+.enq { padding: 1.1rem 1.25rem 1rem; border-bottom: 1px solid var(--border); position: relative; }
+.enq:last-child { border-bottom: 0; }
+.enq.is-new { background: #faf9ff; box-shadow: inset 3px 0 0 var(--purple); }
+.enq.is-closed .enq-msg, .enq.is-closed .enq-about { opacity: .6; }
+.enq-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.enq-who { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.enq-who strong { font-size: 1rem; font-weight: 600; }
+.enq time { font-size: .8125rem; color: var(--text-muted); white-space: nowrap; }
+.chip.src { background: var(--purple-soft); color: var(--purple-dark); }
+.chip.st-new { background: var(--purple); color: #fff; }
+.chip.st-contacted { background: var(--amber-soft); color: var(--amber); }
+.chip.st-closed { background: #ececf2; color: var(--text-light); }
+.enq-contact { display: flex; gap: .4rem 1.25rem; flex-wrap: wrap; margin-top: .35rem; font-size: .9rem; }
+.enq-contact a { color: var(--purple-dark); font-weight: 500; }
+.enq-contact a:hover { text-decoration: underline; }
+.enq-about { margin-top: .5rem; font-size: .875rem; color: var(--text-light); display: flex; flex-wrap: wrap; gap: .1rem 1rem; }
+.enq-about b { color: var(--text); font-weight: 600; }
+.enq-about a { color: var(--purple-dark); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+.enq-msg { margin-top: .55rem; font-size: .9rem; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 80ch; background: var(--bg); border-radius: 10px; padding: .6rem .85rem; }
+.enq-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-top: .85rem; }
+.enq-actions .spacer { flex: 1; }
+@media (max-width: 600px) {
+  .mainnav-inner { padding: 0 .9rem; }
+  .enq { padding: 1rem .9rem; }
+  .enq-actions .btn { flex: 1 1 auto; }
+}
