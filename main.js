@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
   initHeader();
   initMobileNav();
   initFavorites();
+  initHoneypots();
   initContactForm();
+  initVisitBooking();
   initOwnerForm();
   initSmoothScroll();
   initWhatsAppLinks();
@@ -169,7 +171,8 @@ function initStaticMobileCta() {
 }
 
 /* ----------------------------------------------------------
-   Enquiries: saved to Firebase (Firestore "inquiries") and shown in admin.html.
+   Enquiries: saved to Firebase (Firestore "inquiries") and shown in admin.html, and also
+   emailed through EmailJS (see aeSubmitLead below).
    Works for every #contact-form on the site (contact page, area pages and the
    property page). The property-page form is added to the page later by search.js,
    so submits are handled at document level instead of binding to the form.
@@ -198,6 +201,109 @@ function aeSaveInquiry(data) {
   return Promise.race([save, timeout]);
 }
 
+/* ----------------------------------------------------------
+   EmailJS: every lead form also emails you.
+   Public key + service/template IDs are meant to be public (they only allow SENDING
+   through your template). Lock them to your domain in the EmailJS dashboard:
+   Account > Security > allowed origins.
+   ---------------------------------------------------------- */
+var AE_EMAILJS = {
+  serviceId: "service_g19zso8",
+  templateId: "template_fu86367",
+  publicKey: "4Ynx8WPpZN2LccJrr"
+};
+
+var AE_FORM_LABELS = { property: "Property enquiry", contact: "Contact form", enquiry: "Area page enquiry", owner: "Owner listing request" };
+
+/* Readable "label: value" lines for the email body, built from whatever the visitor filled in */
+function aeEmailDetails(label, data) {
+  var rows = [
+    ["Name", data.name], ["Phone", data.phone], ["Email", data.email],
+    ["Property", data.propertyTitle], ["Looking to", data.requirement],
+    ["Listing type", data.listingType], ["Location", data.location], ["Property type", data.propertyType],
+    ["BHK", data.bhk], ["Expected rent / price", data.rent], ["Furnishing", data.furnishing],
+    ["Message", data.message]
+  ];
+  var lines = ["Type: " + label];
+  rows.forEach(function (r) { if (r[1]) lines.push(r[0] + ": " + r[1]); });
+  return lines.join("\n");
+}
+
+/* Full listing details for the email, so you know exactly which property was asked about
+   (titles repeat across listings). Only facts that are always real: no floor, parking or
+   bachelors info, because older listings still carry placeholder values for those. */
+function aePropertyInfo(p) {
+  var rent = p.status === "rent";
+  var layout = p.bedroomType === "1RK" ? "1 RK" : (p.bedrooms > 0 ? p.bedrooms + " BHK" : "");
+  var typeNames = { apartment: "Flat / Apartment", bungalow: "Bungalow", office: "Office", shop: "Shop / Godown" };
+  var price = (p.priceDisplay || ("\u20B9" + Number(p.price).toLocaleString("en-IN"))) + (rent ? " per month" : "");
+  var where = [p.location, p.city].filter(Boolean).join(", ");
+  var link = new URL("property-details.html?id=" + p.id, location.href).href;
+  var lines = [
+    "Property ID: " + p.id,
+    "Title: " + p.title,
+    "Listing: " + (rent ? "For rent" : "For sale"),
+    "Price: " + price,
+    "Location: " + where,
+    "Type: " + [layout, typeNames[p.type] || p.type].filter(Boolean).join(" "),
+    "Area: " + p.area + " " + (p.areaUnit || "sq.ft")
+  ];
+  if (p.bathrooms) lines.push("Bathrooms: " + p.bathrooms);
+  if (p.furnishing) lines.push("Furnishing: " + p.furnishing);
+  lines.push("Link: " + link);
+  return { id: p.id, title: p.title, price: price, location: where, link: link, image: p.image || "", text: lines.join("\n") };
+}
+
+function aeSendEmail(label, data, detailsOverride, property) {
+  var details = detailsOverride ? "Type: " + label + "\n" + detailsOverride : aeEmailDetails(label, data);
+  if (property) details += "\n\nProperty details:\n" + property.text;
+  var when = "";
+  try { when = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }) + " IST"; } catch (e) { when = new Date().toString(); }
+  var subject = "New " + label.toLowerCase() + ": " + data.name + " (" + data.phone + ")";
+  var params = {
+    subject: subject, title: subject, form_type: label,
+    name: data.name, from_name: data.name, phone: data.phone,
+    email: data.email || "", reply_to: data.email || "",
+    property: data.propertyTitle || "",
+    property_id: property ? String(property.id) : "", property_title: property ? property.title : "",
+    property_price: property ? property.price : "", property_location: property ? property.location : "",
+    property_link: property ? property.link : "", property_image: property ? property.image : "",
+    property_details: property ? property.text : "",
+    message: details,            /* everything in one readable block, so a template with just {{message}} still shows it all */
+    details: details,
+    note: data.message || "",    /* only what the visitor typed in the message box */
+    page_url: location.href, submitted_at: when
+  };
+  var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
+  return fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ service_id: AE_EMAILJS.serviceId, template_id: AE_EMAILJS.templateId, user_id: AE_EMAILJS.publicKey, template_params: params }),
+    signal: ctrl ? ctrl.signal : undefined
+  }).then(function (res) {
+    clearTimeout(timer);
+    if (res.ok) return true;
+    return res.text().then(function (t) { throw new Error("EmailJS " + res.status + ": " + t); });
+  }, function (err) { clearTimeout(timer); throw err; });
+}
+
+/* Saves the lead to the admin panel (Firestore) AND emails it. Resolves as soon as either one
+   works, so a lead is only reported as failed when both failed. */
+function aeSubmitLead(label, data, detailsOverride, property) {
+  return new Promise(function (resolve, reject) {
+    var failures = 0, settled = false;
+    function ok(how) { if (!settled) { settled = true; resolve(how); } }
+    function fail(what, err) {
+      console.warn(what + " failed:", err);
+      failures++;
+      if (failures === 2 && !settled) { settled = true; reject(new Error("Could not save or email the enquiry")); }
+    }
+    aeSaveInquiry(data).then(function () { ok("saved"); }, function (e) { fail("Saving enquiry", e); });
+    aeSendEmail(label, data, detailsOverride, property).then(function () { ok("emailed"); }, function (e) { fail("Emailing enquiry", e); });
+  });
+}
+
 function setFormStatus(form, kind, text, linkHref, linkText) {
   var el = form.querySelector(".form-status");
   if (!el) {
@@ -215,11 +321,197 @@ function setFormStatus(form, kind, text, linkHref, linkText) {
   }
 }
 
+/* ----------------------------------------------------------
+   Spam protection (no captcha, nothing for real visitors to do):
+   - Honeypot: every lead form gets a hidden text box. People never see it, but bots fill it in.
+   - Timing: a form submitted less than 2 seconds after it appeared is treated as a bot.
+   A caught submission is dropped silently (the sender sees the normal thank-you message),
+   so bots get no hint about what tripped them. Forms added later by search.js are covered too.
+   ---------------------------------------------------------- */
+var AE_LEAD_FORM_IDS = ["contact-form", "requirement-form", "owner-form", "visit-form"];
+
+function aeAddHoneypot(form) {
+  if (!form || form.querySelector(".ae-hp")) return;
+  form.setAttribute("data-ae-t", String(Date.now()));
+  var box = document.createElement("div");
+  box.className = "ae-hp";
+  box.setAttribute("aria-hidden", "true");
+  box.innerHTML = '<label>Leave this field empty<input type="text" name="ae_company_site" tabindex="-1" autocomplete="off"></label>';
+  form.appendChild(box);
+}
+
+function aeScanHoneypots(root) {
+  if (!root || !root.querySelectorAll) return;
+  if (root.tagName === "FORM" && AE_LEAD_FORM_IDS.indexOf(root.id) > -1) aeAddHoneypot(root);
+  root.querySelectorAll("form").forEach(function (f) { if (AE_LEAD_FORM_IDS.indexOf(f.id) > -1) aeAddHoneypot(f); });
+}
+
+function initHoneypots() {
+  aeScanHoneypots(document);
+  if (typeof MutationObserver !== "function") return;
+  new MutationObserver(function (list) {
+    list.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) aeScanHoneypots(n); }); });
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
+function aeIsBot(form) {
+  var hp = form.querySelector(".ae-hp input");
+  if (hp && hp.value) return true;
+  var t = Number(form.getAttribute("data-ae-t")) || 0;
+  return !!t && Date.now() - t < 2000;
+}
+
+/* Property details for a lead: the full record when properties.js is loaded, else what the static page carries */
+function aePropertyForLead(id, title) {
+  var prop = (id && typeof getPropertyById === "function") ? getPropertyById(id) : null;
+  if (prop) return aePropertyInfo(prop);
+  var link = location.href.split("#")[0];
+  return { id: id, title: title, price: "", location: "", link: link, image: "", text: "Property ID: " + id + "\nTitle: " + title + "\nLink: " + link };
+}
+
+/* ----------------------------------------------------------
+   Book a visit: any button with data-visit-open (+ data-visit-id / data-visit-title) opens a small
+   date and time-slot form. It opens WhatsApp with the request, saves it to the Enquiries tab as a
+   property enquiry (requirement "Visit request") and emails it, like every other lead.
+   ---------------------------------------------------------- */
+var AE_VISIT_SLOTS = ["9 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM"]; /* visiting hours: 9 AM to 9 PM */
+
+function aeLocalISO(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function aeCloseVisitDialog() {
+  var m = document.getElementById("visit-modal");
+  if (!m) return;
+  m.remove();
+  document.body.classList.remove("visit-open");
+  if (window.aeVisitReturnFocus && window.aeVisitReturnFocus.focus) window.aeVisitReturnFocus.focus();
+}
+
+function aeOpenVisitDialog(prop, opener) {
+  aeCloseVisitDialog();
+  window.aeVisitReturnFocus = opener || null;
+  var today = new Date(), last = new Date();
+  last.setDate(last.getDate() + 60);
+  var slots = AE_VISIT_SLOTS.map(function (s) { return "<option>" + s + "</option>"; }).join("");
+  var m = document.createElement("div");
+  m.id = "visit-modal";
+  m.className = "visit-modal";
+  m.innerHTML =
+    '<div class="visit-backdrop" data-visit-close></div>' +
+    '<div class="visit-card" role="dialog" aria-modal="true" aria-labelledby="visit-title">' +
+    '<button type="button" class="visit-x" data-visit-close aria-label="Close"><i class="fas fa-xmark"></i></button>' +
+    '<h3 id="visit-title">Book a visit</h3>' +
+    '<p class="visit-prop"></p>' +
+    '<p class="visit-hours"><i class="far fa-clock"></i> Visits are available daily, 9 AM to 9 PM.</p>' +
+    '<form id="visit-form">' +
+    '<div class="form-group"><label for="visit-name">Your name</label><input type="text" id="visit-name" name="name" required autocomplete="name"></div>' +
+    '<div class="form-group"><label for="visit-phone">Phone number</label><input type="tel" id="visit-phone" name="phone" required autocomplete="tel"></div>' +
+    '<div class="visit-row">' +
+    '<div class="form-group"><label for="visit-date">Preferred date</label><input type="date" id="visit-date" name="visitdate" required min="' + aeLocalISO(today) + '" max="' + aeLocalISO(last) + '"></div>' +
+    '<div class="form-group"><label for="visit-slot">Time slot</label><select id="visit-slot" name="slot">' + slots + '</select></div>' +
+    '</div>' +
+    '<div class="form-group"><label for="visit-note">Note (optional)</label><textarea id="visit-note" name="note" rows="2" placeholder="Anything we should know?"></textarea></div>' +
+    '<button type="submit" class="btn btn-whatsapp btn-block"><i class="fab fa-whatsapp"></i> Request visit</button>' +
+    '</form></div>';
+  m.querySelector(".visit-prop").textContent = prop.title || "This property";
+  var form = m.querySelector("#visit-form");
+  form.setAttribute("data-visit-id", String(prop.id || ""));
+  form.setAttribute("data-visit-title", prop.title || "");
+  document.body.appendChild(m);
+  document.body.classList.add("visit-open");
+  aeAddHoneypot(form);
+  setTimeout(function () { var f = m.querySelector("#visit-name"); if (f) f.focus(); }, 30);
+}
+
+function initVisitBooking() {
+  document.addEventListener("click", function (e) {
+    var opener = e.target.closest("[data-visit-open]");
+    if (opener) {
+      e.preventDefault();
+      aeOpenVisitDialog({
+        id: parseInt(opener.getAttribute("data-visit-id"), 10) || 0,
+        title: opener.getAttribute("data-visit-title") || document.title.split("|")[0].trim()
+      }, opener);
+      return;
+    }
+    if (e.target.closest("[data-visit-close]")) aeCloseVisitDialog();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") aeCloseVisitDialog(); });
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!form || form.id !== "visit-form") return;
+    e.preventDefault();
+    var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
+    var name = val("name"), phone = val("phone"), dateVal = val("visitdate"), slot = val("slot"), note = val("note");
+    if (!name || phone.replace(/\D/g, "").length < 8) {
+      setFormStatus(form, "error", "Please enter your name and a valid phone number.");
+      return;
+    }
+    if (!dateVal) { setFormStatus(form, "error", "Please choose a date for the visit."); return; }
+    var d = new Date(dateVal + "T00:00:00");
+    var dateText = isNaN(d) ? dateVal : d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+    if (aeIsBot(form)) {
+      form.innerHTML = "";
+      var ok = document.createElement("p");
+      ok.className = "form-status is-success";
+      ok.textContent = "Thank you, " + name + ". We have your visit request and will call you to confirm.";
+      form.appendChild(ok);
+      return;
+    }
+    var lastSent = 0;
+    try { lastSent = Number(localStorage.getItem("ae_last_inquiry")) || 0; } catch (err) {}
+    if (Date.now() - lastSent < 20000) {
+      setFormStatus(form, "error", "Your request was just sent. Please wait a few seconds before sending another.");
+      return;
+    }
+
+    var id = parseInt(form.getAttribute("data-visit-id"), 10) || 0;
+    var title = form.getAttribute("data-visit-title") || "";
+    var info = aePropertyForLead(id, title);
+    var message = "Visit request: " + dateText + ", " + slot + (note ? "\nNote: " + note : "");
+    var wa = getWhatsAppLink(info.link + "\n\nHi Akshat Estate, I'd like to visit " + (title || "this property") + " on " + dateText + ", " + slot + ".\nName: " + name + "\nPhone: " + phone + (note ? "\nNote: " + note : ""));
+    window.open(wa, "_blank", "noopener");
+
+    var btn = form.querySelector('[type="submit"]');
+    if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
+    var data = { source: "property", name: name, phone: phone, requirement: "Visit request", message: message, page: location.pathname.slice(-150) };
+    if (id) data.propertyId = id;
+    if (title) data.propertyTitle = title;
+
+    function finish(text) {
+      form.innerHTML = "";
+      var p = document.createElement("p");
+      p.className = "form-status is-success";
+      p.textContent = text + " ";
+      var a = document.createElement("a");
+      a.href = wa; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = "Open WhatsApp again";
+      p.appendChild(a);
+      var c = document.createElement("button");
+      c.type = "button"; c.className = "btn btn-outline btn-block"; c.setAttribute("data-visit-close", ""); c.textContent = "Close"; c.style.marginTop = "1rem";
+      form.appendChild(p); form.appendChild(c);
+    }
+    aeSubmitLead("Visit request", data, null, id ? info : null).then(function () {
+      try { localStorage.setItem("ae_last_inquiry", String(Date.now())); } catch (err) {}
+      finish("Thank you, " + name + ". We have your visit request for " + dateText + " (" + slot + ") and will call you to confirm. WhatsApp opened with the details: press send to reach us faster.");
+    }).catch(function () {
+      finish("WhatsApp opened with your visit request. Press send there and we will confirm the visit.");
+    });
+  });
+}
+
 function initContactForm() {
   document.addEventListener("submit", function (e) {
     var form = e.target;
     if (!form || form.id !== "contact-form") return;
     e.preventDefault();
+    if (aeIsBot(form)) {
+      form.reset();
+      setFormStatus(form, "success", "Thank you. We have received your enquiry and will call you shortly.");
+      return;
+    }
 
     var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
     var name = val("name");
@@ -239,15 +531,17 @@ function initContactForm() {
     var data = { name: name, phone: phone, email: val("email"), message: val("message"), requirement: val("requirement") };
     data.page = location.pathname.slice(-150);
     var propertyTitle = "";
-    if (document.getElementById("property-detail")) {
+    var propertyInfo = null;
+    var staticId = parseInt(document.body.getAttribute("data-property-id"), 10) || 0;
+    if (document.getElementById("property-detail") || staticId) {
       data.source = "property";
-      var pid = parseInt(new URLSearchParams(location.search).get("id"), 10);
+      var pid = staticId || parseInt(new URLSearchParams(location.search).get("id"), 10);
       if (pid) {
         data.propertyId = pid;
-        if (typeof getPropertyById === "function") {
-          var prop = getPropertyById(pid);
-          if (prop) { propertyTitle = prop.title; data.propertyTitle = prop.title; }
-        }
+        var prop = typeof getPropertyById === "function" ? getPropertyById(pid) : null;
+        var ptitle = prop ? prop.title : (document.body.getAttribute("data-property-title") || "");
+        if (ptitle) { propertyTitle = ptitle; data.propertyTitle = ptitle; }
+        propertyInfo = aePropertyForLead(pid, ptitle);
       }
     } else {
       data.source = form.elements.requirement ? "contact" : "enquiry";
@@ -257,7 +551,7 @@ function initContactForm() {
     var original = btn ? btn.textContent : "";
     if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
 
-    aeSaveInquiry(data).then(function () {
+    aeSubmitLead(AE_FORM_LABELS[data.source] || "Enquiry", data, null, propertyInfo).then(function () {
       try { localStorage.setItem("ae_last_inquiry", String(Date.now())); } catch (err) {}
       form.reset();
       setFormStatus(form, "success", "Thank you, " + name + ". We have received your enquiry and will call you shortly.");
@@ -273,8 +567,8 @@ function initContactForm() {
 }
 
 /* "Tell us what you need" (tenant requirement form).
-   Opens WhatsApp with the details filled in and also saves the requirement to Firestore
-   ("inquiries"), so it shows up in the admin Enquiries tab even if the visitor never presses send. */
+   Opens WhatsApp with the details filled in, saves the requirement to Firestore ("inquiries") and emails it
+   (EmailJS), so you get it even if the visitor never presses send in WhatsApp. */
 function initRequirementForm() {
   document.querySelectorAll('#requirement-form input[name="movein"]').forEach(function (i) {
     var t = new Date();
@@ -284,6 +578,11 @@ function initRequirementForm() {
     var form = e.target;
     if (!form || form.id !== "requirement-form") return;
     e.preventDefault();
+    if (aeIsBot(form)) {
+      form.reset();
+      setFormStatus(form, "success", "Thank you. We have your requirement and will call you with matching homes.");
+      return;
+    }
 
     var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
     var name = val("name"), phone = val("phone");
@@ -330,7 +629,7 @@ function initRequirementForm() {
       location: area, bhk: bhk, rent: budget, furnishing: furnishing,
       page: location.pathname.slice(-150)
     };
-    aeSaveInquiry(data).then(function () {
+    aeSubmitLead("Rental requirement", data, summary.split("\n").slice(2).join("\n")).then(function () {
       try { localStorage.setItem("ae_last_inquiry", String(Date.now())); } catch (err) {}
       form.reset();
       setFormStatus(form, "success", "Thank you, " + name + ". We have your requirement and will call you with matching homes. WhatsApp opened with the details: press send to reach us faster.", waLink, "Open WhatsApp again");
@@ -342,8 +641,8 @@ function initRequirementForm() {
   });
 }
 
-/* "List Your Property" form: no backend yet, so submitting opens WhatsApp with the details pre-filled.
-   (To email submissions instead, point this form at Formspree/EmailJS.) */
+/* "List Your Property" form: submitting opens WhatsApp with the details pre-filled, and the lead is
+   also saved to the admin panel and emailed (EmailJS). */
 function initOwnerForm() {
   const form = document.getElementById("owner-form");
   if (!form) return;
@@ -361,6 +660,7 @@ function initOwnerForm() {
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (aeIsBot(form)) { form.reset(); return; }
     const data = new FormData(form);
     const get = function (k) { return (data.get(k) || "").toString().trim(); };
     const selling = get("listingType") === "Sell";
@@ -378,8 +678,8 @@ function initOwnerForm() {
     if (get("message")) lines.push("Notes: " + get("message"));
     lines.push("", "I will share photos here on WhatsApp.");
     window.open(getWhatsAppLink(lines.join("\n")), "_blank", "noopener");
-    /* Also keep a copy in the admin panel (WhatsApp above still opens as before) */
-    aeSaveInquiry({
+    /* Also keep a copy in the admin panel and email it (WhatsApp above still opens as before) */
+    aeSubmitLead("Owner listing request", {
       source: "owner", name: get("name"), phone: get("phone"), listingType: get("listingType"),
       location: get("location"), propertyType: get("propertyType"), bhk: get("bhk"),
       rent: get("rent"), furnishing: get("furnishing"), message: get("message"),

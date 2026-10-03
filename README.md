@@ -18,7 +18,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 | `ahmedabad.html` | Area: Ahmedabad |
 | `style.css` | Styles (Poppins font) |
 | `main.js` | Nav, WhatsApp, forms |
-| `properties.js` | Demo property data |
+| `properties.js` | Built-in property data (14 real rental listings, Gurukul and Memnagar) |
 | `search.js` | Search & filter logic |
 | `admin.html` / `admin.css` / `admin.js` | Admin panel: add, edit, hide and delete listings |
 | `firebase-config.js` | Firebase project settings (shared by the site and admin) |
@@ -40,7 +40,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 
 ## Customise
 
-1. Edit properties in `properties.js`
+1. Edit properties in `properties.js` (14 real listings exported on 2026-10-03)
 2. Connect contact form to Formspree / EmailJS (see comments in `main.js`)
 3. Replace email if different
 
@@ -65,7 +65,7 @@ The public site reads listings from Firestore (collection `properties`). If Fire
 1. **Authentication > Sign-in method:** turn on **Email/Password**.
 2. **Authentication > Users > Add user:** create the admin email and a strong password.
 3. **Firestore Database:** create the database if it does not exist yet (production mode).
-4. **Firestore Database > Rules:** paste the contents of `firestore.rules` (it covers both listings and enquiries), replace `REPLACE-WITH-ADMIN-EMAIL@example.com` with the admin email from step 2, then **Publish**. This is what actually protects your data.
+4. **Firestore Database > Rules:** paste the contents of `firestore.rules` (it covers both listings and enquiries), the admin email in the file is already set to `akshat@gmail.com` (it must match the user from step 2), then **Publish**. This is what actually protects your data.
 5. **Authentication > Settings > User actions:** untick **Enable create (sign-up)** so nobody else can register an account.
 6. **Authentication > Settings > Authorized domains:** make sure your live domain is listed.
 7. Open `admin.html`, sign in, and click **Import listings** once to copy the listings from `properties.js` into Firebase.
@@ -77,7 +77,7 @@ Optional: in Google Cloud Console > APIs & Services > Credentials, restrict the 
 - Photos are pasted as image links (https). Uploading files needs Firebase Storage, which requires the Blaze plan.
 - Listings marked **Live** off are hidden from every page. Deleting is permanent, so use the backup button first if unsure.
 - The homepage **Featured Rentals** row follows the "Homepage" switch in the admin. Before you import, it follows `FEATURED_RENTAL_IDS` in `properties.js`.
-- The static pages in `properties/` (one file per demo listing) and the "Related Properties" cards inside blog articles are plain HTML and are **not** updated from the admin.
+- The static pages in `properties/` (one file per current listing, 14 in total; see `properties/README-pages.txt`) and the "Related Properties" cards inside blog articles are plain HTML and are **not** updated from the admin.
 - The site must be served over http(s). Opening files by double-click still works for the public pages (built-in listings), but the admin panel and live data need a web address or `localhost`.
 
 ### Enquiries
@@ -107,3 +107,35 @@ In the admin, tabs split enquiries by type (Property enquiry, Owner listing requ
 - **FAQs** with FAQ schema on the homepage, rent page, area pages and Ahmedabad page.
 - **SEO:** `sitemap.xml`, `robots.txt`, canonical tags (blog articles and listing pages included), Open Graph / Twitter preview image (`og-image.png`), WebSite, BreadcrumbList, BlogPosting and RealEstateListing data. Add new pages to `sitemap.xml` by hand. Regenerate `og-image.png` if you change the branding.
 - **Polish:** back-to-top button, WhatsApp + Call bar pinned to the bottom of property pages on phones, lazy-loaded images.
+
+### Email notifications (EmailJS)
+
+Every lead form (contact form, area and property-page enquiry boxes, the "Tell us what you need" requirement form, and List Your Property) also sends you an email through EmailJS, in addition to saving it to the Enquiries tab. If either the save or the email fails, the visitor still sees success as long as the other worked; they only see the WhatsApp fallback when both fail.
+
+The IDs live at the top of the enquiry section in `main.js` (`AE_EMAILJS`): service `service_g19zso8`, template `template_fu86367`.
+
+**Set up the template in the EmailJS dashboard** (Email Templates > your template). Set **To Email** to your own address (a fixed address, not a variable), and use these variables:
+
+| Variable | Contains |
+|---|---|
+| `{{subject}}` | e.g. "New contact form: Ravi Patel (9825012345)" (use as the email subject) |
+| `{{message}}` | Everything in one readable block (type, name, phone, email, property, message, and so on). A template with just this one variable already shows the whole enquiry |
+| `{{form_type}}` | Contact form, Property enquiry, Area page enquiry, Rental requirement or Owner listing request |
+| `{{name}}`, `{{phone}}`, `{{email}}` | Visitor details (`{{email}}` is empty if they didn't give one) |
+| `{{property}}` | Property title, for property-page enquiries |
+| `{{property_id}}`, `{{property_title}}`, `{{property_price}}`, `{{property_location}}`, `{{property_link}}`, `{{property_image}}` | The exact listing the visitor asked about (ID, title, price such as "₹18,000 per month", area, page link and photo). Empty for forms that aren't about one property |
+| `{{property_details}}` | The same listing details as a ready-made block (ID, listing type, price, location, layout, area, bathrooms, furnishing, link). Already included inside `{{message}}` for property enquiries |
+| `{{note}}` | Only what the visitor typed in the message box |
+| `{{page_url}}`, `{{submitted_at}}` | The page it came from, and the time in IST |
+| `{{reply_to}}` | The visitor's email, for the Reply-To field |
+
+**Protect the account** (EmailJS dashboard > Account > Security): add your website domain as an allowed origin, and consider turning on reCAPTCHA. The public key and IDs are visible to anyone who views the site's source, so without a domain restriction someone could use them to send emails from your account and use up your monthly quota (free plan: 200 emails/month; EmailJS also allows 1 request per second).
+
+Property enquiries include the full listing details for every listing, including ones added from the admin panel. Floor, parking and bachelors info are deliberately left out of the email until you have confirmed those values in the admin, because the original listings still carry placeholder values for them.
+
+## Added: spam protection, Book a visit, enquiry workflow
+
+- **Spam protection:** every lead form (contact, area/property enquiry, requirement, List Your Property, Book a visit) gets a hidden honeypot box and a 2-second timing check from `aeAddHoneypot` / `aeIsBot` in `main.js`. A caught submission is dropped silently and the sender still sees the thank-you message. Firebase App Check can be added later if spam gets heavy.
+- **Book a visit:** a "Book a visit" button on every property page (the 14 static pages and `property-details.html`). The visitor picks a date (next 60 days) and a time slot (four 3-hour slots covering the 9 AM to 9 PM visiting hours), WhatsApp opens with the request, and it is saved to Enquiries as a property enquiry with requirement "Visit request" and emailed through EmailJS. No change to `firestore.rules` was needed. Slots are listed in `AE_VISIT_SLOTS` in `main.js`.
+- **Static property pages now save enquiries:** the demo pages had a leftover script that cleared the form before it could be sent. It is removed, and each page carries `data-property-id` / `data-property-title` so its enquiries are tied to the right listing.
+- **Admin Enquiries tab:** a "Visit requests" tab; an "N enquiries" link on each listing (opens that property's enquiries) and a count on each enquiry; WhatsApp opens a ready-made reply and, like Call, marks a new enquiry as Contacted; the CSV has a Property ID column.

@@ -223,6 +223,8 @@ function render() {
   }
 }
 
+function enqCountFor(id) { return (state.enqByProp && state.enqByProp[id]) || 0; }
+
 function rowHTML(p) {
   const layout = layoutText(p);
   const isRent = p.status === "rent";
@@ -238,6 +240,7 @@ function rowHTML(p) {
         <span>${esc(layout || typeLabel(p.type))}</span>
         <span>${esc(p.area)} ${esc(p.areaUnit || "sq.ft")}</span>
         <span>ID ${p.id}</span>
+        ${enqCountFor(p.id) ? `<span><button type="button" class="meta-link" data-act="enqs" title="Show the enquiries for this property">${enqCountFor(p.id)} enquir${enqCountFor(p.id) === 1 ? "y" : "ies"}</button></span>` : ""}
       </div>
     </div>
     <span class="chip ${isRent ? "rent" : "sale"}">${isRent ? "For rent" : "For sale"}</span>
@@ -277,6 +280,7 @@ $("#rows").addEventListener("click", (e) => {
   if (btn.dataset.act === "edit") openDrawer(p);
   if (btn.dataset.act === "copy") openDrawer(p, true);
   if (btn.dataset.act === "delete") askDelete(p);
+  if (btn.dataset.act === "enqs") showEnquiriesFor(p);
 });
 
 $("#rows").addEventListener("change", async (e) => {
@@ -641,8 +645,11 @@ $("#export-btn").addEventListener("click", () => {
    Enquiries
    Collection "inquiries", created by the website forms. Read live.
    ========================================================== */
-const enq = { list: [], filter: "all", q: "", unsub: null, ready: false };
+const enq = { list: [], filter: "all", q: "", prop: null, unsub: null, ready: false };
 const SOURCE_LABELS = { property: "Property enquiry", contact: "Contact form", enquiry: "Area page enquiry", owner: "Owner listing request" };
+const VISIT_LABEL = "Visit request";
+const isVisit = (e) => e.source === "property" && e.requirement === VISIT_LABEL;
+const srcLabel = (e) => (isVisit(e) ? VISIT_LABEL : SOURCE_LABELS[e.source] || "Enquiry");
 const STATUS_LABELS = { new: "New", contacted: "Contacted", closed: "Closed" };
 
 function toMs(v) {
@@ -712,8 +719,27 @@ function enqStatus(e) { return STATUS_LABELS[e.status] ? e.status : "new"; }
 
 function renderEnquiries() {
   const list = enq.list;
-  const counts = { all: list.length, property: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
-  list.forEach((e) => { counts[enqStatus(e)]++; if (e.source in counts) counts[e.source]++; });
+  const counts = { all: list.length, property: 0, visit: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
+  const byProp = {};
+  list.forEach((e) => {
+    counts[enqStatus(e)]++;
+    if (isVisit(e)) counts.visit++;
+    else if (e.source in counts) counts[e.source]++;
+    if (e.propertyId) byProp[e.propertyId] = (byProp[e.propertyId] || 0) + 1;
+  });
+  /* Keep the "N enquiries" link on each listing in step with the enquiries list */
+  if (JSON.stringify(byProp) !== JSON.stringify(state.enqByProp || {})) {
+    state.enqByProp = byProp;
+    if (state.loaded) render();
+  }
+  const bar = $("#enq-propbar");
+  if (bar) {
+    const shown = enq.prop ? state.list.find((x) => x.id === enq.prop) : null;
+    bar.hidden = !enq.prop;
+    if (enq.prop) {
+      bar.innerHTML = `Showing enquiries for <b>${esc(shown ? shown.title : "property " + enq.prop)}</b> (ID ${enq.prop}) <button type="button" class="meta-link" id="enq-prop-clear">Show all</button>`;
+    }
+  }
   $$("[data-ecount]").forEach((el) => { el.textContent = counts[el.dataset.ecount]; });
 
   const badge = $("#new-badge");
@@ -730,7 +756,8 @@ function renderEnquiries() {
 
   const q = enq.q.trim().toLowerCase();
   const rows = list
-    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : e.source === enq.filter))
+    .filter((e) => !enq.prop || Number(e.propertyId) === enq.prop)
+    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : enq.filter === "visit" ? isVisit(e) : e.source === enq.filter && !isVisit(e)))
     .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement].join(" ").toLowerCase().includes(q));
 
   $("#enq-rows").innerHTML = rows.map(enqHTML).join("");
@@ -753,6 +780,9 @@ function enqAbout(e) {
       ? `<span>About <a href="property-details.html?id=${Number(e.propertyId)}" target="_blank" rel="noopener">${label}</a></span>`
       : `<span>About <b>${label}</b></span>`);
   }
+  if (e.source === "property" && e.propertyId && enqCountFor(e.propertyId) > 1) {
+    bits.push(`<span><button type="button" class="meta-link" data-eact="byprop" data-prop="${Number(e.propertyId)}">${enqCountFor(e.propertyId)} enquiries for this property</button></span>`);
+  }
   if (e.source === "contact" && e.requirement) bits.push(`<span>Looking to <b>${esc(e.requirement)}</b></span>`);
   if (e.source === "enquiry" && e.page) bits.push(`<span>Sent from <b>${esc(e.page)}</b></span>`);
   if (e.source === "owner") {
@@ -766,6 +796,19 @@ function enqAbout(e) {
     if (e.furnishing) bits.push(`<span>${esc(e.furnishing)}</span>`);
   }
   return bits.length ? `<div class="enq-about">${bits.join("")}</div>` : "";
+}
+
+/* Ready-made first reply for the WhatsApp button, so you only press send */
+function replyText(e) {
+  const hi = `Hi ${e.name || "there"}, this is Akshat Estate.`;
+  if (isVisit(e)) {
+    const when = String(e.message || "").split("\n")[0].replace(/^Visit request:\s*/i, "");
+    return `${hi} Thank you for your visit request${e.propertyTitle ? " for " + e.propertyTitle : ""}${when ? " (" + when + ")" : ""}. Does that time work for you? We will confirm the visit.`;
+  }
+  if (e.source === "property") return `${hi} Thank you for your enquiry${e.propertyTitle ? " about " + e.propertyTitle : ""}. How can we help you with it?`;
+  if (e.source === "owner") return `${hi} Thank you for your request to list your property. Please share a few photos and we will get started.`;
+  if (e.source === "enquiry" && e.requirement === "Rental requirement") return `${hi} Thank you for sharing what you need. We will send you matching homes shortly.`;
+  return `${hi} Thank you for getting in touch. How can we help?`;
 }
 
 function enqHTML(e) {
@@ -784,7 +827,7 @@ function enqHTML(e) {
     <div class="enq-head">
       <div class="enq-who">
         <strong>${esc(e.name)}</strong>
-        <span class="chip src">${esc(SOURCE_LABELS[e.source] || "Enquiry")}</span>
+        <span class="chip ${isVisit(e) ? "visit" : "src"}">${esc(srcLabel(e))}</span>
         <span class="chip st-${st}">${STATUS_LABELS[st]}</span>
       </div>
       <time title="${esc(fullDate(ms))}">${esc(whenText(ms))}</time>
@@ -797,7 +840,7 @@ function enqHTML(e) {
     ${e.message ? `<p class="enq-msg">${esc(e.message)}</p>` : ""}
     <div class="enq-actions">
       <a class="btn btn-primary btn-sm" href="tel:${esc(tel)}">Call</a>
-      <a class="btn btn-ghost btn-sm" href="https://wa.me/${esc(num)}" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn btn-ghost btn-sm" data-wa-reply href="https://wa.me/${esc(num)}?text=${encodeURIComponent(replyText(e))}" target="_blank" rel="noopener">WhatsApp</a>
       ${next}${also}
       <span class="spacer"></span>
       <button type="button" class="icon-btn danger" data-eact="delete" title="Delete enquiry" aria-label="Delete enquiry from ${esc(e.name)}"><i class="fas fa-trash-can"></i></button>
@@ -815,8 +858,8 @@ $("#enq-tabs").addEventListener("click", (ev) => {
 $("#enq-search").addEventListener("input", (ev) => { enq.q = ev.target.value; renderEnquiries(); });
 
 $("#enq-rows").addEventListener("click", async (ev) => {
-  /* Tapping Call (or the phone number) marks a new enquiry as contacted; the call itself still starts */
-  const call = ev.target.closest('a[href^="tel:"]');
+  /* Tapping Call, the phone number or WhatsApp marks a new enquiry as contacted; the call or chat still starts */
+  const call = ev.target.closest('a[href^="tel:"], a[data-wa-reply]');
   if (call) {
     const item = enq.list.find((x) => x.id === call.closest(".enq").dataset.id);
     if (item && enqStatus(item) === "new") {
@@ -831,6 +874,7 @@ $("#enq-rows").addEventListener("click", async (ev) => {
   const item = enq.list.find((x) => x.id === id);
   if (!item) return;
   const act = btn.dataset.eact;
+  if (act === "byprop") { enq.prop = Number(btn.dataset.prop); renderEnquiries(); return; }
   if (act === "delete") {
     const ok = await confirmBox("Delete this enquiry?", `The enquiry from ${item.name || "this visitor"} will be removed permanently.`, "Delete enquiry");
     if (!ok) return;
@@ -854,9 +898,10 @@ $("#enq-export").addEventListener("click", () => {
     if (/^[=+\-@]/.test(t)) t = "'" + t;
     return '"' + t.replace(/"/g, '""') + '"';
   };
-  const head = ["Received", "Status", "Source", "Name", "Phone", "Email", "Message", "Property", "Looking to", "Page"];
+  const head = ["Received", "Status", "Source", "Name", "Phone", "Email", "Message", "Property ID", "Property", "Looking to", "Page"];
   const lines = [head.map(cell).join(",")].concat(enq.list.map((e) => [
-    fullDate(toMs(e.createdAt)), STATUS_LABELS[enqStatus(e)], SOURCE_LABELS[e.source] || "", e.name, e.phone, e.email, e.message,
+    fullDate(toMs(e.createdAt)), STATUS_LABELS[enqStatus(e)], isVisit(e) ? VISIT_LABEL : SOURCE_LABELS[e.source] || "", e.name, e.phone, e.email, e.message,
+    e.propertyId || "",
     e.propertyTitle || (e.source === "owner" ? [e.listingType, e.bhk, e.propertyType, e.location, e.rent].filter(Boolean).join(" ") : ""),
     e.requirement, e.page
   ].map(cell).join(",")));
@@ -866,6 +911,17 @@ $("#enq-export").addEventListener("click", () => {
   a.download = `akshat-estate-enquiries-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* From a listing's "N enquiries" link: open the Enquiries tab filtered to that property */
+function showEnquiriesFor(p) {
+  enq.prop = p.id;
+  enq.filter = "all";
+  $$("#enq-tabs .tab").forEach((t) => { const on = t.dataset.efilter === "all"; t.classList.toggle("is-active", on); t.setAttribute("aria-selected", on); });
+  showView("enquiries");
+}
+document.addEventListener("click", (ev) => {
+  if (ev.target.closest("#enq-prop-clear")) { enq.prop = null; renderEnquiries(); }
 });
 
 /* ---------- Section navigation ---------- */

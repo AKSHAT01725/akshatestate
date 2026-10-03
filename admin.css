@@ -250,3 +250,9 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 
 /* The logo file has a solid white box; blend it into the softer background */
 .topbar-brand img, .login-logo { mix-blend-mode: multiply; }
+
+/* Enquiry workflow additions */
+.chip.visit { background: var(--green-soft); color: var(--green); }
+.meta-link { background: none; border: 0; padding: 0; font: inherit; color: var(--purple-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.propbar { margin: 0 0 1rem; padding: .65rem 1rem; border: 1px solid var(--purple-muted, var(--border)); background: var(--purple-soft); border-radius: 10px; font-size: .875rem; color: var(--text); display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .75rem; }
+.propbar[hidden] { display: none; }

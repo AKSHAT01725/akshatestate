@@ -439,6 +439,7 @@ function initPropertyDetails() {
           <p>Message us on WhatsApp and we will share details and arrange a visit.</p>
           <a href="#" data-whatsapp data-whatsapp-msg="${escapeAttr(waMessage)}" class="btn btn-whatsapp btn-block btn-lg"><i class="fab fa-whatsapp"></i> WhatsApp About This Property</a>
           <a href="tel:+918141293057" class="btn btn-secondary btn-block" style="margin-top:0.5rem"><i class="fas fa-phone"></i> Call +91 81412 93057</a>
+          <button type="button" class="btn btn-primary btn-block" data-visit-open data-visit-id="${property.id}" data-visit-title="${escapeAttr(property.title)}" style="margin-top:0.5rem"><i class="far fa-calendar-check"></i> Book a visit</button>
           <button type="button" class="btn btn-outline btn-block property-favorite detail-save" data-id="${property.id}" style="margin-top:0.5rem"><i class="far fa-heart"></i> <span>Save to shortlist</span></button>
           <div class="sidebar-divider"><span>or send an inquiry</span></div>
           <form id="contact-form">
