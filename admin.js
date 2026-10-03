@@ -721,13 +721,10 @@ function enqStatus(e) { return STATUS_LABELS[e.status] ? e.status : "new"; }
 
 function renderEnquiries() {
   const list = enq.list;
-  const counts = { all: list.length, property: 0, visit: 0, wa: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
+  const counts = { all: list.length, new: 0, contacted: 0, closed: 0 };
   const byProp = {};
   list.forEach((e) => {
     counts[enqStatus(e)]++;
-    if (isVisit(e)) counts.visit++;
-    else if (isWa(e)) counts.wa++;
-    else if (e.source in counts) counts[e.source]++;
     if (e.propertyId) byProp[e.propertyId] = (byProp[e.propertyId] || 0) + 1;
   });
   /* Keep the "N enquiries" link on each listing in step with the enquiries list */
@@ -760,8 +757,8 @@ function renderEnquiries() {
   const q = enq.q.trim().toLowerCase();
   const rows = list
     .filter((e) => !enq.prop || Number(e.propertyId) === enq.prop)
-    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : enq.filter === "visit" ? isVisit(e) : enq.filter === "wa" ? isWa(e) : e.source === enq.filter && !isVisit(e) && !isWa(e)))
-    .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement].join(" ").toLowerCase().includes(q));
+    .filter((e) => enq.filter === "all" || enqStatus(e) === enq.filter)
+    .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement, srcLabel(e)].join(" ").toLowerCase().includes(q));
 
   $("#enq-rows").innerHTML = rows.map(enqHTML).join("");
   const empty = $("#enq-empty");
@@ -820,12 +817,8 @@ function enqHTML(e) {
   const ms = toMs(e.createdAt);
   const num = waNumber(e.phone);
   const tel = String(e.phone || "").replace(/[^\d+]/g, "");
-  const next = st === "new"
-    ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="contacted">Mark contacted</button>`
-    : st === "contacted"
-      ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="closed">Close</button>`
-      : `<button type="button" class="btn btn-ghost btn-sm" data-eact="new">Reopen</button>`;
-  const also = st === "new" ? `<button type="button" class="btn btn-ghost btn-sm" data-eact="closed">Close</button>` : "";
+  const seg = ["new", "contacted", "closed"].map((k) =>
+    `<button type="button" class="seg-btn${st === k ? " is-on" : ""}" data-eact="${k}" aria-pressed="${st === k}">${STATUS_LABELS[k]}</button>`).join("");
   return `
   <li class="enq is-${st}" data-id="${esc(e.id)}">
     <div class="enq-head">
@@ -843,10 +836,11 @@ function enqHTML(e) {
     ${enqAbout(e)}
     ${e.message ? `<p class="enq-msg">${esc(e.message)}</p>` : ""}
     <div class="enq-actions">
-      <a class="btn btn-primary btn-sm" href="tel:${esc(tel)}">Call</a>
-      <a class="btn btn-ghost btn-sm" data-wa-reply href="https://wa.me/${esc(num)}?text=${encodeURIComponent(replyText(e))}" target="_blank" rel="noopener">WhatsApp</a>
-      ${next}${also}
-      <span class="spacer"></span>
+      <a class="btn btn-primary" href="tel:${esc(tel)}"><i class="fas fa-phone" aria-hidden="true"></i> Call</a>
+      <a class="btn btn-ghost" data-wa-reply href="https://wa.me/${esc(num)}?text=${encodeURIComponent(replyText(e))}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp</a>
+    </div>
+    <div class="enq-foot">
+      <div class="seg" role="group" aria-label="Status of the enquiry from ${esc(e.name)}">${seg}</div>
       <button type="button" class="icon-btn danger" data-eact="delete" title="Delete enquiry" aria-label="Delete enquiry from ${esc(e.name)}"><i class="fas fa-trash-can"></i></button>
     </div>
   </li>`;
@@ -886,6 +880,7 @@ $("#enq-rows").addEventListener("click", async (ev) => {
     catch (err) { console.error(err); toast(friendlyError(err), true); }
     return;
   }
+  if (enqStatus(item) === act) return;
   try {
     await F.updateDoc(eref(id), { status: act });
     toast(act === "new" ? "Reopened" : act === "contacted" ? "Marked as contacted" : "Enquiry closed");

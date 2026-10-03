@@ -256,3 +256,99 @@ legend { font-size: 1rem; font-weight: 700; margin-bottom: .9rem; padding: 0; }
 .meta-link { background: none; border: 0; padding: 0; font: inherit; color: var(--purple-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .propbar { margin: 0 0 1rem; padding: .65rem 1rem; border: 1px solid var(--purple-muted, var(--border)); background: var(--purple-soft); border-radius: 10px; font-size: .875rem; color: var(--text); display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .75rem; }
 .propbar[hidden] { display: none; }
+
+/* ==========================================================
+   Enquiry cards: Call + WhatsApp, then a New / Contacted / Closed switch
+   ========================================================== */
+.enq-actions { display: flex; gap: .5rem; flex-wrap: nowrap; margin-top: .85rem; }
+.enq-actions .btn { min-height: 40px; }
+.enq-foot { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .7rem; }
+.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.seg-btn { padding: .35rem .95rem; border-radius: 999px; font-size: .8125rem; font-weight: 500; color: var(--text-light); min-height: 34px; transition: background .2s, color .2s; }
+.seg-btn:hover { color: var(--text); }
+.seg-btn.is-on { background: var(--purple); color: #fff; font-weight: 600; }
+button, .btn, .icon-btn, .tab, .nav-tab, .seg-btn, .switch { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.panel { overflow: hidden; overflow: clip; }
+
+/* ==========================================================
+   Phones (up to 700px): bottom navigation, floating Add button,
+   full-screen edit form, bigger tap targets, no zoom-on-focus
+   ========================================================== */
+@media (max-width: 700px) {
+  body { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+
+  /* iPhones zoom the page when a field under 16px gets focus */
+  input[type=text], input[type=email], input[type=password], input[type=url], input[type=number], input[type=search], select, textarea, .chips input { font-size: 16px; }
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 40px; }
+  .icon-btn { width: 44px; height: 44px; }
+
+  /* Top bar */
+  .topbar-inner { padding: calc(.5rem + env(safe-area-inset-top)) .9rem .5rem; gap: .6rem; }
+  .topbar-brand img { width: 104px; }
+
+  /* Section navigation becomes a bottom bar */
+  .mainnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; border: 0; border-top: 1px solid var(--border); box-shadow: 0 -4px 18px rgba(26, 21, 64, .1); padding-bottom: env(safe-area-inset-bottom); }
+  .mainnav-inner { max-width: none; padding: 0; gap: 0; }
+  .nav-tab { flex: 1; flex-direction: column; justify-content: center; gap: .15rem; min-height: 60px; padding: .45rem 0 .4rem; font-size: .75rem; border-bottom: 0; border-top: 3px solid transparent; position: relative; }
+  .nav-tab i { font-size: 1.2rem; }
+  .nav-tab.is-active { border-top-color: var(--purple); }
+  .nav-tab .badge { position: absolute; top: 6px; left: calc(50% + 8px); }
+
+  .wrap { padding: 1rem .9rem 7rem; }
+  .page-head { align-items: flex-start; margin-bottom: .9rem; }
+  .page-head h1 { font-size: 1.4rem; }
+  .page-actions { width: auto; }
+  .page-actions .btn { flex: 0 0 auto; min-height: 40px; font-size: .8125rem; }
+
+  /* Add property: floating button within thumb reach */
+  #add-btn { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 25; min-height: 52px; padding: 0 1.3rem; font-size: .9375rem; box-shadow: 0 8px 22px rgba(91, 76, 219, .45); }
+  .toast { bottom: calc(92px + env(safe-area-inset-bottom)); }
+
+  /* Filter bar stays visible while scrolling the list; tabs share the width */
+  .toolbar { position: sticky; top: 0; z-index: 12; background: var(--white); flex-direction: column; align-items: stretch; gap: 0; padding: 0 .9rem; }
+  .tabs { gap: 0; overflow: visible; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; padding: .65rem .1rem .55rem; font-size: .8125rem; line-height: 1.25; }
+  .tab .count { display: block; margin: 0; font-size: .875rem; font-weight: 600; }
+  .search { max-width: none; min-width: 0; margin: .15rem 0 .6rem; }
+  .search input { min-height: 44px; }
+
+  /* Listings: each row is a compact card */
+  .row { position: relative; grid-template-columns: 76px minmax(0, 1fr); grid-template-areas: "thumb main" "tog tog" "act act"; gap: .65rem .85rem; padding: .95rem .9rem; }
+  .row .thumb { width: 76px; height: 58px; }
+  .row .chip { position: absolute; top: .95rem; right: .9rem; }
+  .row .row-main { padding-right: 4.6rem; }
+  .row-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
+  .row .toggles { gap: .5rem 1.25rem; flex-wrap: wrap; }
+  .switch { min-height: 40px; }
+  .row .row-actions { display: grid; grid-template-columns: 1fr auto auto auto; gap: .5rem; border-top: 0; padding-top: 0; margin-top: 0; }
+  .row .row-actions .btn { margin: 0; width: 100%; min-height: 44px; }
+  .row .row-actions .icon-btn { border: 1px solid var(--border); border-radius: 12px; }
+  .row .row-actions .icon-btn.danger { color: var(--red); }
+
+  /* Enquiries: large Call / WhatsApp buttons, full-width status switch */
+  .enq { padding: 1rem .9rem; }
+  .enq-head { gap: .25rem .75rem; }
+  .enq-msg { max-width: none; }
+  .enq-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .enq-actions .btn { min-height: 48px; font-size: .9375rem; }
+  .seg { flex: 1; }
+  .seg-btn { flex: 1; min-height: 42px; padding: .35rem .3rem; }
+
+  /* Add / edit form fills the screen, Save stays pinned at the bottom */
+  .drawer { width: 100%; max-width: none; height: 100%; box-shadow: none; }
+  .drawer-head { padding: calc(.7rem + env(safe-area-inset-top)) 1rem .7rem; }
+  .drawer-foot { padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom)); gap: .6rem; }
+  .drawer-foot .btn { flex: 1; min-height: 48px; }
+  .drawer-foot .btn-primary { flex: 2; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr 1fr; gap: 0 .75rem; }
+  .grid-3 > .field:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .photo-preview img { width: 72px; height: 54px; }
+  .confirm { width: calc(100% - 2rem); }
+  .confirm-actions .btn { flex: 1; min-height: 46px; }
+}
+@media (max-width: 359px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) { .grid-2.stack-phone { grid-template-columns: 1fr; } }
