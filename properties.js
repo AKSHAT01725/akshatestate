@@ -500,7 +500,7 @@ function renderPropertyCard(property) {
         </div>
         <div class="property-actions">
           <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Details</a>
-          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
           <button type="button" class="btn btn-outline btn-sm btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
         </div>
       </div>
@@ -546,7 +546,7 @@ function renderPropertyHCard(property) {
         </div>
         <div class="property-hcard-cta">
           <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Property</a>
-          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
           <button type="button" class="btn btn-outline btn-sm btn-share" data-share-url="${escapeAttr(getPropertyUrl(property))}" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i> Share</button>
         </div>
       </div>
@@ -706,7 +706,7 @@ function renderRentalCard(property) {
         <ul class="rental-meta">${factsHTML}</ul>
         <div class="rental-actions">
           <a href="${detailUrl}" class="btn btn-outline btn-sm">View Property</a>
-          <a href="#" class="btn btn-whatsapp btn-sm" data-whatsapp data-whatsapp-msg="${msg}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
+          <a href="#" class="btn btn-whatsapp btn-sm" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${msg}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
         </div>
       </div>
     </article>

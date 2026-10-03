@@ -649,7 +649,9 @@ const enq = { list: [], filter: "all", q: "", prop: null, unsub: null, ready: fa
 const SOURCE_LABELS = { property: "Property enquiry", contact: "Contact form", enquiry: "Area page enquiry", owner: "Owner listing request" };
 const VISIT_LABEL = "Visit request";
 const isVisit = (e) => e.source === "property" && e.requirement === VISIT_LABEL;
-const srcLabel = (e) => (isVisit(e) ? VISIT_LABEL : SOURCE_LABELS[e.source] || "Enquiry");
+const WA_LABEL = "WhatsApp enquiry";
+const isWa = (e) => e.source === "property" && e.requirement === WA_LABEL;
+const srcLabel = (e) => (isVisit(e) ? VISIT_LABEL : isWa(e) ? WA_LABEL : SOURCE_LABELS[e.source] || "Enquiry");
 const STATUS_LABELS = { new: "New", contacted: "Contacted", closed: "Closed" };
 
 function toMs(v) {
@@ -719,11 +721,12 @@ function enqStatus(e) { return STATUS_LABELS[e.status] ? e.status : "new"; }
 
 function renderEnquiries() {
   const list = enq.list;
-  const counts = { all: list.length, property: 0, visit: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
+  const counts = { all: list.length, property: 0, visit: 0, wa: 0, owner: 0, contact: 0, enquiry: 0, new: 0, contacted: 0, closed: 0 };
   const byProp = {};
   list.forEach((e) => {
     counts[enqStatus(e)]++;
     if (isVisit(e)) counts.visit++;
+    else if (isWa(e)) counts.wa++;
     else if (e.source in counts) counts[e.source]++;
     if (e.propertyId) byProp[e.propertyId] = (byProp[e.propertyId] || 0) + 1;
   });
@@ -757,7 +760,7 @@ function renderEnquiries() {
   const q = enq.q.trim().toLowerCase();
   const rows = list
     .filter((e) => !enq.prop || Number(e.propertyId) === enq.prop)
-    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : enq.filter === "visit" ? isVisit(e) : e.source === enq.filter && !isVisit(e)))
+    .filter((e) => enq.filter === "all" || (STATUS_LABELS[enq.filter] ? enqStatus(e) === enq.filter : enq.filter === "visit" ? isVisit(e) : enq.filter === "wa" ? isWa(e) : e.source === enq.filter && !isVisit(e) && !isWa(e)))
     .filter((e) => !q || [e.name, e.phone, e.email, e.message, e.propertyTitle, e.location, e.requirement].join(" ").toLowerCase().includes(q));
 
   $("#enq-rows").innerHTML = rows.map(enqHTML).join("");
@@ -805,6 +808,7 @@ function replyText(e) {
     const when = String(e.message || "").split("\n")[0].replace(/^Visit request:\s*/i, "");
     return `${hi} Thank you for your visit request${e.propertyTitle ? " for " + e.propertyTitle : ""}${when ? " (" + when + ")" : ""}. Does that time work for you? We will confirm the visit.`;
   }
+  if (isWa(e)) return `${hi} Thank you for your interest${e.propertyTitle ? " in " + e.propertyTitle : ""}. How can we help you with it?`;
   if (e.source === "property") return `${hi} Thank you for your enquiry${e.propertyTitle ? " about " + e.propertyTitle : ""}. How can we help you with it?`;
   if (e.source === "owner") return `${hi} Thank you for your request to list your property. Please share a few photos and we will get started.`;
   if (e.source === "enquiry" && e.requirement === "Rental requirement") return `${hi} Thank you for sharing what you need. We will send you matching homes shortly.`;
@@ -827,7 +831,7 @@ function enqHTML(e) {
     <div class="enq-head">
       <div class="enq-who">
         <strong>${esc(e.name)}</strong>
-        <span class="chip ${isVisit(e) ? "visit" : "src"}">${esc(srcLabel(e))}</span>
+        <span class="chip ${isVisit(e) || isWa(e) ? "visit" : "src"}">${esc(srcLabel(e))}</span>
         <span class="chip st-${st}">${STATUS_LABELS[st]}</span>
       </div>
       <time title="${esc(fullDate(ms))}">${esc(whenText(ms))}</time>
@@ -900,7 +904,7 @@ $("#enq-export").addEventListener("click", () => {
   };
   const head = ["Received", "Status", "Source", "Name", "Phone", "Email", "Message", "Property ID", "Property", "Looking to", "Page"];
   const lines = [head.map(cell).join(",")].concat(enq.list.map((e) => [
-    fullDate(toMs(e.createdAt)), STATUS_LABELS[enqStatus(e)], isVisit(e) ? VISIT_LABEL : SOURCE_LABELS[e.source] || "", e.name, e.phone, e.email, e.message,
+    fullDate(toMs(e.createdAt)), STATUS_LABELS[enqStatus(e)], isVisit(e) ? VISIT_LABEL : isWa(e) ? WA_LABEL : SOURCE_LABELS[e.source] || "", e.name, e.phone, e.email, e.message,
     e.propertyId || "",
     e.propertyTitle || (e.source === "owner" ? [e.listingType, e.bhk, e.propertyType, e.location, e.rent].filter(Boolean).join(" ") : ""),
     e.requirement, e.page

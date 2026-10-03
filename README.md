@@ -24,7 +24,9 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 | `firebase-config.js` | Firebase project settings (shared by the site and admin) |
 | `firestore.rules` | Security rules to publish in Firebase (public read, admin-only write) |
 | `blog.html` | Blog index (lists all articles) |
-| `blog/` | All 12 blog article pages (each has a Back to Blog button) |
+| `blog/` | 12 blog articles plus 3 rental tools (each has a Back to Blog button) |
+| `rental-tools.js` | Budget calculator and tick-off checklists used by the 3 blog tools |
+| `rental-agreement-help.html` | Short page on what a rental agreement covers and how we help |
 
 ## Contact
 
@@ -139,3 +141,9 @@ Property enquiries include the full listing details for every listing, including
 - **Book a visit:** a "Book a visit" button on every property page (the 14 static pages and `property-details.html`). The visitor picks a date (next 60 days) and a time slot (four 3-hour slots covering the 9 AM to 9 PM visiting hours), WhatsApp opens with the request, and it is saved to Enquiries as a property enquiry with requirement "Visit request" and emailed through EmailJS. No change to `firestore.rules` was needed. Slots are listed in `AE_VISIT_SLOTS` in `main.js`.
 - **Static property pages now save enquiries:** the demo pages had a leftover script that cleared the form before it could be sent. It is removed, and each page carries `data-property-id` / `data-property-title` so its enquiries are tied to the right listing.
 - **Admin Enquiries tab:** a "Visit requests" tab; an "N enquiries" link on each listing (opens that property's enquiries) and a count on each enquiry; WhatsApp opens a ready-made reply and, like Call, marks a new enquiry as Contacted; the CSV has a Property ID column.
+
+## Added: WhatsApp number capture, blog rental tools, owner extras
+
+- **WhatsApp About This Property now asks for the visitor's mobile number first.** Tapping it on a property page (sidebar button, floating button, mobile WhatsApp bar) or on a listing card opens a small popup (number required, name optional). The number is saved to Enquiries as a property enquiry with requirement "WhatsApp enquiry" (new **WhatsApp enquiries** tab in the admin), emailed through EmailJS, and then WhatsApp opens. If saving or email fails or takes more than 6 seconds, WhatsApp still opens. The number is remembered on that device so a repeat tap is one step, and the same property is not saved twice within a minute. Request Image buttons and general "WhatsApp us" links are unchanged. The code is `initWhatsAppLead` in `main.js`; no change to `firestore.rules` was needed.
+- **Blog rental tools:** `blog/rent-budget-calculator-ahmedabad.html`, `blog/moving-checklist-ahmedabad.html`, `blog/rental-agreement-checklist-ahmedabad.html`. Checklist ticks are saved in the visitor's browser only. All three are on the blog index and in `sitemap.xml`.
+- **Owner extras** on `list-your-property.html`: a "How Listing With Us Works" section and an owner FAQ (with FAQ schema), plus `rental-agreement-help.html`. Check that the wording matches what you actually offer.

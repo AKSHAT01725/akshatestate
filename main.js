@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initHoneypots();
   initContactForm();
   initVisitBooking();
+  initWhatsAppLead();
   initOwnerForm();
   initSmoothScroll();
   initWhatsAppLinks();
@@ -328,7 +329,7 @@ function setFormStatus(form, kind, text, linkHref, linkText) {
    A caught submission is dropped silently (the sender sees the normal thank-you message),
    so bots get no hint about what tripped them. Forms added later by search.js are covered too.
    ---------------------------------------------------------- */
-var AE_LEAD_FORM_IDS = ["contact-form", "requirement-form", "owner-form", "visit-form"];
+var AE_LEAD_FORM_IDS = ["contact-form", "requirement-form", "owner-form", "visit-form", "wa-form"];
 
 function aeAddHoneypot(form) {
   if (!form || form.querySelector(".ae-hp")) return;
@@ -498,6 +499,167 @@ function initVisitBooking() {
       finish("Thank you, " + name + ". We have your visit request for " + dateText + " (" + slot + ") and will call you to confirm. WhatsApp opened with the details: press send to reach us faster.");
     }).catch(function () {
       finish("WhatsApp opened with your visit request. Press send there and we will confirm the visit.");
+    });
+  });
+}
+
+/* ----------------------------------------------------------
+   WhatsApp About This Property: asks for the visitor's mobile number first, saves it to the admin
+   panel (Enquiries, requirement "WhatsApp enquiry") and emails it, and only then opens WhatsApp.
+   Applies to every property-specific WhatsApp button: cards (data-wa-lead-id / data-wa-lead-title),
+   and on a property page the sidebar button, the floating button and the mobile WhatsApp bar.
+   Request Image buttons and general "WhatsApp us" links are not affected.
+   WhatsApp always opens, even if saving or emailing fails or takes too long.
+   ---------------------------------------------------------- */
+var AE_WA_CONTACT_KEY = "ae_wa_contact";   /* remembers name + number on this device, so a repeat tap is one step */
+var AE_WA_LAST_KEY = "ae_wa_last";         /* "propertyId:time": the same property is not saved twice within a minute */
+
+function aeWaPropertyFrom(el) {
+  var tagged = el.closest("[data-wa-lead-id]");
+  var id = 0, title = "";
+  if (tagged) {
+    id = parseInt(tagged.getAttribute("data-wa-lead-id"), 10) || 0;
+    title = tagged.getAttribute("data-wa-lead-title") || "";
+  } else {
+    var onPropertyPage = document.body.getAttribute("data-property-id") || document.getElementById("property-detail");
+    if (!onPropertyPage) return null;
+    if (!el.closest(".whatsapp-float, .mobile-cta-bar .btn-whatsapp, .sidebar-card .btn-whatsapp")) return null;
+    id = parseInt(document.body.getAttribute("data-property-id"), 10) || parseInt(new URLSearchParams(location.search).get("id"), 10) || 0;
+    var prop = (id && typeof getPropertyById === "function") ? getPropertyById(id) : null;
+    title = prop ? prop.title : (document.body.getAttribute("data-property-title") || "");
+  }
+  return id ? { id: id, title: title } : null;
+}
+
+function aeCloseWaDialog() {
+  var m = document.getElementById("wa-modal");
+  if (!m) return;
+  m.remove();
+  document.body.classList.remove("visit-open");
+  if (window.aeWaReturnFocus && window.aeWaReturnFocus.focus) window.aeWaReturnFocus.focus();
+}
+
+function aeOpenWaDialog(prop, waHref, opener) {
+  aeCloseWaDialog();
+  window.aeWaReturnFocus = opener || null;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(AE_WA_CONTACT_KEY) || "{}") || {}; } catch (err) {}
+  var m = document.createElement("div");
+  m.id = "wa-modal";
+  m.className = "visit-modal";
+  m.innerHTML =
+    '<div class="visit-backdrop" data-wa-close></div>' +
+    '<div class="visit-card" role="dialog" aria-modal="true" aria-labelledby="wa-title">' +
+    '<button type="button" class="visit-x" data-wa-close aria-label="Close"><i class="fas fa-xmark"></i></button>' +
+    '<h3 id="wa-title">Chat on WhatsApp</h3>' +
+    '<p class="visit-prop"></p>' +
+    '<form id="wa-form">' +
+    '<div class="form-group"><label for="wa-phone">Your mobile number</label><input type="tel" id="wa-phone" name="phone" required inputmode="tel" autocomplete="tel" placeholder="e.g. 98250 12345"></div>' +
+    '<div class="form-group"><label for="wa-name">Your name (optional)</label><input type="text" id="wa-name" name="name" autocomplete="name"></div>' +
+    '<p class="visit-hours"><i class="fas fa-phone"></i> We keep your number so we can call you back if WhatsApp does not connect.</p>' +
+    '<button type="submit" class="btn btn-whatsapp btn-block"><i class="fab fa-whatsapp"></i> Continue to WhatsApp</button>' +
+    '</form></div>';
+  m.querySelector(".visit-prop").textContent = prop.title || "This property";
+  var form = m.querySelector("#wa-form");
+  form.setAttribute("data-wa-id", String(prop.id));
+  form.setAttribute("data-wa-title", prop.title || "");
+  form.setAttribute("data-wa-href", waHref);
+  m.querySelector("#wa-phone").value = saved.phone || "";
+  m.querySelector("#wa-name").value = saved.name || "";
+  document.body.appendChild(m);
+  document.body.classList.add("visit-open");
+  aeAddHoneypot(form);
+  /* A returning visitor with the number already filled in can legitimately submit in under 2 seconds */
+  if (saved.phone) form.setAttribute("data-ae-t", String(Date.now() - 5000));
+  setTimeout(function () { var f = m.querySelector(saved.phone ? "button[type=submit]" : "#wa-phone"); if (f) f.focus(); }, 30);
+}
+
+function initWhatsAppLead() {
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-whatsapp], .whatsapp-float, .mobile-cta-bar .btn-whatsapp");
+    if (el && !el.closest(".request-image-btn")) {
+      var prop = aeWaPropertyFrom(el);
+      if (prop) {
+        e.preventDefault();
+        e.stopPropagation();
+        var href = (el.href && el.href.indexOf("wa.me") > -1) ? el.href : getWhatsAppLink(el.getAttribute("data-whatsapp-msg"));
+        aeOpenWaDialog(prop, href, el);
+        return;
+      }
+    }
+    if (e.target.closest("[data-wa-close]")) aeCloseWaDialog();
+  }, true);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") aeCloseWaDialog(); });
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!form || form.id !== "wa-form") return;
+    e.preventDefault();
+    var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
+    var phone = val("phone"), name = val("name");
+    if (phone.replace(/\D/g, "").length < 10) {
+      setFormStatus(form, "error", "Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    var id = parseInt(form.getAttribute("data-wa-id"), 10) || 0;
+    var title = form.getAttribute("data-wa-title") || "";
+    var href = form.getAttribute("data-wa-href");
+
+    /* Open the tab inside the tap (so pop-up blockers allow it) and point it at WhatsApp when the lead is saved */
+    var tab = null;
+    try {
+      tab = window.open("", "_blank");
+      if (tab) { tab.opener = null; tab.document.write("<p style=\"font-family:sans-serif;padding:1.5rem\">Opening WhatsApp...</p>"); }
+    } catch (err) { tab = null; }
+    var opened = false;
+    function goWhatsApp() {
+      if (opened) return;
+      opened = true;
+      if (tab && !tab.closed) { try { tab.location.href = href; return; } catch (err) {} }
+      window.location.href = href;
+    }
+    function finish(text) {
+      form.innerHTML = "";
+      var p = document.createElement("p");
+      p.className = "form-status is-success";
+      p.textContent = text + " ";
+      var a = document.createElement("a");
+      a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = "Open WhatsApp again";
+      p.appendChild(a);
+      var c = document.createElement("button");
+      c.type = "button"; c.className = "btn btn-outline btn-block"; c.setAttribute("data-wa-close", ""); c.textContent = "Close"; c.style.marginTop = "1rem";
+      form.appendChild(p); form.appendChild(c);
+    }
+
+    try { localStorage.setItem(AE_WA_CONTACT_KEY, JSON.stringify({ name: name, phone: phone })); } catch (err) {}
+
+    var recent = false;
+    try {
+      var last = (localStorage.getItem(AE_WA_LAST_KEY) || "").split(":");
+      recent = Number(last[0]) === id && Date.now() - Number(last[1]) < 60000;
+    } catch (err) {}
+    if (aeIsBot(form) || recent) {      /* bots and repeat taps: no lead, but WhatsApp still opens */
+      goWhatsApp();
+      finish("Opening WhatsApp.");
+      return;
+    }
+
+    var btn = form.querySelector('[type="submit"]');
+    if (btn) { btn.textContent = "Please wait..."; btn.disabled = true; }
+    var data = {
+      source: "property", name: name || "WhatsApp visitor", phone: phone,
+      requirement: "WhatsApp enquiry", message: "Tapped WhatsApp About This Property",
+      propertyId: id, propertyTitle: title, page: location.pathname.slice(-150)
+    };
+    var info = aePropertyForLead(id, title);
+    var lead = aeSubmitLead("WhatsApp enquiry", data, null, info).then(function () {
+      try { localStorage.setItem(AE_WA_LAST_KEY, id + ":" + Date.now()); } catch (err) {}
+    }, function () {});
+    /* Wait for the save/email, but never keep the visitor waiting more than 6 seconds */
+    var cap = new Promise(function (resolve) { setTimeout(resolve, 6000); });
+    Promise.race([lead, cap]).then(function () {
+      goWhatsApp();
+      finish("Thank you. WhatsApp is opening; press send there to reach us.");
     });
   });
 }
