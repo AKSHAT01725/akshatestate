@@ -68,7 +68,7 @@ const PROPERTIES = [
     type: "apartment",
     status: "rent",
     bedrooms: 0,
-    bedroomType: "1RK",
+    bedroomType: "1ROOM",
     bathrooms: 1,
     area: 300,
     areaUnit: "sq.ft",
@@ -260,7 +260,7 @@ const PROPERTIES = [
     type: "apartment",
     status: "rent",
     bedrooms: 0,
-    bedroomType: "1RK",
+    bedroomType: "1ROOM",
     bathrooms: 1,
     area: 300,
     areaUnit: "sq.ft",
@@ -414,8 +414,10 @@ function filterProperties(filters) {
     if (filters.bedroomType && filters.bedroomType !== "all") {
       if (filters.bedroomType === "1RK") {
         if (p.bedroomType !== "1RK") return false;
+      } else if (filters.bedroomType === "1ROOM") {
+        if (p.bedroomType !== "1ROOM") return false;
       } else if (filters.bedroomType === "1BHK") {
-        if (p.bedroomType === "1RK" || p.bedrooms !== 1) return false;
+        if (p.bedroomType || p.bedrooms !== 1) return false;
       } else if (filters.bedroomType === "2BHK") {
         if (p.bedrooms !== 2) return false;
       }
@@ -423,13 +425,11 @@ function filterProperties(filters) {
     if (filters.bedrooms && filters.bedrooms !== "all" && !filters.bedroomType) {
       if (filters.bedrooms === "1RK" || filters.bedrooms === "1rk") {
         if (p.bedroomType !== "1RK") return false;
+      } else if (filters.bedrooms === "1ROOM" || filters.bedrooms === "1room") {
+        if (p.bedroomType !== "1ROOM") return false;
       } else {
         const beds = parseInt(filters.bedrooms, 10);
-        if (filters.bedrooms === "4+") {
-          if (p.bedrooms < 4) return false;
-        } else if (p.bedroomType === "1RK" || p.bedrooms !== beds) {
-          return false;
-        }
+        if (p.bedroomType || p.bedrooms !== beds) return false;
       }
     }
     if (filters.furnishing && filters.furnishing !== "all" && p.furnishing !== filters.furnishing) return false;
@@ -460,10 +460,30 @@ function sortProperties(list, sort) {
   return out;
 }
 
+/* "New" tag (listed in the last 7 days) and "Updated N days ago" (last time the listing was
+   checked as still available; hidden after 30 days so old dates never sit on a card).
+   Both come from the admin, so a listing without those dates shows nothing. */
+function getFreshness(property) {
+  var now = Date.now(), DAY = 86400000, out = { isNew: false, updated: "" };
+  if (property.listedAt && now - property.listedAt >= 0 && now - property.listedAt < 7 * DAY) out.isNew = true;
+  if (property.confirmedAt) {
+    var days = Math.floor((now - property.confirmedAt) / DAY);
+    if (days <= 0) out.updated = "Updated today";
+    else if (days === 1) out.updated = "Updated yesterday";
+    else if (days <= 30) out.updated = "Updated " + days + " days ago";
+  }
+  return out;
+}
+function freshnessHTML(property) {
+  var f = getFreshness(property);
+  if (!f.isNew && !f.updated) return "";
+  return '<div class="fresh-line">' + (f.isNew ? '<span class="fresh-new">New</span>' : "") + (f.updated ? '<span class="fresh-upd"><i class="far fa-clock" aria-hidden="true"></i> ' + f.updated + "</span>" : "") + "</div>";
+}
+
 function renderPropertyCard(property) {
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
-  const bedsText = property.bedroomType === "1RK" ? "1 RK" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—");
+  const bedsText = (property.bedroomType === "1RK" ? "1 RK" : property.bedroomType === "1ROOM" ? "1 Room" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—"));
   const bathsText = property.bathrooms > 0 ? property.bathrooms + " Bath" : "—";
   const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
@@ -491,6 +511,7 @@ function renderPropertyCard(property) {
           <i class="fas fa-map-marker-alt"></i>
           ${property.location}, ${property.city}
         </div>
+        ${freshnessHTML(property)}
         <div class="property-specs">
           <div class="property-spec"><i class="fas fa-ruler-combined"></i> ${property.area} ${property.areaUnit}</div>
           <div class="property-spec"><i class="fas fa-home"></i> ${typeLabel}</div>
@@ -511,7 +532,7 @@ function renderPropertyCard(property) {
 function renderPropertyHCard(property) {
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
-  const bedsText = property.bedroomType === "1RK" ? "1 RK" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—");
+  const bedsText = (property.bedroomType === "1RK" ? "1 RK" : property.bedroomType === "1ROOM" ? "1 Room" : (property.bedrooms > 0 ? property.bedrooms + " BHK" : "—"));
   const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
   return `
@@ -528,6 +549,7 @@ function renderPropertyHCard(property) {
         </div>
       </div>
       <div class="property-hcard-body">
+        ${freshnessHTML(property)}
         <div class="property-hcard-top">
           <h3 class="property-hcard-title"><a href="property-details.html?id=${property.id}">${property.title}</a></h3>
           <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
@@ -584,6 +606,7 @@ function getFeaturedRentals() {
 
 function getPropertyLabel(property) {
   if (property.bedroomType === "1RK") return "1 RK property";
+  if (property.bedroomType === "1ROOM") return "1 Room property";
   if (property.type === "apartment" && property.bedrooms > 0) return property.bedrooms + " BHK property";
   if (property.type === "shop") return "shop";
   if (property.type === "office") return "office";
@@ -643,6 +666,7 @@ function formatPropertyType(property) {
 
 function getBhkText(property) {
   if (property.bedroomType === "1RK") return "1 RK";
+  if (property.bedroomType === "1ROOM") return "1 Room";
   return property.bedrooms > 0 ? property.bedrooms + " BHK" : "";
 }
 
@@ -703,6 +727,7 @@ function renderRentalCard(property) {
         <div class="rental-price">${property.priceDisplay}<span> / month</span></div>
         <h3 class="rental-title"><a href="${detailUrl}">${property.title}</a></h3>
         <div class="rental-loc"><i class="fas fa-map-marker-alt"></i> ${property.location}, ${property.city}</div>
+        ${freshnessHTML(property)}
         <ul class="rental-meta">${factsHTML}</ul>
         <div class="rental-actions">
           <a href="${detailUrl}" class="btn btn-outline btn-sm">View Property</a>
@@ -769,11 +794,17 @@ window.propertiesReady = (function () {
       homeFeatured: d.homeFeatured === true,
       homeRank: num(d.homeRank, 999)
     };
-    if (d.bedroomType === "1RK") p.bedroomType = "1RK";
+    if (d.bedroomType === "1RK" || d.bedroomType === "1ROOM") p.bedroomType = d.bedroomType;
     ["carpetArea", "floorNo", "totalFloors", "carParking"].forEach(function (k) {
       if (d[k] !== undefined && d[k] !== null && d[k] !== "") p[k] = num(d[k], 0);
     });
     if (typeof d.bachelorsAllowed === "boolean") p.bachelorsAllowed = d.bachelorsAllowed;
+    ["listedAt", "confirmedAt"].forEach(function (k) {
+      var v = d[k], ms = null;
+      if (v && typeof v.toMillis === "function") ms = v.toMillis();
+      else if (typeof v === "number") ms = v;
+      if (ms && isFinite(ms)) p[k] = ms;
+    });
     return p;
   }
 
@@ -877,10 +908,10 @@ function getAreaRentStats(area) {
   const key = String(area || "").toLowerCase();
   const rows = [
     { label: "1 RK", test: function (p) { return p.bedroomType === "1RK"; } },
-    { label: "1 BHK", test: function (p) { return p.bedroomType !== "1RK" && p.bedrooms === 1; } },
+    { label: "1 Room", test: function (p) { return p.bedroomType === "1ROOM"; } },
+    { label: "1 BHK", test: function (p) { return !p.bedroomType && p.bedrooms === 1; } },
     { label: "2 BHK", test: function (p) { return p.bedrooms === 2; } },
-    { label: "3 BHK", test: function (p) { return p.bedrooms === 3; } },
-    { label: "4+ BHK", test: function (p) { return p.bedrooms >= 4; } }
+    { label: "3 BHK", test: function (p) { return p.bedrooms === 3; } }
   ];
   const rentals = PROPERTIES.filter(function (p) {
     return p.status === "rent" && p.type === "apartment" && p.price > 0 &&

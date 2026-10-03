@@ -85,7 +85,7 @@ function initListingsPage() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const pageName = window.location.pathname.split("/").pop().toLowerCase();
-  const pageBedroomType = pageName.startsWith("1rk-flats-for-rent") ? "1RK" : (pageName.startsWith("1bhk-flats-for-rent") ? "1BHK" : (pageName.startsWith("2bhk-flats-for-rent") ? "2BHK" : ""));
+  const pageBedroomType = pageName.startsWith("1rk-flats-for-rent") ? "1RK" : pageName.startsWith("1room-for-rent") ? "1ROOM" : (pageName.startsWith("1bhk-flats-for-rent") ? "1BHK" : (pageName.startsWith("2bhk-flats-for-rent") ? "2BHK" : ""));
   var stored = {};
   try {
     stored = JSON.parse(sessionStorage.getItem("ae_filters") || "{}") || {};
@@ -195,7 +195,7 @@ function initListingsPage() {
 /* Plain-English summary of the active filters, e.g. "a 2 BHK flat in Memnagar, furnished, up to ₹20,000" */
 function describeFilters(f) {
   const bits = [];
-  const size = f.bedrooms && f.bedrooms !== "all" ? (f.bedrooms === "1RK" ? "1 RK" : f.bedrooms + " BHK") : "";
+  const size = f.bedrooms && f.bedrooms !== "all" ? (f.bedrooms === "1RK" ? "1 RK" : f.bedrooms === "1ROOM" ? "1 Room" : f.bedrooms + " BHK") : "";
   const kind = f.type && f.type !== "all" ? ({ apartment: "flat", bungalow: "bungalow", office: "office", shop: "shop" }[f.type] || f.type) : "home";
   let what = "a " + (size ? size + " " : "") + kind + (f.status === "sale" ? " for sale" : " for rent");
   if (f.location && f.location !== "all") what += " in " + f.location;
@@ -231,7 +231,7 @@ function initAreaRentTables() {
   document.querySelectorAll("[data-area-compare]").forEach(function (el) {
     const areas = ["Gurukul", "Memnagar", "Sola"];
     const stats = areas.map(function (a) { return getAreaRentStats(a); });
-    const labels = ["1 RK", "1 BHK", "2 BHK", "3 BHK"];
+    const labels = ["1 RK", "1 Room", "1 BHK", "2 BHK", "3 BHK"];
     const body = labels.map(function (label) {
       const cells = stats.map(function (s) {
         const r = s.rows.filter(function (x) { return x.label === label; })[0];
@@ -384,7 +384,7 @@ function initPropertyDetails() {
   aeDetailSeo(property);
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
-  const bedsText = property.bedrooms > 0 ? property.bedrooms + " BHK" : "N/A";
+  const bedsText = (typeof getBhkText === "function" && getBhkText(property)) || (property.bedrooms > 0 ? property.bedrooms + " BHK" : "N/A");
   const bathsText = property.bathrooms > 0 ? property.bathrooms : "N/A";
   const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
   const waMessage = getPropertyWhatsAppMessage(property);
@@ -413,6 +413,7 @@ function initPropertyDetails() {
         <h1 class="detail-title">${property.title}</h1>
         <div class="detail-loc"><i class="fas fa-map-marker-alt"></i> ${property.location}, ${property.city}</div>
         <div class="detail-price">${property.priceDisplay}</div>
+        ${typeof freshnessHTML === "function" ? freshnessHTML(property) : ""}
         <div class="specs-card">
           ${renderSpecItems(getPropertyDetailRows(property))}
         </div>

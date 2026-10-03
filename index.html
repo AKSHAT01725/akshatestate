@@ -11,9 +11,9 @@
   <meta property="og:description" content="Search flats and apartments for rent across Ahmedabad: Gurukul, Memnagar, Sola and more.">
   <meta property="og:url" content="https://akshatestate.com/">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preload" href="fonts/poppins-400.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="fonts/poppins-600.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <script type="application/ld+json">
@@ -128,7 +128,7 @@
 <body>
   <header class="header">
     <div class="container">
-      <a href="index.html" class="logo"><img src="logo.png" alt="Akshat Estate" class="logo-image"></a>
+      <a href="index.html" class="logo"><img src="logo.png" alt="Akshat Estate" class="logo-image" width="360" height="93" decoding="async"></a>
       <nav class="nav" aria-label="Main navigation">
         <ul class="nav-links">
           <li><a href="index.html" class="active">Home</a></li>
@@ -206,6 +206,7 @@
             <select id="rs-bhk" name="bedrooms">
               <option value="all">Any</option>
               <option value="1RK">1 RK</option>
+              <option value="1ROOM">1 Room</option>
               <option value="1">1 BHK</option>
               <option value="2">2 BHK</option>
               <option value="3">3 BHK</option>
@@ -261,19 +262,19 @@
       </div>
       <div class="areas-grid">
         <a href="gurukul.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80" alt="Flats for rent in Gurukul, Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80" alt="Flats for rent in Gurukul, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Gurukul</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="memnagar.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=600&q=80" alt="Flats for rent in Memnagar, Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=600&q=80" alt="Flats for rent in Memnagar, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Memnagar</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="sola.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80" alt="Flats for rent in Sola, Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80" alt="Flats for rent in Sola, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Sola</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="ahmedabad.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Flats for rent across Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Flats for rent across Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>All Ahmedabad</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
       </div>
@@ -304,8 +305,9 @@
         <h2 class="section-heading">Find the Right Size Home</h2>
         <p class="section-subheading">Jump straight to the type of rental you need.</p>
       </div>
-      <div class="categories-grid categories-grid-4">
+      <div class="categories-grid categories-grid-5">
         <a href="1RK-flats-for-rent.html" class="category-card"><div class="category-icon"><i class="fas fa-door-open"></i></div><h3>1 RK for Rent</h3><p>Compact and budget-friendly</p></a>
+        <a href="1room-for-rent.html" class="category-card"><div class="category-icon"><i class="fas fa-key"></i></div><h3>1 Room for Rent</h3><p>Simple, low-cost rooms</p></a>
         <a href="1bhk-flats-for-rent.html" class="category-card"><div class="category-icon"><i class="fas fa-bed"></i></div><h3>1 BHK for Rent</h3><p>Singles and couples</p></a>
         <a href="2bhk-flats-for-rent.html" class="category-card"><div class="category-icon"><i class="fas fa-house"></i></div><h3>2 BHK for Rent</h3><p>Small families</p></a>
         <a href="rent.html" data-filters='{"status":"rent","bedrooms":"3"}' class="category-card"><div class="category-icon"><i class="fas fa-building"></i></div><h3>3 BHK for Rent</h3><p>Larger family homes</p></a>
@@ -346,7 +348,7 @@
             <div class="form-group"><label for="rq-area">Preferred Area</label>
               <select id="rq-area" name="area"><option value="">Any area</option><option>Gurukul</option><option>Memnagar</option><option>Sola</option><option>Other part of Ahmedabad</option></select></div>
             <div class="form-group"><label for="rq-bhk">BHK</label>
-              <select id="rq-bhk" name="bhk"><option value="">Any</option><option>1 RK</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK</option><option>4+ BHK</option></select></div>
+              <select id="rq-bhk" name="bhk"><option value="">Any</option><option>1 RK</option><option>1 Room</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK</option></select></div>
             <div class="form-group"><label for="rq-budget">Budget (per month)</label>
               <select id="rq-budget" name="budget"><option value="">Not sure yet</option><option>Up to &#8377;10,000</option><option>Up to &#8377;15,000</option><option>Up to &#8377;20,000</option><option>Up to &#8377;30,000</option><option>Up to &#8377;50,000</option><option>Above &#8377;50,000</option></select></div>
             <div class="form-group"><label for="rq-movein">Move-in Date</label><input type="date" id="rq-movein" name="movein"></div>
@@ -385,15 +387,15 @@
       </div>
       <div class="guide-grid">
         <a href="blog/cost-to-rent-flat-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80" alt="How much does it cost to rent a flat in Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80" alt="How much does it cost to rent a flat in Ahmedabad" loading="lazy" decoding="async">
           <div class="guide-card-body"><h3>How Much Does It Cost to Rent a Flat in Ahmedabad?</h3><p>What affects monthly rent and the other costs to plan for.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="blog/furnished-flats-for-rent-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80" alt="Furnished flats for rent in Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80" alt="Furnished flats for rent in Ahmedabad" loading="lazy" decoding="async">
           <div class="guide-card-body"><h3>Furnished Flats for Rent in Ahmedabad</h3><p>Furnished, semi-furnished or unfurnished: what each usually includes.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="blog/best-areas-to-rent-flat-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3be14?w=800&q=80" alt="Best areas to rent a flat in Ahmedabad" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3be14?w=800&q=80" alt="Best areas to rent a flat in Ahmedabad" loading="lazy" decoding="async">
           <div class="guide-card-body"><h3>Best Areas to Rent a Flat in Ahmedabad</h3><p>How to compare localities for work, family, budget and lifestyle.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
       </div>
@@ -403,22 +405,22 @@
     </div>
   </section>
 
-  <!-- Testimonials are hidden until real client feedback is added (the previous three were demo placeholders).
-  <section class="section section-bg">
+  <section class="section section-bg" id="reviews" hidden>
     <div class="container">
       <div class="text-center">
         <span class="section-label">Client Feedback</span>
-        <h2 class="section-heading">What Clients Say</h2>
+        <h2 class="section-heading">What Clients Say on Google</h2>
+        <p class="section-subheading">Reviews from tenants and owners we have worked with.</p>
+        <p class="rv-preview-note" id="reviews-preview-note" hidden>Layout preview only. These are placeholders, not real reviews.</p>
       </div>
-      <div class="testimonials-grid">
-        <div class="testimonial-card">
-          <p class="testimonial-text">Real client feedback goes here.</p>
-          <div class="testimonial-author"><div class="testimonial-avatar">AB</div><div class="testimonial-info"><h4>Client Name</h4><span>Ahmedabad</span></div></div>
-        </div>
+      <div class="rv-wrap">
+        <button type="button" class="rv-arrow prev" id="reviews-prev" aria-label="Previous reviews">&#8249;</button>
+        <div class="rv-track" id="reviews-track" aria-live="polite"></div>
+        <button type="button" class="rv-arrow next" id="reviews-next" aria-label="Next reviews">&#8250;</button>
+        <div class="rv-dots" id="reviews-dots"></div>
       </div>
     </div>
   </section>
-  -->
 
 
   <section class="section" id="faq">
@@ -474,7 +476,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="index.html" class="logo"><img src="logo.png" alt="Akshat Estate" class="logo-image"></a>
+          <a href="index.html" class="logo"><img src="logo.png" alt="Akshat Estate" class="logo-image" width="360" height="93" decoding="async"></a>
           <p>Your trusted real-estate partner in Ahmedabad with 20+ years of experience. Rental homes come first: we help tenants find the right flat and help owners find the right tenant, with buying, selling and property assistance across Ahmedabad and nearby areas.</p>
           <div class="footer-social">
             <a href="https://www.google.com/maps?q=Gurukul+Rd,+Memnagar,+Ahmedabad,+Gujarat+380052" target="_blank" rel="noopener noreferrer" aria-label="Location" title="Location"><i class="fas fa-map-marker-alt"></i></a>
@@ -500,7 +502,7 @@
         <div>
           <h4>Rent in Ahmedabad</h4>
           <ul class="footer-links">
-            <li><a href="1RK-flats-for-rent.html">1RK for Rent</a></li>
+            <li><a href="1RK-flats-for-rent.html">1RK for Rent</a></li><li><a href="1room-for-rent.html">1 Room for Rent</a></li>
             <li><a href="1bhk-flats-for-rent.html">1BHK for Rent</a></li>
             <li><a href="2bhk-flats-for-rent.html">2BHK for Rent</a></li>
           </ul>
@@ -531,5 +533,7 @@
   <script src="properties.js"></script>
   <script src="main.js"></script>
   <script src="search.js"></script>
+  <script src="reviews-data.js"></script>
+  <script src="reviews.js"></script>
 </body>
 </html>

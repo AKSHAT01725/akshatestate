@@ -84,6 +84,7 @@ function formatPrice(n, status) {
 }
 function layoutText(p) {
   if (p.bedroomType === "1RK") return "1 RK";
+  if (p.bedroomType === "1ROOM") return "1 Room";
   return p.bedrooms > 0 ? p.bedrooms + " BHK" : "";
 }
 const typeLabel = (t) => ({ apartment: "Flat", bungalow: "Bungalow", office: "Office", shop: "Shop" }[t] || t);
@@ -181,14 +182,15 @@ function render() {
     all: list.length,
     rent: list.filter((p) => p.status === "rent").length,
     sale: list.filter((p) => p.status === "sale").length,
-    hidden: list.filter((p) => !p.active).length
+    hidden: list.filter((p) => !p.active).length,
+    stale: list.filter(needsCheck).length
   };
   $$("[data-count]").forEach((el) => { el.textContent = counts[el.dataset.count]; });
 
   const live = list.length - counts.hidden;
   if (state.loaded) {
     $("#summary").textContent = list.length
-      ? `${live} live on the website${counts.hidden ? `, ${counts.hidden} hidden` : ""}. ${counts.rent} for rent, ${counts.sale} for sale.`
+      ? `${live} live on the website${counts.hidden ? `, ${counts.hidden} hidden` : ""}. ${counts.rent} for rent, ${counts.sale} for sale.${counts.stale ? ` ${counts.stale} need${counts.stale === 1 ? "s" : ""} a quick check.` : ""}`
       : "No listings yet.";
   }
 
@@ -205,6 +207,7 @@ function render() {
       if (state.filter === "rent") return p.status === "rent";
       if (state.filter === "sale") return p.status === "sale";
       if (state.filter === "hidden") return !p.active;
+      if (state.filter === "stale") return needsCheck(p);
       return true;
     })
     .filter((p) => !q || [p.title, p.location, p.city, String(p.id), p.priceDisplay].join(" ").toLowerCase().includes(q))
@@ -221,6 +224,21 @@ function render() {
   } else {
     empty.hidden = true;
   }
+}
+
+/* Reconfirm: a live listing counts as "checked" when it was saved or ticked within the last 30 days */
+const CHECK_DAYS = 30;
+function checkedMs(p) { return toMs(p.confirmedAt); }
+function needsCheck(p) {
+  if (!p.active) return false;
+  const ms = checkedMs(p);
+  return !ms || Date.now() - ms > CHECK_DAYS * 86400000;
+}
+function checkedText(p) {
+  const ms = checkedMs(p);
+  if (!ms) return "Not checked yet";
+  const d = Math.floor((Date.now() - ms) / 86400000);
+  return d <= 0 ? "Checked today" : d === 1 ? "Checked yesterday" : `Checked ${d} days ago`;
 }
 
 function enqCountFor(id) { return (state.enqByProp && state.enqByProp[id]) || 0; }
@@ -242,6 +260,11 @@ function rowHTML(p) {
         <span>ID ${p.id}</span>
         ${enqCountFor(p.id) ? `<span><button type="button" class="meta-link" data-act="enqs" title="Show the enquiries for this property">${enqCountFor(p.id)} enquir${enqCountFor(p.id) === 1 ? "y" : "ies"}</button></span>` : ""}
       </div>
+      ${p.active ? `<div class="row-check ${needsCheck(p) ? "is-stale" : ""}">
+        <span class="chk">${esc(checkedText(p))}</span>
+        <button type="button" class="meta-link" data-act="confirm" title="Tap if this is still available">Still available</button>
+        ${needsCheck(p) ? `<button type="button" class="meta-link warn" data-act="rented" title="Hide it from the website (you can turn Live back on)">Rented, hide it</button>` : ""}
+      </div>` : ""}
     </div>
     <span class="chip ${isRent ? "rent" : "sale"}">${isRent ? "For rent" : "For sale"}</span>
     <div class="toggles">
@@ -281,7 +304,25 @@ $("#rows").addEventListener("click", (e) => {
   if (btn.dataset.act === "copy") openDrawer(p, true);
   if (btn.dataset.act === "delete") askDelete(p);
   if (btn.dataset.act === "enqs") showEnquiriesFor(p);
+  if (btn.dataset.act === "confirm") markChecked(p, false);
+  if (btn.dataset.act === "rented") markChecked(p, true);
 });
+
+async function markChecked(p, hide) {
+  const patch = hide
+    ? { active: false, updatedAt: F.serverTimestamp() }
+    : { confirmedAt: F.serverTimestamp(), updatedAt: F.serverTimestamp() };
+  try {
+    await F.updateDoc(ref(p.id), patch);
+    if (hide) p.active = false; else p.confirmedAt = { toMillis: () => Date.now() };
+    clearSiteCache();
+    toast(hide ? "Hidden from the website. Turn Live back on if it comes free again." : "Marked as still available");
+  } catch (err) {
+    console.error(err);
+    toast(friendlyError(err), true);
+  }
+  render();
+}
 
 $("#rows").addEventListener("change", async (e) => {
   const input = e.target.closest("input[data-act]");
@@ -344,7 +385,7 @@ scrim.addEventListener("click", closeDrawer);
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && drawer.classList.contains("is-open")) closeDrawer(); });
 
 function layoutValue(p) {
-  if (p.bedroomType === "1RK") return "1RK";
+  if (p.bedroomType === "1RK" || p.bedroomType === "1ROOM") return p.bedroomType;
   return p.bedrooms > 0 ? String(p.bedrooms) : "2";
 }
 
@@ -495,7 +536,7 @@ function readForm() {
   const data = {
     title, status, type, location,
     city: clean(form.city.value, 60) || "Ahmedabad",
-    bedrooms: isHome && layout !== "1RK" ? Number(layout) : 0,
+    bedrooms: isHome && layout !== "1RK" && layout !== "1ROOM" ? Number(layout) : 0,
     bathrooms: Math.max(0, num(form.bathrooms.value) || 0),
     area, areaUnit: form.areaUnit.value,
     furnishing: form.furnishing.value,
@@ -513,13 +554,13 @@ function readForm() {
     homeFeatured: status === "rent" && form.homeFeatured.checked
   };
   if (isHome) data.bachelorsAllowed = form.bachelorsAllowed.checked;
-  return { data, isOneRK: isHome && layout === "1RK", problems };
+  return { data, roomType: isHome && (layout === "1RK" || layout === "1ROOM") ? layout : "", problems };
 }
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (state.busy) return;
-  const { data, isOneRK, problems } = readForm();
+  const { data, roomType, problems } = readForm();
   if (problems.length) {
     showFormError(problems.join(" "));
     const first = $(".is-invalid", form);
@@ -531,17 +572,20 @@ form.addEventListener("submit", async (e) => {
   const editing = state.editing;
   const id = editing ? editing.id : nextId();
   const payload = { ...data, id, updatedAt: F.serverTimestamp() };
-  if (isOneRK) payload.bedroomType = "1RK";
+  if (roomType) payload.bedroomType = roomType;
   else if (editing && editing.bedroomType) payload.bedroomType = F.deleteField();
-  if (!editing) payload.featured = false;
+  if (!editing) { payload.featured = false; payload.listedAt = F.serverTimestamp(); }
+  payload.confirmedAt = F.serverTimestamp(); /* saving a listing counts as checking it */
   if (payload.homeFeatured && !(editing && editing.homeRank)) payload.homeRank = nextHomeRank();
 
   const btn = $("#save-btn");
   state.busy = true; btn.disabled = true; btn.textContent = "Saving…";
   try {
     await F.setDoc(ref(id), payload, { merge: true });
-    const local = { ...(editing || {}), ...data, id };
-    if (isOneRK) local.bedroomType = "1RK"; else delete local.bedroomType;
+    const nowTs = { toMillis: () => Date.now() };
+    const local = { ...(editing || {}), ...data, id, confirmedAt: nowTs };
+    if (!editing) local.listedAt = nowTs;
+    if (roomType) local.bedroomType = roomType; else delete local.bedroomType;
     if (payload.homeRank) local.homeRank = payload.homeRank;
     if (editing) Object.assign(editing, local); else state.list.push(normalise(local, id));
     clearSiteCache();

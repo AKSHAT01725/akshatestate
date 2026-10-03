@@ -1,3 +1,7 @@
+@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/poppins-400.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/poppins-500.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/poppins-600.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/poppins-700.woff') format('woff');}
 /* Akshat Estate admin: same purple and Poppins as the website, built for quick edits */
 :root {
   --purple: #5b4cdb;
@@ -352,3 +356,8 @@ button, .btn, .icon-btn, .tab, .nav-tab, .seg-btn, .switch { -webkit-tap-highlig
 }
 
 @media (max-width: 700px) { .grid-2.stack-phone { grid-template-columns: 1fr; } }
+
+/* Reconfirm line under each listing */
+.row-check { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem .9rem; font-size: .75rem; color: var(--text-muted); margin-top: .25rem; }
+.row-check.is-stale .chk { color: #b45309; font-weight: 600; }
+.row-check .meta-link.warn { color: #b45309; }

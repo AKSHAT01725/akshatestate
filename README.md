@@ -16,7 +16,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 | `memnagar.html` | Area: Memnagar |
 | `sola.html` | Area: Sola |
 | `ahmedabad.html` | Area: Ahmedabad |
-| `style.css` | Styles (Poppins font) |
+| `style.css` | Styles (Poppins font, self-hosted from `fonts/`) |
 | `main.js` | Nav, WhatsApp, forms |
 | `properties.js` | Built-in property data (14 real rental listings, Gurukul and Memnagar) |
 | `search.js` | Search & filter logic |
@@ -25,7 +25,10 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 | `firestore.rules` | Security rules to publish in Firebase (public read, admin-only write) |
 | `blog.html` | Blog index (lists all articles) |
 | `blog/` | 12 blog articles plus 3 rental tools (each has a Back to Blog button) |
+| `reviews-data.js` | Your real Google reviews (edit this file only) |
+| `reviews.js` | Google reviews carousel and auto-rotate on the homepage |
 | `rental-tools.js` | Budget calculator and tick-off checklists used by the 3 blog tools |
+| `1room-for-rent.html` / `-gurukul` / `-memnagar` | 1 Room landing pages (same layout as the 1 RK pages) |
 | `rental-agreement-help.html` | Short page on what a rental agreement covers and how we help |
 
 ## Contact
@@ -36,7 +39,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 ## Tech
 
 - HTML5, CSS3, Vanilla JS
-- Font: **Poppins** (Google Fonts)
+- Font: **Poppins**, self-hosted in `fonts/` (Latin subset, 4 weights, about 42 KB in total)
 - Icons: Font Awesome 6
 - No frameworks
 
@@ -52,7 +55,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 - **WhatsApp messages:** built by `getPropertyWhatsAppMessage()` in `properties.js`. Detail pages and cards use the same text.
 - **Rental search:** `#rental-search-form` on `index.html`; it sends filters to `rent.html` (see `initHeroSearch` in `search.js`).
 - **List Your Property form:** `list-your-property.html` has no backend, so it opens WhatsApp with the owner's details pre-filled (`initOwnerForm` in `main.js`). Swap in Formspree/EmailJS to receive submissions by email or to collect photos.
-- **Testimonials:** the homepage section is commented out until you have real client feedback.
+- **Google reviews:** the homepage carousel (`#reviews`) reads the `REVIEWS` list in `reviews-data.js` (up to 12) and scrolls continuously (pauses on hover, touch and focus). It stays hidden until you paste in real Google reviews. Open `index.html?preview-reviews` to check the layout with placeholders.
 - **Trust section:** add business hours and your Google Business Profile link where marked in `index.html`.
 - **New guides:** `blog/cost-to-rent-flat-ahmedabad.html` and `blog/furnished-flats-for-rent-ahmedabad.html`.
 
@@ -152,3 +155,10 @@ Property enquiries include the full listing details for every listing, including
 
 `admin.html` is built to be used from a phone: Listings and Enquiries are a bottom navigation bar, "Add property" is a floating button within thumb reach, the add/edit form fills the screen with Save pinned at the bottom, the tabs and search stay at the top while you scroll, and all buttons and fields are sized for fingers (16px fields, so iPhones do not zoom in when you tap one). Tip: open the admin in your phone's browser and use "Add to Home Screen" to get an app-like icon.
 
+
+### Fresh listings and reconfirm (admin)
+
+- New listings get a **listed** date. Public cards show a green **New** tag for 7 days.
+- Saving a listing, or tapping **Still available** on its row, sets the **checked** date. Public cards show "Updated today / N days ago" for up to 30 days. Older dates are hidden, so a stale date never appears on the site.
+- Listings not checked in 30 days (or never) show an amber note and count under the **Needs check** tab. Tap **Still available**, or **Rented, hide it** to take it off the site (turn **Live** back on if it comes free).
+- Listings imported before this update have no dates, so they show nothing publicly and appear under **Needs check** until you tap Still available once.

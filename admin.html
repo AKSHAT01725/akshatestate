@@ -6,9 +6,6 @@
   <meta name="theme-color" content="#e7e6ee">
   <meta name="robots" content="noindex, nofollow">
   <title>Admin | Akshat Estate</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="admin.css">
 </head>
@@ -87,6 +84,7 @@
             <button type="button" role="tab" class="tab is-active" data-filter="all"><span class="tab-label">All</span> <span class="count" data-count="all">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="rent"><span class="tab-label">For rent</span> <span class="count" data-count="rent">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="sale"><span class="tab-label">For sale</span> <span class="count" data-count="sale">0</span></button>
+            <button type="button" role="tab" class="tab" data-filter="stale"><span class="tab-label">Needs check</span> <span class="count" data-count="stale">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="hidden"><span class="tab-label">Hidden</span> <span class="count" data-count="hidden">0</span></button>
           </div>
           <label class="search">
@@ -194,12 +192,10 @@
               <span>Layout</span>
               <select name="layout">
                 <option value="1RK">1 RK</option>
+                <option value="1ROOM">1 Room</option>
                 <option value="1">1 BHK</option>
                 <option value="2" selected>2 BHK</option>
                 <option value="3">3 BHK</option>
-                <option value="4">4 BHK</option>
-                <option value="5">5 BHK</option>
-                <option value="6">6 BHK</option>
               </select>
             </label>
             <label class="field">
