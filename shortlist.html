@@ -3,28 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1BHK Flats for Rent in Memnagar, Ahmedabad | Akshat Estate</title>
-  <meta name="description" content="1BHK flats for rent in Memnagar, Ahmedabad. Explore rental apartments and connect with Akshat Estate for current availability and local guidance.">
-  <link rel="canonical" href="https://akshatestate.com/1BHK-flats-for-rent-memnagar">
+  <title>My Shortlist | Akshat Estate</title>
+  <meta name="description" content="Your saved rental homes on Akshat Estate. Compare them side by side and share them on WhatsApp.">
+  <meta name="robots" content="noindex, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Akshat Estate">
-  <meta property="og:locale" content="en_IN">
-  <meta property="og:title" content="1BHK Flats for Rent in Memnagar, Ahmedabad | Akshat Estate">
-  <meta property="og:description" content="1BHK flats for rent in Memnagar, Ahmedabad. Explore rental apartments and connect with Akshat Estate for current availability and local guidance.">
-  <meta property="og:url" content="https://akshatestate.com/1BHK-flats-for-rent-memnagar">
-  <meta property="og:image" content="https://akshatestate.com/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Akshat Estate: rental homes and real estate in Ahmedabad">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="1BHK Flats for Rent in Memnagar, Ahmedabad | Akshat Estate">
-  <meta name="twitter:description" content="1BHK flats for rent in Memnagar, Ahmedabad. Explore rental apartments and connect with Akshat Estate for current availability and local guidance.">
-  <meta name="twitter:image" content="https://akshatestate.com/og-image.png">
 </head>
 <body>
   <header class="header">
@@ -33,7 +19,7 @@
       <nav class="nav">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="rent.html" class="nav-rent">Rent</a></li>
+          <li><a href="rent.html" class="nav-rent active">Rent</a></li>
           <li><a href="buy.html">Buy</a></li>
           <li><a href="list-your-property.html">Sell Property</a></li>
           <li><a href="about.html">About</a></li>
@@ -54,62 +40,26 @@
     <a href="contact.html">Contact</a>
     <a href="list-your-property.html" class="btn btn-primary">List Property <span class="free-highlight">Free</span></a>
   </nav>
+
   <div class="page-header">
     <div class="container">
-      <h1>1 BHK Flats for Rent in Memnagar</h1>
-      <p>Find 1 BHK rental flats and apartments in Memnagar, Ahmedabad</p>
-      <nav class="breadcrumb"><a href="index.html">Home</a> / <a href="rent.html">Rent</a> / <span>1 BHK in Memnagar</span></nav>
+      <h1 id="sl-title">My Shortlist</h1>
+      <p id="sl-sub">Homes you saved with the heart button, saved in this browser.</p>
+      <nav class="breadcrumb"><a href="index.html">Home</a> / <span>My Shortlist</span></nav>
     </div>
   </div>
-    <section class="section">
+
+  <section class="section">
     <div class="container">
-      <div style="max-width:720px;margin:0 auto 2rem;text-align:center">
+      <div id="shortlist-banner"></div>
+      <div class="shortlist-toolbar" id="shortlist-toolbar" hidden>
+        <span class="count" id="shortlist-count"></span>
+        <a href="#" class="btn btn-whatsapp btn-sm" id="shortlist-share"><i class="fab fa-whatsapp"></i> Share on WhatsApp</a>
+        <button type="button" class="btn btn-outline btn-sm" id="shortlist-copy"><i class="fas fa-link"></i> Copy link</button>
+        <button type="button" class="btn btn-outline btn-sm" id="shortlist-clear"><i class="far fa-trash-can"></i> Clear all</button>
       </div>
-      <div class="section-intro" style="max-width:800px;margin:0 auto 2rem;text-align:center">
-      </div>
-      <div class="listings-layout">
-        <div class="listings-main">
-          <form id="filter-form" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem;align-items:center">
-            <input type="hidden" name="location" value="Memnagar">
-            <select name="status" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;font-weight:500;color:var(--text-light)">
-              <option value="rent" selected>For Rent</option>
-              <option value="all">Buy / Rent</option>
-              <option value="sale">For Sale</option>
-            </select>
-            <select name="type" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;font-weight:500;color:var(--text-light)">
-              <option value="all">Property Type</option>
-              <option value="apartment">Flat / Apartment</option>
-              <option value="bungalow">Bungalow</option>
-              <option value="office">Office</option>
-              <option value="shop">Shop / Godown</option>
-            </select>
-            <select name="bedrooms" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;font-weight:500;color:var(--text-light)">
-              <option value="all">BHK</option>
-              <option value="1RK">1 RK</option>
-              <option value="1">1 BHK</option>
-              <option value="2">2 BHK</option>
-              <option value="3">3 BHK</option>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-          </form>
-          <p class="results-count" id="results-count">Loading...</p>
-          <div id="properties-list"></div>
-        </div>
-        <aside class="sidebar-card">
-          <h3>Enquire about Gurukul</h3>
-          <p>Share your requirement and we will get back to you.</p>
-          <form id="contact-form">
-            <div class="form-group"><input type="text" name="name" required placeholder="Your Name"></div>
-            <div class="form-group"><input type="tel" name="phone" required placeholder="Phone Number"></div>
-            <div class="form-group"><textarea name="message" placeholder="Your requirement"></textarea></div>
-            <button type="submit" class="btn btn-primary btn-block">Send Enquiry</button>
-          </form>
-        </aside>
-      </div>
-      <div class="text-center mt-3">
-        <a href="properties.html" class="btn btn-outline">View All Properties</a>
-        <a href="contact.html" class="btn btn-primary" style="margin-left:0.5rem">Contact Us</a>
-      </div>
+      <div id="shortlist-list"></div>
+      <div id="shortlist-compare"></div>
     </div>
   </section>
 
@@ -168,11 +118,11 @@
       </div>
     </div>
   </footer>
+
   <a href="#" class="whatsapp-float" data-whatsapp aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
   <a href="tel:+918141293057" class="call-float" aria-label="Call us"><i class="fas fa-phone"></i></a>
   <script src="properties.js"></script>
   <script src="main.js"></script>
   <script src="search.js"></script>
-<script>document.addEventListener('DOMContentLoaded',function(){var f=document.getElementById('filter-form');if(f){var b=f.querySelector('[name="bedrooms"]');if(b)b.value="1";}});</script>
 </body>
 </html>

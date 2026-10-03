@@ -34,6 +34,96 @@
     "areaServed": { "@type": "City", "name": "Ahmedabad" }
   }
   </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I find a flat for rent with Akshat Estate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the search at the top of this page or open the Rent page, then message us on WhatsApp from any property card. If you do not see what you need, fill in the Tell Us What You Need form and we will look for matching homes."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which areas in Ahmedabad do you cover?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We focus on Gurukul, Memnagar and Sola, and can also help with other parts of Ahmedabad. Each area page lists nearby landmarks and the rent range of the flats we currently have."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I see the flat before I decide?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can bachelors rent a flat?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on the owner and the housing society. On the Rent page you can switch on the “Bachelors allowed” filter, or tell us in the requirement form and we will check with owners."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What documents do I need to rent a flat in Ahmedabad?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Requirements vary by owner and society. Read our guide to the documents required for renting a flat in Ahmedabad and we will confirm what is needed for the home you choose."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much does it cost to rent a flat in Ahmedabad?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Rent depends on the area, size, furnishing and building, and there are other costs such as a security deposit and maintenance. Our guide explains how much it costs to rent a flat in Ahmedabad, and each area page shows the rent range of flats currently listed with us."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between furnished, semi-furnished and unfurnished?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Furnished homes are usually ready to move in with items such as beds, a sofa and appliances. Semi-furnished homes typically have basics such as wardrobes and a kitchen setup. Unfurnished homes are empty apart from basic fixtures. Always ask for the exact list of items. More in our guide to furnished flats for rent in Ahmedabad."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "I own a flat. Can you help me find a tenant?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Share the details on the List Your Property page and we will get in touch to discuss the next steps."
+      }
+    }
+  ]
+}
+  </script>
+  <meta property="og:site_name" content="Akshat Estate">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:image" content="https://akshatestate.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Akshat Estate: rental homes and real estate in Ahmedabad">
+  <meta name="twitter:title" content="Akshat Estate | Rental Homes &amp; Real Estate in Ahmedabad | Flats for Rent in Gurukul, Memnagar &amp; Sola">
+  <meta name="twitter:description" content="Find flats and apartments for rent across Ahmedabad with Akshat Estate. 1 RK, 1 BHK, 2 BHK and 3 BHK rentals in Gurukul, Memnagar and Sola, with easy WhatsApp enquiries and local guidance. Buying and selling assistance too.">
+  <meta name="twitter:image" content="https://akshatestate.com/og-image.png">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Akshat Estate",
+  "url": "https://akshatestate.com/",
+  "inLanguage": "en-IN"
+}
+  </script>
 </head>
 <body>
   <header class="header">
@@ -239,6 +329,39 @@
     </div>
   </section>
 
+
+  <!-- TELL US WHAT YOU NEED (tenant requirement form: opens WhatsApp and saves to the admin Enquiries tab) -->
+  <section class="section section-bg" id="requirement">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">Can't Find It?</span>
+        <h2 class="section-heading">Tell Us What You Need</h2>
+        <p class="section-subheading">Share your requirement and we will look for matching rental homes and get back to you.</p>
+      </div>
+      <div class="requirement-card">
+        <form id="requirement-form">
+          <div class="requirement-grid">
+            <div class="form-group"><label for="rq-name">Your Name *</label><input type="text" id="rq-name" name="name" required autocomplete="name" placeholder="Full name"></div>
+            <div class="form-group"><label for="rq-phone">Phone / WhatsApp *</label><input type="tel" id="rq-phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="+91"></div>
+            <div class="form-group"><label for="rq-area">Preferred Area</label>
+              <select id="rq-area" name="area"><option value="">Any area</option><option>Gurukul</option><option>Memnagar</option><option>Sola</option><option>Other part of Ahmedabad</option></select></div>
+            <div class="form-group"><label for="rq-bhk">BHK</label>
+              <select id="rq-bhk" name="bhk"><option value="">Any</option><option>1 RK</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK</option><option>4+ BHK</option></select></div>
+            <div class="form-group"><label for="rq-budget">Budget (per month)</label>
+              <select id="rq-budget" name="budget"><option value="">Not sure yet</option><option>Up to &#8377;10,000</option><option>Up to &#8377;15,000</option><option>Up to &#8377;20,000</option><option>Up to &#8377;30,000</option><option>Up to &#8377;50,000</option><option>Above &#8377;50,000</option></select></div>
+            <div class="form-group"><label for="rq-movein">Move-in Date</label><input type="date" id="rq-movein" name="movein"></div>
+            <div class="form-group"><label for="rq-furnishing">Furnishing</label>
+              <select id="rq-furnishing" name="furnishing"><option value="">Any</option><option>Furnished</option><option>Semi-furnished</option><option>Unfurnished</option></select></div>
+            <div class="form-group req-span2"><label for="rq-note">Anything else?</label><input type="text" id="rq-note" name="note" maxlength="300" placeholder="Floor, parking, family size, nearby landmark..."></div>
+          </div>
+          <label class="req-check"><input type="checkbox" name="bachelors"> I am looking for a home that allows bachelors</label>
+          <button type="submit" class="btn btn-whatsapp btn-lg"><i class="fab fa-whatsapp"></i> Send Requirement</button>
+          <p class="form-note">This opens WhatsApp with your details filled in and also saves them with us, so we can call you with matching homes.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- 6. LIST YOUR PROPERTY FOR RENT (owners) -->
   <section class="cta-section" id="list-property">
     <div class="container">
@@ -296,6 +419,27 @@
     </div>
   </section>
   -->
+
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">FAQ</span>
+        <h2 class="section-heading">Renting in Ahmedabad: Common Questions</h2>
+        <p class="section-subheading">Quick answers for tenants and owners.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item"><summary>How do I find a flat for rent with Akshat Estate?</summary><div class="faq-answer"><p>Use the search at the top of this page or open the <a href="rent.html">Rent page</a>, then message us on WhatsApp from any property card. If you do not see what you need, fill in the <a href="#requirement">Tell Us What You Need</a> form and we will look for matching homes.</p></div></details>
+        <details class="faq-item"><summary>Which areas in Ahmedabad do you cover?</summary><div class="faq-answer"><p>We focus on <a href="gurukul.html">Gurukul</a>, <a href="memnagar.html">Memnagar</a> and <a href="sola.html">Sola</a>, and can also help with other parts of Ahmedabad. Each area page lists nearby landmarks and the rent range of the flats we currently have.</p></div></details>
+        <details class="faq-item"><summary>Can I see the flat before I decide?</summary><div class="faq-answer"><p>Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time.</p></div></details>
+        <details class="faq-item"><summary>Can bachelors rent a flat?</summary><div class="faq-answer"><p>It depends on the owner and the housing society. On the Rent page you can switch on the &ldquo;Bachelors allowed&rdquo; filter, or tell us in the requirement form and we will check with owners.</p></div></details>
+        <details class="faq-item"><summary>What documents do I need to rent a flat in Ahmedabad?</summary><div class="faq-answer"><p>Requirements vary by owner and society. Read our guide to the <a href="blog/documents-required-renting-ahmedabad.html">documents required for renting a flat in Ahmedabad</a> and we will confirm what is needed for the home you choose.</p></div></details>
+        <details class="faq-item"><summary>How much does it cost to rent a flat in Ahmedabad?</summary><div class="faq-answer"><p>Rent depends on the area, size, furnishing and building, and there are other costs such as a security deposit and maintenance. Our guide explains <a href="blog/cost-to-rent-flat-ahmedabad.html">how much it costs to rent a flat in Ahmedabad</a>, and each area page shows the rent range of flats currently listed with us.</p></div></details>
+        <details class="faq-item"><summary>What is the difference between furnished, semi-furnished and unfurnished?</summary><div class="faq-answer"><p>Furnished homes are usually ready to move in with items such as beds, a sofa and appliances. Semi-furnished homes typically have basics such as wardrobes and a kitchen setup. Unfurnished homes are empty apart from basic fixtures. Always ask for the exact list of items. More in our guide to <a href="blog/furnished-flats-for-rent-ahmedabad.html">furnished flats for rent in Ahmedabad</a>.</p></div></details>
+        <details class="faq-item"><summary>I own a flat. Can you help me find a tenant?</summary><div class="faq-answer"><p>Yes. Share the details on the <a href="list-your-property.html">List Your Property</a> page and we will get in touch to discuss the next steps.</p></div></details>
+      </div>
+    </div>
+  </section>
 
   <!-- 8. TRUST + CONTACT -->
   <section class="section section-bg" id="about">

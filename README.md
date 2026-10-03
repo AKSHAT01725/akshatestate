@@ -29,7 +29,7 @@ All files are in **one folder**. Open `index.html` in a browser to view.
 ## Contact
 
 - **Phone / WhatsApp:** +91 81412 93057
-- **Email:** info@akshatestate.com (replace if needed)
+- **Email:** akshatestate.ahd@gmail.com (replace if needed)
 
 ## Tech
 
@@ -97,3 +97,13 @@ In the admin, tabs split enquiries by type (Property enquiry, Owner listing requ
 - If saving fails (offline, blocked, or rules not published yet), the visitor sees a message with a WhatsApp link so the lead is not lost.
 - Anyone who knows the public API key could still send junk enquiries straight to Firebase. If that ever happens, turn on **Firebase App Check** (reCAPTCHA) for Firestore.
 - Enquiries are personal data (names and phone numbers). Only the admin account can read them; consider deleting old ones from time to time.
+
+## Added in the latest round
+
+- **Tell Us What You Need** (`#requirement` on `index.html` and `rent.html`): tenant requirement form. Opens WhatsApp with the details and saves them to the admin Enquiries tab (source "enquiry"), using the existing Firestore rules.
+- **Shortlist / compare:** the heart on any card saves a home in the visitor's browser (`localStorage` key `ae_favorites`). `shortlist.html` lists saved homes, compares them side by side, and shares them on WhatsApp with a link like `shortlist.html?ids=14,5,27`. The header shows a heart with a count on wide screens, and the mobile menu has a My Shortlist link.
+- **Rent page:** sort (newest, price, area) and quick chips (Bachelors allowed, With parking, Furnished / Semi). Sort is also on the Buy, Properties, area and Ahmedabad pages. "Bachelors allowed" uses `PROPERTY_DETAIL_DEFAULTS` / `PROPERTY_EXTRAS` in `properties.js` (set real values per listing). "With parking" uses the parking count or "Parking" in the amenities.
+- **Area pages** (`gurukul.html`, `memnagar.html`, `sola.html`): about text, nearby landmarks, a rent table worked out from the live listings, and an FAQ. `ahmedabad.html` compares the three areas. Edit the text in each page's `#about-area` section. Check the landmarks and metro details before publishing; they can change.
+- **FAQs** with FAQ schema on the homepage, rent page, area pages and Ahmedabad page.
+- **SEO:** `sitemap.xml`, `robots.txt`, canonical tags (blog articles and listing pages included), Open Graph / Twitter preview image (`og-image.png`), WebSite, BreadcrumbList, BlogPosting and RealEstateListing data. Add new pages to `sitemap.xml` by hand. Regenerate `og-image.png` if you change the branding.
+- **Polish:** back-to-top button, WhatsApp + Call bar pinned to the bottom of property pages on phones, lazy-loaded images.

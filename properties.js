@@ -658,7 +658,7 @@ function getFeaturedProperties() {
 }
 
 function filterProperties(filters) {
-  return PROPERTIES.filter(p => {
+  const list = PROPERTIES.filter(p => {
     if (filters.status && filters.status !== "all" && p.status !== filters.status) return false;
     if (filters.type && filters.type !== "all" && p.type !== filters.type) return false;
     if (filters.location && filters.location !== "all") {
@@ -695,8 +695,29 @@ function filterProperties(filters) {
     if (filters.furnishing && filters.furnishing !== "all" && p.furnishing !== filters.furnishing) return false;
     if (filters.minPrice && p.price < parseInt(filters.minPrice, 10)) return false;
     if (filters.maxPrice && p.price > parseInt(filters.maxPrice, 10)) return false;
+    if (isOn(filters.bachelors) && !(p.type === "apartment" && getPropertyExtras(p).bachelorsAllowed)) return false;
+    if (isOn(filters.parking) && !hasParking(p)) return false;
+    if (isOn(filters.furnishedOnly) && p.furnishing === "unfurnished") return false;
     return true;
   });
+  return sortProperties(list, filters.sort);
+}
+
+function isOn(v) { return v === true || v === "1" || v === "on" || v === "true"; }
+
+/* Parking: a stored car-parking count, or "Parking" listed in the amenities */
+function hasParking(p) {
+  return getPropertyExtras(p).carParking > 0 || (p.amenities || []).some(function (a) { return /parking/i.test(a); });
+}
+
+/* Sort a list of properties: "newest" (latest added first), "price-asc", "price-desc", "area-desc" */
+function sortProperties(list, sort) {
+  const out = list.slice();
+  if (sort === "price-asc") out.sort(function (a, b) { return a.price - b.price || a.id - b.id; });
+  else if (sort === "price-desc") out.sort(function (a, b) { return b.price - a.price || a.id - b.id; });
+  else if (sort === "area-desc") out.sort(function (a, b) { return b.area - a.area || a.id - b.id; });
+  else if (sort === "newest") out.sort(function (a, b) { return b.id - a.id; });
+  return out;
 }
 
 function renderPropertyCard(property) {
@@ -935,6 +956,7 @@ function renderRentalCard(property) {
         <button type="button" class="request-image-btn" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
           <i class="fas fa-camera"></i> Request Image
         </button>
+        <button type="button" class="rental-fav property-favorite" data-id="${property.id}" title="Save to shortlist" aria-label="Save to shortlist"><i class="far fa-heart"></i></button>
         <button type="button" class="rental-share btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
       </div>
       <div class="rental-card-body">
@@ -1091,3 +1113,42 @@ window.propertiesReady = (function () {
     return false;
   });
 })();
+
+
+/* ==========================================================
+   Shortlist + area rent stats
+   ========================================================== */
+
+/* Saved (hearted) property IDs, stored in this browser only */
+function getSavedIds() {
+  try {
+    const ids = JSON.parse(localStorage.getItem("ae_favorites") || "[]");
+    return Array.isArray(ids) ? ids.map(String) : [];
+  } catch (e) { return []; }
+}
+
+function formatINR(n) {
+  return "\u20B9" + Number(n).toLocaleString("en-IN");
+}
+
+/* Rent range per size for an area, worked out from the rental listings currently on the site.
+   area: "Gurukul" | "Memnagar" | "Sola" | "Ahmedabad" (all three areas) */
+function getAreaRentStats(area) {
+  const key = String(area || "").toLowerCase();
+  const rows = [
+    { label: "1 RK", test: function (p) { return p.bedroomType === "1RK"; } },
+    { label: "1 BHK", test: function (p) { return p.bedroomType !== "1RK" && p.bedrooms === 1; } },
+    { label: "2 BHK", test: function (p) { return p.bedrooms === 2; } },
+    { label: "3 BHK", test: function (p) { return p.bedrooms === 3; } },
+    { label: "4+ BHK", test: function (p) { return p.bedrooms >= 4; } }
+  ];
+  const rentals = PROPERTIES.filter(function (p) {
+    return p.status === "rent" && p.type === "apartment" && p.price > 0 &&
+      (key === "ahmedabad" || String(p.location).toLowerCase() === key);
+  });
+  const stats = rows.map(function (r) {
+    const prices = rentals.filter(r.test).map(function (p) { return p.price; });
+    return { label: r.label, count: prices.length, min: Math.min.apply(null, prices), max: Math.max.apply(null, prices) };
+  }).filter(function (r) { return r.count > 0; });
+  return { total: rentals.length, rows: stats };
+}

@@ -11,6 +11,88 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which areas do you cover?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We focus on Gurukul, Memnagar and Sola, and can also help with other parts of Ahmedabad."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I choose between Gurukul, Memnagar and Sola?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It comes down to where you work or study, your budget and the lifestyle you want. Our guide to the best areas to rent a flat in Ahmedabad compares areas, and Gurukul vs Memnagar looks at the two neighbouring areas in detail."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I see the flat before I decide?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much does it cost to rent a flat in Ahmedabad?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Rent depends on the area, size, furnishing and building. The table above shows the rent ranges of the flats currently listed with us, and our guide explains how much it costs to rent a flat in Ahmedabad."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "I own a flat. Can you help me find a tenant?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Share the details on the List Your Property page and we will get in touch."
+      }
+    }
+  ]
+}
+  </script>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Akshat Estate">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:title" content="Properties in Ahmedabad, Ahmedabad | Buy &amp; Rent | Akshat Estate">
+  <meta property="og:description" content="Find properties for sale and rent in Ahmedabad, Ahmedabad. Browse apartments and homes with Akshat Estate.">
+  <meta property="og:url" content="https://akshatestate.com/ahmedabad">
+  <meta property="og:image" content="https://akshatestate.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Akshat Estate: rental homes and real estate in Ahmedabad">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Properties in Ahmedabad, Ahmedabad | Buy &amp; Rent | Akshat Estate">
+  <meta name="twitter:description" content="Find properties for sale and rent in Ahmedabad, Ahmedabad. Browse apartments and homes with Akshat Estate.">
+  <meta name="twitter:image" content="https://akshatestate.com/og-image.png">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://akshatestate.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Flats for Rent in Ahmedabad",
+      "item": "https://akshatestate.com/ahmedabad"
+    }
+  ]
+}
+  </script>
 </head>
 <body>
   <header class="header">
@@ -75,6 +157,13 @@
               <option value="2">2 BHK</option>
               <option value="3">3 BHK</option>
             </select>
+            <select name="sort" aria-label="Sort properties" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;font-weight:500;color:var(--text-light)">
+              <option value="">Sort: Default</option>
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="area-desc">Area: Large to Small</option>
+            </select>
             <button type="submit" class="btn btn-primary btn-sm">Apply</button>
           </form>
           <p class="results-count" id="results-count">Loading...</p>
@@ -94,6 +183,40 @@
       <div class="text-center mt-3">
         <a href="properties.html" class="btn btn-outline">View All Properties</a>
         <a href="contact.html" class="btn btn-primary" style="margin-left:0.5rem">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section section-bg" id="compare-areas">
+    <div class="container">
+      <div class="section-head-left">
+        <span class="section-label">Compare Areas</span>
+        <h2>Rent Ranges Across Our Areas</h2>
+        <p>Monthly rent of the rental flats currently listed with us in Gurukul, Memnagar and Sola.</p>
+      </div>
+      <div class="section-head-left" data-area-compare></div>
+      <div class="section-head-left area-links">
+        <a class="btn btn-outline btn-sm" href="gurukul.html">About Gurukul</a>
+        <a class="btn btn-outline btn-sm" href="memnagar.html">About Memnagar</a>
+        <a class="btn btn-outline btn-sm" href="sola.html">About Sola</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">FAQ</span>
+        <h2 class="section-heading">Renting in Ahmedabad: Common Questions</h2>
+        <p class="section-subheading">Quick answers for tenants and owners.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item"><summary>Which areas do you cover?</summary><div class="faq-answer"><p>We focus on <a href="gurukul.html">Gurukul</a>, <a href="memnagar.html">Memnagar</a> and <a href="sola.html">Sola</a>, and can also help with other parts of Ahmedabad.</p></div></details>
+        <details class="faq-item"><summary>How do I choose between Gurukul, Memnagar and Sola?</summary><div class="faq-answer"><p>It comes down to where you work or study, your budget and the lifestyle you want. Our guide to the <a href="blog/best-areas-to-rent-flat-ahmedabad.html">best areas to rent a flat in Ahmedabad</a> compares areas, and <a href="blog/gurukul-vs-memnagar-rent.html">Gurukul vs Memnagar</a> looks at the two neighbouring areas in detail.</p></div></details>
+        <details class="faq-item"><summary>Can I see the flat before I decide?</summary><div class="faq-answer"><p>Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time.</p></div></details>
+        <details class="faq-item"><summary>How much does it cost to rent a flat in Ahmedabad?</summary><div class="faq-answer"><p>Rent depends on the area, size, furnishing and building. The table above shows the rent ranges of the flats currently listed with us, and our guide explains <a href="blog/cost-to-rent-flat-ahmedabad.html">how much it costs to rent a flat in Ahmedabad</a>.</p></div></details>
+        <details class="faq-item"><summary>I own a flat. Can you help me find a tenant?</summary><div class="faq-answer"><p>Yes. Share the details on the <a href="list-your-property.html">List Your Property</a> page and we will get in touch.</p></div></details>
       </div>
     </div>
   </section>

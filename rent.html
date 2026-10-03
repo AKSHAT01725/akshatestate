@@ -11,6 +11,76 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I narrow down the flats?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the filters above the list: locality, BHK, furnishing, budget, and the quick options for bachelors allowed, parking and furnished homes. You can also sort by newest, price or area. Tap the heart on any flat to save it, then compare your saved homes on the My Shortlist page."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between furnished, semi-furnished and unfurnished?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Furnished homes are usually ready to move in, semi-furnished homes typically have wardrobes and a kitchen setup, and unfurnished homes are empty apart from basic fixtures. The exact items differ from owner to owner, so ask for the list. See our guide to furnished flats for rent in Ahmedabad."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can bachelors rent a flat?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on the owner and the housing society. Switch on the “Bachelors allowed” filter, or tell us in the form below and we will check with owners."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I see the flat before I decide?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much will I pay in total?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Besides the monthly rent, plan for a security deposit, maintenance if it is charged separately, and the cost of the rental agreement. Our guide explains how much it costs to rent a flat in Ahmedabad."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if I do not see what I am looking for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Fill in the Tell Us What You Need form below with your area, budget and BHK. We will look for matching homes and get back to you."
+      }
+    }
+  ]
+}
+  </script>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Akshat Estate">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:title" content="Flats for Rent in Ahmedabad | Gurukul, Memnagar &amp; Sola | Akshat Estate">
+  <meta property="og:description" content="Browse flats and apartments for rent in Ahmedabad: 1 RK, 1 BHK, 2 BHK and 3 BHK homes in Gurukul, Memnagar and Sola. Enquire on WhatsApp.">
+  <meta property="og:url" content="https://akshatestate.com/rent">
+  <meta property="og:image" content="https://akshatestate.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Akshat Estate: rental homes and real estate in Ahmedabad">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Flats for Rent in Ahmedabad | Gurukul, Memnagar &amp; Sola | Akshat Estate">
+  <meta name="twitter:description" content="Browse flats and apartments for rent in Ahmedabad: 1 RK, 1 BHK, 2 BHK and 3 BHK homes in Gurukul, Memnagar and Sola. Enquire on WhatsApp.">
+  <meta name="twitter:image" content="https://akshatestate.com/og-image.png">
 </head>
 <body>
   <header class="header">
@@ -85,6 +155,18 @@
             <input type="number" name="minPrice" placeholder="Min ₹" min="0" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;width:100px">
             <input type="number" name="maxPrice" placeholder="Max ₹" min="0" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;width:100px">
             <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+            <span class="filter-row-break"></span>
+            <select name="sort" aria-label="Sort properties" style="border:1px solid var(--border);padding:0.45rem 0.9rem;border-radius:999px;background:var(--white);font-size:0.8125rem;font-weight:500;color:var(--text-light)">
+              <option value="">Sort: Default</option>
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="area-desc">Area: Large to Small</option>
+            </select>
+            <label class="filter-chip"><input type="checkbox" name="bachelors"><span>Bachelors allowed</span></label>
+            <label class="filter-chip"><input type="checkbox" name="parking"><span>With parking</span></label>
+            <label class="filter-chip" title="Furnished or semi-furnished"><input type="checkbox" name="furnishedOnly"><span>Furnished / Semi</span></label>
+            <a href="#" class="filter-clear" data-clear-filters>Clear filters</a>
           </form>
           <p class="results-count" id="results-count">Loading...</p>
           <div id="properties-list"></div>
@@ -104,6 +186,58 @@
             <a href="list-your-property.html" class="btn btn-outline btn-block btn-sm">List Your Property</a>
           </div>
         </aside>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- TELL US WHAT YOU NEED (tenant requirement form: opens WhatsApp and saves to the admin Enquiries tab) -->
+  <section class="section section-bg" id="requirement">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">Can't Find It?</span>
+        <h2 class="section-heading">Tell Us What You Need</h2>
+        <p class="section-subheading">Share your requirement and we will look for matching rental homes and get back to you.</p>
+      </div>
+      <div class="requirement-card">
+        <form id="requirement-form">
+          <div class="requirement-grid">
+            <div class="form-group"><label for="rq-name">Your Name *</label><input type="text" id="rq-name" name="name" required autocomplete="name" placeholder="Full name"></div>
+            <div class="form-group"><label for="rq-phone">Phone / WhatsApp *</label><input type="tel" id="rq-phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="+91"></div>
+            <div class="form-group"><label for="rq-area">Preferred Area</label>
+              <select id="rq-area" name="area"><option value="">Any area</option><option>Gurukul</option><option>Memnagar</option><option>Sola</option><option>Other part of Ahmedabad</option></select></div>
+            <div class="form-group"><label for="rq-bhk">BHK</label>
+              <select id="rq-bhk" name="bhk"><option value="">Any</option><option>1 RK</option><option>1 BHK</option><option>2 BHK</option><option>3 BHK</option><option>4+ BHK</option></select></div>
+            <div class="form-group"><label for="rq-budget">Budget (per month)</label>
+              <select id="rq-budget" name="budget"><option value="">Not sure yet</option><option>Up to &#8377;10,000</option><option>Up to &#8377;15,000</option><option>Up to &#8377;20,000</option><option>Up to &#8377;30,000</option><option>Up to &#8377;50,000</option><option>Above &#8377;50,000</option></select></div>
+            <div class="form-group"><label for="rq-movein">Move-in Date</label><input type="date" id="rq-movein" name="movein"></div>
+            <div class="form-group"><label for="rq-furnishing">Furnishing</label>
+              <select id="rq-furnishing" name="furnishing"><option value="">Any</option><option>Furnished</option><option>Semi-furnished</option><option>Unfurnished</option></select></div>
+            <div class="form-group req-span2"><label for="rq-note">Anything else?</label><input type="text" id="rq-note" name="note" maxlength="300" placeholder="Floor, parking, family size, nearby landmark..."></div>
+          </div>
+          <label class="req-check"><input type="checkbox" name="bachelors"> I am looking for a home that allows bachelors</label>
+          <button type="submit" class="btn btn-whatsapp btn-lg"><i class="fab fa-whatsapp"></i> Send Requirement</button>
+          <p class="form-note">This opens WhatsApp with your details filled in and also saves them with us, so we can call you with matching homes.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-label">FAQ</span>
+        <h2 class="section-heading">Renting a Flat: Common Questions</h2>
+        <p class="section-subheading">Quick answers before you shortlist.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item"><summary>How do I narrow down the flats?</summary><div class="faq-answer"><p>Use the filters above the list: locality, BHK, furnishing, budget, and the quick options for bachelors allowed, parking and furnished homes. You can also sort by newest, price or area. Tap the heart on any flat to save it, then compare your saved homes on the <a href="shortlist.html">My Shortlist</a> page.</p></div></details>
+        <details class="faq-item"><summary>What is the difference between furnished, semi-furnished and unfurnished?</summary><div class="faq-answer"><p>Furnished homes are usually ready to move in, semi-furnished homes typically have wardrobes and a kitchen setup, and unfurnished homes are empty apart from basic fixtures. The exact items differ from owner to owner, so ask for the list. See our guide to <a href="blog/furnished-flats-for-rent-ahmedabad.html">furnished flats for rent in Ahmedabad</a>.</p></div></details>
+        <details class="faq-item"><summary>Can bachelors rent a flat?</summary><div class="faq-answer"><p>It depends on the owner and the housing society. Switch on the &ldquo;Bachelors allowed&rdquo; filter, or tell us in the form below and we will check with owners.</p></div></details>
+        <details class="faq-item"><summary>Can I see the flat before I decide?</summary><div class="faq-answer"><p>Yes. We help coordinate property visits at times that suit you. Message us on WhatsApp with the property you like and a convenient time.</p></div></details>
+        <details class="faq-item"><summary>How much will I pay in total?</summary><div class="faq-answer"><p>Besides the monthly rent, plan for a security deposit, maintenance if it is charged separately, and the cost of the rental agreement. Our guide explains <a href="blog/cost-to-rent-flat-ahmedabad.html">how much it costs to rent a flat in Ahmedabad</a>.</p></div></details>
+        <details class="faq-item"><summary>What if I do not see what I am looking for?</summary><div class="faq-answer"><p>Fill in the <a href="#requirement">Tell Us What You Need</a> form below with your area, budget and BHK. We will look for matching homes and get back to you.</p></div></details>
       </div>
     </div>
   </section>
