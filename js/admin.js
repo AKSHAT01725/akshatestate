@@ -102,9 +102,11 @@ if (auth) {
       showApp();
       loadAll();
       startEnquiries();
+      onSignedIn();
     } else {
       state.list = []; state.loaded = false;
       stopEnquiries();
+      onSignedOut();
       showLogin();
     }
   });
@@ -296,7 +298,7 @@ function rowHTML(p) {
     <div class="row-actions">
       <button type="button" class="btn btn-ghost btn-sm" data-act="edit" aria-label="Edit ${esc(p.title)}">Edit</button>
       <button type="button" class="icon-btn" data-act="copy" title="Duplicate" aria-label="Duplicate ${esc(p.title)}"><i class="fas fa-copy"></i></button>
-      <a class="icon-btn" href="property-details.html?id=${p.id}" target="_blank" rel="noopener" title="View on website" aria-label="View ${esc(p.title)} on the website"><i class="fas fa-arrow-up-right-from-square"></i></a>
+      <a class="icon-btn" href="../property-details.html?id=${p.id}" target="_blank" rel="noopener" title="View on website" aria-label="View ${esc(p.title)} on the website"><i class="fas fa-arrow-up-right-from-square"></i></a>
       <button type="button" class="icon-btn danger" data-act="delete" title="Delete" aria-label="Delete ${esc(p.title)}"><i class="fas fa-trash-can"></i></button>
     </div>
   </li>`;
@@ -877,7 +879,7 @@ function enqAbout(e) {
   if (e.source === "property") {
     const label = esc(e.propertyTitle || (e.propertyId ? "Property " + e.propertyId : "a property"));
     bits.push(e.propertyId
-      ? `<span>About <a href="property-details.html?id=${Number(e.propertyId)}" target="_blank" rel="noopener">${label}</a></span>`
+      ? `<span>About <a href="../property-details.html?id=${Number(e.propertyId)}" target="_blank" rel="noopener">${label}</a></span>`
       : `<span>About <b>${label}</b></span>`);
   }
   if (e.source === "property" && e.propertyId && enqCountFor(e.propertyId) > 1) {
@@ -1034,3 +1036,84 @@ $(".mainnav").addEventListener("click", (ev) => {
   const b = ev.target.closest("[data-view]");
   if (b) showView(b.dataset.view);
 });
+
+/* ==========================================================
+   Install the admin as an app (only after you sign in)
+   Nothing is offered on the sign-in screen, and the public website is not installable at all:
+   the admin's own manifest is added to this page only once someone is signed in.
+   ========================================================== */
+const INSTALL_DISMISS_KEY = "ae_admin_install_dismissed";
+let installEvent = null;
+let signedIn = false;
+
+const isStandalone = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function installDismissed() {
+  try { const t = Number(localStorage.getItem(INSTALL_DISMISS_KEY)); return !!t && Date.now() - t < 30 * 24 * 60 * 60 * 1000; }
+  catch (e) { return false; }
+}
+
+function setAdminManifest(on) {
+  let link = document.querySelector('link[rel="manifest"]');
+  if (on && !link) {
+    link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = "manifest.webmanifest";
+    document.head.appendChild(link);
+  } else if (!on && link) {
+    link.remove();
+  }
+}
+
+function registerAdminApp() {
+  if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+  navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {});
+}
+
+function updateInstallBar() {
+  const bar = $("#install-bar");
+  const canPrompt = !!installEvent;
+  const iosHelp = isIOS() && !canPrompt;
+  bar.hidden = !(signedIn && !isStandalone() && !installDismissed() && (canPrompt || iosHelp));
+  $("#install-btn").hidden = !canPrompt;
+  $("#install-text").textContent = canPrompt
+    ? "Install this admin as an app on this device for one-tap access."
+    : "To install this admin as an app: tap the Share button in your browser, then choose \u201cAdd to Home Screen\u201d.";
+  $("#install-dismiss").textContent = canPrompt ? "Not now" : "Got it";
+}
+
+function onSignedIn() {
+  signedIn = true;
+  setAdminManifest(true);      /* this is what makes the browser offer "Install" */
+  registerAdminApp();
+  updateInstallBar();
+}
+function onSignedOut() {
+  signedIn = false;
+  installEvent = null;
+  setAdminManifest(false);
+  updateInstallBar();
+}
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();          /* we show our own button instead of the browser's pop-up */
+  installEvent = e;
+  updateInstallBar();
+});
+window.addEventListener("appinstalled", () => {
+  installEvent = null;
+  updateInstallBar();
+  toast("App installed");
+});
+$("#install-btn").addEventListener("click", async () => {
+  if (!installEvent) return;
+  const ev = installEvent;
+  installEvent = null;
+  updateInstallBar();
+  try { await ev.prompt(); await ev.userChoice; } catch (e) { /* the browser closed the prompt */ }
+});
+$("#install-dismiss").addEventListener("click", () => {
+  try { localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now())); } catch (e) {}
+  updateInstallBar();
+});
+

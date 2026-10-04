@@ -114,7 +114,7 @@ function aeUpdateShortlistCount() {
 }
 
 function initShortlistLink() {
-  var href = AE_MAIN_SRC ? new URL("shortlist.html", AE_MAIN_SRC).href : "shortlist.html";
+  var href = AE_MAIN_SRC ? new URL("../shortlist.html", AE_MAIN_SRC).href : "shortlist.html";   /* main.js is in /js/, shortlist.html is in the site root */
   var onPage = /shortlist\.html$/.test(location.pathname);
   var nav = document.querySelector(".header .nav");
   if (nav && !nav.querySelector(".nav-shortlist")) {
@@ -1036,7 +1036,7 @@ setInterval(aeRenderOpenStatus, 5 * 60 * 1000);
    ========================================================== */
 var AE_BASE = (function () {
   var s = document.currentScript && document.currentScript.src;
-  return s ? s.replace(/main\.js[^\/]*$/, "") : "";
+  return s ? s.replace(/js\/main\.js[^\/]*$/, "") : "";   /* main.js lives in /js/, the site root is one level up */
 })();
 
 function aeAddFormPrivacy() {
@@ -1073,7 +1073,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* ==========================================================
-   Installable app: registers sw.js (https only). Pages still need the internet for listings;
+   Faster repeat visits: registers sw.js (https only). The public website is deliberately NOT an installable
+   app (no manifest); only the admin (admin/) can be installed. Pages still need the internet for listings;
    the service worker only keeps the shell, fonts and images so repeat visits are quick, and
    shows a friendly offline page when there is no connection.
    ========================================================== */

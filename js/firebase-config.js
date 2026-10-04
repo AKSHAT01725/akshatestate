@@ -2,7 +2,7 @@
  * Akshat Estate - Firebase configuration (shared by the public site and admin.html)
  *
  * These web-app keys are meant to be public; they identify the project, they do not
- * grant access. What protects your data is firestore.rules + Firebase Authentication.
+ * grant access. What protects your data is firebase/firestore.rules + Firebase Authentication.
  * Still, in Google Cloud Console > APIs & Services > Credentials you can restrict this
  * API key to your website's domain(s).
  *

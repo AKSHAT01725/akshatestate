@@ -1,7 +1,7 @@
-@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/poppins-400.woff') format('woff');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/poppins-500.woff') format('woff');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/poppins-600.woff') format('woff');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/poppins-700.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/poppins-400.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('../fonts/poppins-500.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('../fonts/poppins-600.woff') format('woff');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/poppins-700.woff') format('woff');}
 /* Akshat Estate admin: same purple and Poppins as the website, built for quick edits */
 :root {
   --purple: #5b4cdb;
@@ -371,3 +371,17 @@ button, .btn, .icon-btn, .tab, .nav-tab, .seg-btn, .switch { -webkit-tap-highlig
 @media (max-width: 700px) { .ord-btn { width: 34px; height: 34px; } }
 
 .hint { font-size: .8125rem; color: var(--text-muted); margin: .25rem 0 0; }
+
+/* ==========================================================
+   Install-as-app bar (shown only after sign-in, when the browser can install)
+   ========================================================== */
+.install-bar { display: flex; align-items: center; gap: .85rem; flex-wrap: wrap; width: calc(100% - 2.5rem); max-width: calc(1120px - 2.5rem); margin: .75rem auto 0; padding: .7rem 1rem; background: var(--purple-soft); border: 1px solid #d6d1f3; border-radius: var(--radius); }
+.install-icon { width: 40px; height: 40px; border-radius: 10px; flex: none; }
+.install-bar p { flex: 1 1 240px; font-size: .875rem; color: var(--text); line-height: 1.45; margin: 0; }
+.install-actions { display: flex; align-items: center; gap: .9rem; }
+@media (max-width: 700px) {
+  .install-bar { width: calc(100% - 1.8rem); gap: .6rem .75rem; }
+  .install-actions { width: 100%; }
+  .install-actions .btn { flex: 1; min-height: 44px; }
+  .install-actions .link-btn { min-height: 44px; padding: 0 .75rem; }
+}
