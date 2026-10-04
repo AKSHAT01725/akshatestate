@@ -8,6 +8,12 @@
   <title>Admin | Akshat Estate</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="admin.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 </head>
 <body>
 
@@ -85,6 +91,7 @@
             <button type="button" role="tab" class="tab" data-filter="rent"><span class="tab-label">For rent</span> <span class="count" data-count="rent">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="sale"><span class="tab-label">For sale</span> <span class="count" data-count="sale">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="stale"><span class="tab-label">Needs check</span> <span class="count" data-count="stale">0</span></button>
+            <button type="button" role="tab" class="tab" data-filter="rented"><span class="tab-label">Rented</span> <span class="count" data-count="rented">0</span></button>
             <button type="button" role="tab" class="tab" data-filter="hidden"><span class="tab-label">Hidden</span> <span class="count" data-count="hidden">0</span></button>
           </div>
           <label class="search">
@@ -291,6 +298,24 @@
             <input type="checkbox" name="bachelorsAllowed" checked>
             <span>Bachelors allowed</span>
           </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Availability</legend>
+          <div class="grid-2">
+            <label class="field">
+              <span>Status</span>
+              <select name="availability">
+                <option value="available">Available</option>
+                <option value="rented">Rented</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Available from (optional)</span>
+              <input type="date" name="availableFrom">
+            </label>
+          </div>
+          <p class="hint">A rented flat stays on the website with a Rented tag and moves to the end of the list. Add a date if it will be free soon. A date that has passed is ignored.</p>
         </fieldset>
 
         <fieldset>

@@ -409,11 +409,13 @@ function initPropertyDetails() {
           <span class="badge ${badgeClass}">${badgeText}</span>
           <span class="badge badge-verified-listing">Verified Listing</span>
           <span class="badge badge-type">${typeLabel}</span>
+          ${isRented(property) ? '<span class="badge badge-rented">Rented</span>' : ""}
         </div>
         <h1 class="detail-title">${property.title}</h1>
         <div class="detail-loc"><i class="fas fa-map-marker-alt"></i> ${property.location}, ${property.city}</div>
         <div class="detail-price">${property.priceDisplay}</div>
         ${typeof freshnessHTML === "function" ? freshnessHTML(property) : ""}
+        ${isRented(property) ? '<p class="rented-note">This one is rented right now. Message us on WhatsApp and we will suggest similar flats that are available.</p>' : ""}
         <div class="specs-card">
           ${renderSpecItems(getPropertyDetailRows(property))}
         </div>
@@ -424,6 +426,11 @@ function initPropertyDetails() {
         <div class="detail-section">
           <h3>Nearby Landmarks</h3>
           <p class="nearby-landmarks">${property.location}, Ahmedabad — contact us for exact address and site visit.</p>
+        </div>
+        <div class="detail-section">
+          <h3>Location</h3>
+          <div class="map-embed"><iframe title="Map of ${escapeAttr(property.location)}, Ahmedabad" src="https://www.google.com/maps?q=${encodeURIComponent(property.location + ", Ahmedabad, Gujarat")}&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+          <p class="map-note">The map shows the area only. We share the exact address when you book a visit. <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.location + ", Ahmedabad, Gujarat")}" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></p>
         </div>
       </div>
       <div>
@@ -440,6 +447,7 @@ function initPropertyDetails() {
           <p>Message us on WhatsApp and we will share details and arrange a visit.</p>
           <a href="#" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${escapeAttr(waMessage)}" class="btn btn-whatsapp btn-block btn-lg"><i class="fab fa-whatsapp"></i> WhatsApp About This Property</a>
           <a href="tel:+918141293057" class="btn btn-secondary btn-block" style="margin-top:0.5rem"><i class="fas fa-phone"></i> Call +91 81412 93057</a>
+          <p class="open-status" data-open-status hidden></p>
           <button type="button" class="btn btn-primary btn-block" data-visit-open data-visit-id="${property.id}" data-visit-title="${escapeAttr(property.title)}" style="margin-top:0.5rem"><i class="far fa-calendar-check"></i> Book a visit</button>
           <button type="button" class="btn btn-outline btn-block property-favorite detail-save" data-id="${property.id}" style="margin-top:0.5rem"><i class="far fa-heart"></i> <span>Save to shortlist</span></button>
           <div class="sidebar-divider"><span>or send an inquiry</span></div>
@@ -458,6 +466,8 @@ function initPropertyDetails() {
       <div class="properties-grid" id="similar-properties"></div>
     </div>
   `;
+
+  if (typeof aeRenderOpenStatus === "function") aeRenderOpenStatus();
 
   container.querySelectorAll(".gallery-thumbs img").forEach(function (thumb) {
     thumb.addEventListener("click", function () {
@@ -510,9 +520,9 @@ function aeDetailSeo(property) {
     if (!meta) { meta = document.createElement("meta"); meta.name = "description"; document.head.appendChild(meta); }
     meta.content = desc;
     const offer = property.status === "rent"
-      ? { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: "https://schema.org/InStock",
+      ? { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: isRented(property) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
           priceSpecification: { "@type": "UnitPriceSpecification", price: property.price, priceCurrency: "INR", unitText: "MONTH" } }
-      : { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: "https://schema.org/InStock" };
+      : { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: isRented(property) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock" };
     const ld = {
       "@context": "https://schema.org", "@type": "RealEstateListing",
       name: property.title, url: url, description: desc,

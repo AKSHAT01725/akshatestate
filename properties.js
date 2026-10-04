@@ -440,7 +440,9 @@ function filterProperties(filters) {
     if (isOn(filters.furnishedOnly) && p.furnishing === "unfurnished") return false;
     return true;
   });
-  return sortProperties(list, filters.sort);
+  const sorted = sortProperties(list, filters.sort);
+  /* rented flats stay visible but come after the available ones */
+  return sorted.filter(function (p) { return !isRented(p); }).concat(sorted.filter(isRented));
 }
 
 function isOn(v) { return v === true || v === "1" || v === "on" || v === "true"; }
@@ -474,10 +476,35 @@ function getFreshness(property) {
   }
   return out;
 }
+/* Rented / available-from. availableFrom is a date written YYYY-MM-DD; a date that has passed is ignored. */
+function isRented(p) { return !!p && p.availability === "rented"; }
+function futureAvailableFrom(p) {
+  if (!p || !p.availableFrom) return null;
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p.availableFrom);
+  if (!m) return null;
+  var d = new Date(+m[1], +m[2] - 1, +m[3]), today = new Date(); today.setHours(0, 0, 0, 0);
+  return d > today ? d : null;
+}
+function fmtDay(d) { return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); }
+/* Short text for cards: "" when simply available now */
+function availabilityText(p) {
+  var d = futureAvailableFrom(p);
+  if (isRented(p)) return d ? "Rented, free from " + fmtDay(d) : "Rented";
+  return d ? "Available from " + fmtDay(d) : "";
+}
+/* Value for the detail page row */
+function availabilityDetail(p) {
+  var d = futureAvailableFrom(p);
+  if (isRented(p)) return d ? "Rented (free from " + fmtDay(d) + ")" : "Rented";
+  return d ? "From " + fmtDay(d) : "Available now";
+}
+function rentedClass(p) { return isRented(p) ? " is-rented" : ""; }
+
 function freshnessHTML(property) {
-  var f = getFreshness(property);
-  if (!f.isNew && !f.updated) return "";
-  return '<div class="fresh-line">' + (f.isNew ? '<span class="fresh-new">New</span>' : "") + (f.updated ? '<span class="fresh-upd"><i class="far fa-clock" aria-hidden="true"></i> ' + f.updated + "</span>" : "") + "</div>";
+  if (isRented(property)) return '<div class="fresh-line"><span class="fresh-rented">' + availabilityText(property) + "</span></div>";
+  var f = getFreshness(property), a = availabilityText(property);
+  if (!f.isNew && !f.updated && !a) return "";
+  return '<div class="fresh-line">' + (a ? '<span class="fresh-avail">' + a + "</span>" : "") + (f.isNew ? '<span class="fresh-new">New</span>' : "") + (f.updated ? '<span class="fresh-upd"><i class="far fa-clock" aria-hidden="true"></i> ' + f.updated + "</span>" : "") + "</div>";
 }
 
 function renderPropertyCard(property) {
@@ -488,7 +515,7 @@ function renderPropertyCard(property) {
   const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
   return `
-    <article class="property-card" data-id="${property.id}">
+    <article class="property-card${rentedClass(property)}" data-id="${property.id}">
       <div class="property-image">
         <img src="${property.image}" alt="${property.title} in ${property.location}, Ahmedabad" class="img-blur" loading="lazy" width="400" height="220">
         <span class="property-badge badge ${badgeClass}">${badgeText}</span>
@@ -536,7 +563,7 @@ function renderPropertyHCard(property) {
   const typeLabel = property.type === "apartment" ? "Flat / Apartment" : (property.type === "shop" ? "Shop / Godown" : (property.type.charAt(0).toUpperCase() + property.type.slice(1)));
 
   return `
-    <article class="property-hcard" data-id="${property.id}">
+    <article class="property-hcard${rentedClass(property)}" data-id="${property.id}">
       <div class="property-hcard-img">
         <img src="${property.image}" alt="${property.title}" class="img-blur" loading="lazy">
         <span class="property-badge badge ${badgeClass}" style="position:absolute;top:0.75rem;left:0.75rem;z-index:3">${badgeText}</span>
@@ -596,12 +623,12 @@ function getFeaturedRentals() {
   /* Live listings (admin panel) carry a homeFeatured flag; use it when present */
   if (PROPERTIES.some(function (p) { return typeof p.homeFeatured === "boolean"; })) {
     return PROPERTIES
-      .filter(function (p) { return p.homeFeatured === true && p.status === "rent"; })
+      .filter(function (p) { return p.homeFeatured === true && p.status === "rent" && !isRented(p); })
       .sort(function (a, b) { return (a.homeRank || 999) - (b.homeRank || 999) || a.id - b.id; });
   }
   return FEATURED_RENTAL_IDS
     .map(function (id) { return getPropertyById(id); })
-    .filter(function (p) { return p && p.status === "rent"; });
+    .filter(function (p) { return p && p.status === "rent" && !isRented(p); });
 }
 
 function getPropertyLabel(property) {
@@ -677,6 +704,7 @@ function getPropertyDetailRows(property) {
   const isHome = property.type === "apartment";
   const rows = [["Type", formatPropertyType(property)]];
   if (getBhkText(property)) rows.push(["BHK", getBhkText(property)]);
+  rows.push(["Availability", availabilityDetail(property)]);
   rows.push(["Super Built-up Area", property.area + " " + unit]);
   if (property.bathrooms > 0) rows.push(["Bathrooms", property.bathrooms]);
   rows.push(["Furnishing", formatFurnishing(property.furnishing)]);
@@ -712,7 +740,7 @@ function renderRentalCard(property) {
   }).join("");
 
   return `
-    <article class="rental-card" data-id="${property.id}">
+    <article class="rental-card${rentedClass(property)}" data-id="${property.id}">
       <div class="rental-card-img">
         <a class="rental-card-link" href="${detailUrl}" tabindex="-1" aria-hidden="true">
           <img src="${property.image}" alt="${escapeAttr(property.title)}" class="img-blur" loading="lazy" width="400" height="280" draggable="false">
@@ -799,6 +827,8 @@ window.propertiesReady = (function () {
       if (d[k] !== undefined && d[k] !== null && d[k] !== "") p[k] = num(d[k], 0);
     });
     if (typeof d.bachelorsAllowed === "boolean") p.bachelorsAllowed = d.bachelorsAllowed;
+    p.availability = d.availability === "rented" ? "rented" : "available";
+    if (typeof d.availableFrom === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.availableFrom)) p.availableFrom = d.availableFrom;
     ["listedAt", "confirmedAt"].forEach(function (k) {
       var v = d[k], ms = null;
       if (v && typeof v.toMillis === "function") ms = v.toMillis();
@@ -914,7 +944,7 @@ function getAreaRentStats(area) {
     { label: "3 BHK", test: function (p) { return p.bedrooms === 3; } }
   ];
   const rentals = PROPERTIES.filter(function (p) {
-    return p.status === "rent" && p.type === "apartment" && p.price > 0 &&
+    return p.status === "rent" && p.type === "apartment" && p.price > 0 && !isRented(p) &&
       (key === "ahmedabad" || String(p.location).toLowerCase() === key);
   });
   const stats = rows.map(function (r) {

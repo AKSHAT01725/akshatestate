@@ -160,5 +160,25 @@ Property enquiries include the full listing details for every listing, including
 
 - New listings get a **listed** date. Public cards show a green **New** tag for 7 days.
 - Saving a listing, or tapping **Still available** on its row, sets the **checked** date. Public cards show "Updated today / N days ago" for up to 30 days. Older dates are hidden, so a stale date never appears on the site.
-- Listings not checked in 30 days (or never) show an amber note and count under the **Needs check** tab. Tap **Still available**, or **Rented, hide it** to take it off the site (turn **Live** back on if it comes free).
+- Listings not checked in 30 days (or never) show an amber note and count under the **Needs check** tab. Tap **Still available**, or **Mark rented** to keep it on the site with a Rented tag.
 - Listings imported before this update have no dates, so they show nothing publicly and appear under **Needs check** until you tap Still available once.
+
+### Rented status and homepage order (admin)
+
+- Each listing has an **Availability** section: **Available** or **Rented**, plus an optional **Available from** date.
+- A rented flat stays on the website with a grey Rented tag, drops to the end of the lists, leaves the homepage Featured Rentals and the area rent tables, and tells search engines it is out of stock. On the property page, visitors see a note asking them to message you for similar flats.
+- A future "Available from" date shows on the card ("Available from 15 Dec 2026"). A date that has passed is ignored.
+- On each row: **Mark rented** / **Mark available**. The **Rented** tab lists them.
+- **Homepage order:** next to the Homepage switch, each featured rental has up and down arrows and a position number. The order matches the website. Rented or hidden flats are left out of the numbering.
+
+### Map, price guide, installable app, privacy
+
+- **Map:** every property page shows a Google Map of the area only (not the exact address) with an "Open in Google Maps" link. The link text says the exact address is shared when a visit is booked.
+- **Open now / Closed now:** hidden until you set your hours. In `main.js`, change `var AE_HOURS = null;` to for example `var AE_HOURS = { days: [1, 2, 3, 4, 5, 6], open: "10:00", close: "19:00" };` (0 = Sunday). It shows on property pages, the home page contact card and the contact page, using India time.
+- **Rent price guide:** `rent-price-guide-ahmedabad.html` builds its tables from your live listings (rented flats are left out). It has no hand-typed prices, so it stays correct by itself.
+- **Installable app:** `manifest.webmanifest`, `sw.js`, `offline.html` and the icons (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`). It works on https only. To clear every visitor's saved copy after a big change, change `VERSION` in `sw.js`. The admin page is never saved.
+- **Privacy:** `privacy-policy.html` now names Firebase, EmailJS, Google Analytics, Google Maps and what is saved in the browser. A one-line privacy note is added under every enquiry form, and a small notice with an OK button appears once per visitor. Please read the policy and the notice once and change anything that is not how you work.
+
+### Favicons
+
+Every page declares the same icon set (`favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `android-chrome-192x192.png`, `android-chrome-512x512.png` and `apple-touch-icon.png`). The links are relative (for example `favicon.ico`, or `../favicon.ico` for pages inside `blog/` and `properties/`), so they work from the domain root, from a subfolder, and when a page is opened as a local file. The files live in the site root, and the "Add to Home Screen" icon in `manifest.webmanifest` uses the same artwork. To change the icon later, replace those six files and keep the same names. When you add a new page, copy the six lines from an existing page in the same folder.

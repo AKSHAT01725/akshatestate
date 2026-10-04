@@ -183,14 +183,15 @@ function render() {
     rent: list.filter((p) => p.status === "rent").length,
     sale: list.filter((p) => p.status === "sale").length,
     hidden: list.filter((p) => !p.active).length,
-    stale: list.filter(needsCheck).length
+    stale: list.filter(needsCheck).length,
+    rented: list.filter(isRentedP).length
   };
   $$("[data-count]").forEach((el) => { el.textContent = counts[el.dataset.count]; });
 
   const live = list.length - counts.hidden;
   if (state.loaded) {
     $("#summary").textContent = list.length
-      ? `${live} live on the website${counts.hidden ? `, ${counts.hidden} hidden` : ""}. ${counts.rent} for rent, ${counts.sale} for sale.${counts.stale ? ` ${counts.stale} need${counts.stale === 1 ? "s" : ""} a quick check.` : ""}`
+      ? `${live} live on the website${counts.hidden ? `, ${counts.hidden} hidden` : ""}. ${counts.rent} for rent, ${counts.sale} for sale.${counts.rented ? ` ${counts.rented} rented.` : ""}${counts.stale ? ` ${counts.stale} need${counts.stale === 1 ? "s" : ""} a quick check.` : ""}`
       : "No listings yet.";
   }
 
@@ -208,6 +209,7 @@ function render() {
       if (state.filter === "sale") return p.status === "sale";
       if (state.filter === "hidden") return !p.active;
       if (state.filter === "stale") return needsCheck(p);
+      if (state.filter === "rented") return isRentedP(p);
       return true;
     })
     .filter((p) => !q || [p.title, p.location, p.city, String(p.id), p.priceDisplay].join(" ").toLowerCase().includes(q))
@@ -229,8 +231,9 @@ function render() {
 /* Reconfirm: a live listing counts as "checked" when it was saved or ticked within the last 30 days */
 const CHECK_DAYS = 30;
 function checkedMs(p) { return toMs(p.confirmedAt); }
+const isRentedP = (p) => p.availability === "rented";
 function needsCheck(p) {
-  if (!p.active) return false;
+  if (!p.active || isRentedP(p)) return false;
   const ms = checkedMs(p);
   return !ms || Date.now() - ms > CHECK_DAYS * 86400000;
 }
@@ -239,6 +242,17 @@ function checkedText(p) {
   if (!ms) return "Not checked yet";
   const d = Math.floor((Date.now() - ms) / 86400000);
   return d <= 0 ? "Checked today" : d === 1 ? "Checked yesterday" : `Checked ${d} days ago`;
+}
+
+function homeOrderHTML(p) {
+  const list = homeList();
+  const i = list.findIndex((x) => x.id === p.id);
+  if (i < 0) return "";
+  return `<span class="home-order" title="Order on the homepage">
+        <button type="button" class="ord-btn" data-act="up" aria-label="Show earlier on the homepage" ${i === 0 ? "disabled" : ""}><i class="fas fa-chevron-up"></i></button>
+        <span class="ord-num">#${i + 1}</span>
+        <button type="button" class="ord-btn" data-act="down" aria-label="Show later on the homepage" ${i === list.length - 1 ? "disabled" : ""}><i class="fas fa-chevron-down"></i></button>
+      </span>`;
 }
 
 function enqCountFor(id) { return (state.enqByProp && state.enqByProp[id]) || 0; }
@@ -260,11 +274,14 @@ function rowHTML(p) {
         <span>ID ${p.id}</span>
         ${enqCountFor(p.id) ? `<span><button type="button" class="meta-link" data-act="enqs" title="Show the enquiries for this property">${enqCountFor(p.id)} enquir${enqCountFor(p.id) === 1 ? "y" : "ies"}</button></span>` : ""}
       </div>
-      ${p.active ? `<div class="row-check ${needsCheck(p) ? "is-stale" : ""}">
-        <span class="chk">${esc(checkedText(p))}</span>
-        <button type="button" class="meta-link" data-act="confirm" title="Tap if this is still available">Still available</button>
-        ${needsCheck(p) ? `<button type="button" class="meta-link warn" data-act="rented" title="Hide it from the website (you can turn Live back on)">Rented, hide it</button>` : ""}
-      </div>` : ""}
+      ${p.active ? (isRentedP(p)
+        ? `<div class="row-check"><span class="chk">Rented${p.availableFrom ? ` &middot; free from ${esc(p.availableFrom)}` : ""}</span>
+            <button type="button" class="meta-link" data-act="available" title="It is free again">Mark available</button></div>`
+        : `<div class="row-check ${needsCheck(p) ? "is-stale" : ""}">
+            <span class="chk">${esc(checkedText(p))}${p.availableFrom ? ` &middot; from ${esc(p.availableFrom)}` : ""}</span>
+            <button type="button" class="meta-link" data-act="confirm" title="Tap if this is still available">Still available</button>
+            <button type="button" class="meta-link ${needsCheck(p) ? "warn" : ""}" data-act="rented" title="Keep it on the website with a Rented tag">Mark rented</button>
+          </div>`) : ""}
     </div>
     <span class="chip ${isRent ? "rent" : "sale"}">${isRent ? "For rent" : "For sale"}</span>
     <div class="toggles">
@@ -274,6 +291,7 @@ function rowHTML(p) {
       <label class="switch ${isRent ? "" : "is-off"}" title="${isRent ? "Show in Featured Rentals on the homepage" : "Only rentals can be featured on the homepage"}">
         <input type="checkbox" data-act="home" ${p.homeFeatured && isRent ? "checked" : ""} ${isRent ? "" : "disabled"}><span class="track"></span>Homepage
       </label>
+      ${homeOrderHTML(p)}
     </div>
     <div class="row-actions">
       <button type="button" class="btn btn-ghost btn-sm" data-act="edit" aria-label="Edit ${esc(p.title)}">Edit</button>
@@ -304,19 +322,53 @@ $("#rows").addEventListener("click", (e) => {
   if (btn.dataset.act === "copy") openDrawer(p, true);
   if (btn.dataset.act === "delete") askDelete(p);
   if (btn.dataset.act === "enqs") showEnquiriesFor(p);
-  if (btn.dataset.act === "confirm") markChecked(p, false);
-  if (btn.dataset.act === "rented") markChecked(p, true);
+  if (btn.dataset.act === "confirm") setAvailability(p, "confirm");
+  if (btn.dataset.act === "rented") setAvailability(p, "rented");
+  if (btn.dataset.act === "available") setAvailability(p, "available");
+  if (btn.dataset.act === "up") moveHome(p, -1);
+  if (btn.dataset.act === "down") moveHome(p, 1);
 });
 
-async function markChecked(p, hide) {
-  const patch = hide
-    ? { active: false, updatedAt: F.serverTimestamp() }
-    : { confirmedAt: F.serverTimestamp(), updatedAt: F.serverTimestamp() };
+async function setAvailability(p, what) {
+  const patch = { updatedAt: F.serverTimestamp() };
+  const local = {};
+  if (what === "rented") { patch.availability = "rented"; local.availability = "rented"; }
+  else {
+    patch.confirmedAt = F.serverTimestamp(); local.confirmedAt = { toMillis: () => Date.now() };
+    if (what === "available") { patch.availability = "available"; local.availability = "available"; }
+  }
   try {
     await F.updateDoc(ref(p.id), patch);
-    if (hide) p.active = false; else p.confirmedAt = { toMillis: () => Date.now() };
+    Object.assign(p, local);
     clearSiteCache();
-    toast(hide ? "Hidden from the website. Turn Live back on if it comes free again." : "Marked as still available");
+    toast(what === "rented" ? "Marked as rented. It stays on the website with a Rented tag." : what === "available" ? "Marked as available again" : "Marked as still available");
+  } catch (err) {
+    console.error(err);
+    toast(friendlyError(err), true);
+  }
+  render();
+}
+
+/* ---------- Homepage order ---------- */
+/* Same order the website uses: lowest number first, rented or hidden flats are left out */
+function homeList() {
+  return state.list
+    .filter((p) => p.homeFeatured && p.status === "rent" && p.active && !isRentedP(p))
+    .sort((a, b) => (a.homeRank || 999) - (b.homeRank || 999) || a.id - b.id);
+}
+async function moveHome(p, dir) {
+  const list = homeList();
+  const i = list.findIndex((x) => x.id === p.id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  const changed = [];
+  list.forEach((x, k) => { if (x.homeRank !== k + 1) changed.push([x, k + 1]); });
+  try {
+    await Promise.all(changed.map(([x, rank]) => F.updateDoc(ref(x.id), { homeRank: rank, updatedAt: F.serverTimestamp() })));
+    changed.forEach(([x, rank]) => { x.homeRank = rank; });
+    clearSiteCache();
+    toast("Homepage order updated");
   } catch (err) {
     console.error(err);
     toast(friendlyError(err), true);
@@ -414,6 +466,8 @@ function fillForm(p, asCopy) {
   form.floorNo.value = src.floorNo ?? 1;
   form.totalFloors.value = src.totalFloors ?? 2;
   form.bachelorsAllowed.checked = src.bachelorsAllowed !== false;
+  form.availability.value = asCopy ? "available" : (src.availability === "rented" ? "rented" : "available");
+  form.availableFrom.value = asCopy ? "" : (src.availableFrom || "");
   form.active.checked = asCopy ? true : src.active !== false;
   form.homeFeatured.checked = asCopy ? false : src.homeFeatured === true;
   amenities = [...(src.amenities || [])];
@@ -550,6 +604,8 @@ function readForm() {
     carParking: Math.max(0, num(form.carParking.value) || 0),
     floorNo: Math.max(0, num(form.floorNo.value) || 0),
     totalFloors: Math.max(1, num(form.totalFloors.value) || 1),
+    availability: form.availability.value === "rented" ? "rented" : "available",
+    availableFrom: /^\d{4}-\d{2}-\d{2}$/.test(form.availableFrom.value) ? form.availableFrom.value : "",
     active: form.active.checked,
     homeFeatured: status === "rent" && form.homeFeatured.checked
   };

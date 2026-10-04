@@ -977,3 +977,111 @@ document.addEventListener("click", function (e) {
   } catch (err) {}
   window.location.href = a.getAttribute("href") || "properties.html";
 });
+
+
+/* ==========================================================
+   Open now / Closed now
+   Fill in AE_HOURS to switch it on. days: 0 = Sunday ... 6 = Saturday. Times are India time.
+   Example (Mon to Sat, 10 am to 7 pm):
+     var AE_HOURS = { days: [1, 2, 3, 4, 5, 6], open: "10:00", close: "19:00" };
+   Leave it as null and the "Open now" line stays hidden.
+   Any element with the data-open-status attribute shows the line.
+   ========================================================== */
+var AE_HOURS = null;
+
+function aeOpenInfo(now) {
+  if (!AE_HOURS || !AE_HOURS.days || !AE_HOURS.days.length) return null;
+  var map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  var names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Kolkata", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now || new Date());
+  var day = 0, mins = 0;
+  parts.forEach(function (p) {
+    if (p.type === "weekday") day = map[p.value];
+    if (p.type === "hour") mins += parseInt(p.value, 10) * 60;
+    if (p.type === "minute") mins += parseInt(p.value, 10);
+  });
+  function toMin(t) { var a = String(t).split(":"); return parseInt(a[0], 10) * 60 + (parseInt(a[1], 10) || 0); }
+  function label(m) {
+    var h = Math.floor(m / 60), mm = m % 60, ap = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return h + (mm ? ":" + (mm < 10 ? "0" : "") + mm : "") + " " + ap;
+  }
+  var o = toMin(AE_HOURS.open), c = toMin(AE_HOURS.close);
+  if (AE_HOURS.days.indexOf(day) > -1 && mins >= o && mins < c) return { open: true, text: "Open now \u00b7 closes " + label(c) };
+  for (var i = 0; i < 8; i++) {
+    var d = (day + i) % 7;
+    if (AE_HOURS.days.indexOf(d) > -1 && (i > 0 || mins < o)) {
+      var when = i === 0 ? "today" : i === 1 ? "tomorrow" : names[d];
+      return { open: false, text: "Closed now \u00b7 opens " + when + " " + label(o) };
+    }
+  }
+  return null;
+}
+function aeRenderOpenStatus() {
+  var info = aeOpenInfo();
+  document.querySelectorAll("[data-open-status]").forEach(function (el) {
+    if (!info) { el.hidden = true; return; }
+    el.hidden = false;
+    el.className = "open-status " + (info.open ? "is-open" : "is-closed");
+    el.textContent = info.text;
+  });
+}
+document.addEventListener("DOMContentLoaded", aeRenderOpenStatus);
+setInterval(aeRenderOpenStatus, 5 * 60 * 1000);
+
+
+/* ==========================================================
+   Privacy: a short line under every lead form, and a one-time notice about analytics and
+   what the site saves in the browser. Links go to privacy-policy.html.
+   ========================================================== */
+var AE_BASE = (function () {
+  var s = document.currentScript && document.currentScript.src;
+  return s ? s.replace(/main\.js[^\/]*$/, "") : "";
+})();
+
+function aeAddFormPrivacy() {
+  AE_LEAD_FORM_IDS.forEach(function (id) {
+    document.querySelectorAll("form#" + id).forEach(function (form) {
+      if (form.querySelector(".form-privacy")) return;
+      var btn = form.querySelector('button[type="submit"], button:not([type])');
+      var p = document.createElement("p");
+      p.className = "form-privacy";
+      p.innerHTML = 'We use your details only to reply to this enquiry. <a href="' + AE_BASE + 'privacy-policy.html">Privacy Policy</a>';
+      if (btn && btn.parentNode === form) form.insertBefore(p, btn);
+      else form.appendChild(p);
+    });
+  });
+}
+document.addEventListener("DOMContentLoaded", function () {
+  aeAddFormPrivacy();
+  /* forms drawn later (property page, visit pop-up) */
+  var t = 0;
+  new MutationObserver(function () { clearTimeout(t); t = setTimeout(aeAddFormPrivacy, 150); }).observe(document.body, { childList: true, subtree: true });
+
+  var seen = false;
+  try { seen = localStorage.getItem("ae_notice_ok") === "1"; } catch (e) {}
+  if (seen || document.getElementById("ae-notice") || /privacy-policy\.html$/.test(location.pathname)) return;
+  var n = document.createElement("div");
+  n.id = "ae-notice"; n.className = "ae-notice"; n.setAttribute("role", "region"); n.setAttribute("aria-label", "Website notice");
+  n.innerHTML = '<p>This site uses analytics, and saves your shortlist and filters in your browser. <a href="' + AE_BASE + 'privacy-policy.html">Read how</a></p><button type="button" class="btn btn-primary btn-sm">OK</button>';
+  n.querySelector("button").addEventListener("click", function () {
+    try { localStorage.setItem("ae_notice_ok", "1"); } catch (e) {}
+    n.remove();
+  });
+  document.body.appendChild(n);
+});
+
+
+/* ==========================================================
+   Installable app: registers sw.js (https only). Pages still need the internet for listings;
+   the service worker only keeps the shell, fonts and images so repeat visits are quick, and
+   shows a friendly offline page when there is no connection.
+   ========================================================== */
+(function () {
+  if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+  var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if (location.protocol !== "https:" && !isLocal) return;
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register(AE_BASE + "sw.js").catch(function () {});
+  });
+})();

@@ -361,3 +361,13 @@ button, .btn, .icon-btn, .tab, .nav-tab, .seg-btn, .switch { -webkit-tap-highlig
 .row-check { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem .9rem; font-size: .75rem; color: var(--text-muted); margin-top: .25rem; }
 .row-check.is-stale .chk { color: #b45309; font-weight: 600; }
 .row-check .meta-link.warn { color: #b45309; }
+
+/* Homepage order arrows */
+.home-order { display: inline-flex; align-items: center; gap: .2rem; }
+.ord-btn { width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--border); background: #fff; color: var(--text-light); font-size: .7rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.ord-btn:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); }
+.ord-btn:disabled { opacity: .35; cursor: default; }
+.ord-num { font-size: .75rem; font-weight: 600; color: var(--text-muted); min-width: 1.6rem; text-align: center; }
+@media (max-width: 700px) { .ord-btn { width: 34px; height: 34px; } }
+
+.hint { font-size: .8125rem; color: var(--text-muted); margin: .25rem 0 0; }
