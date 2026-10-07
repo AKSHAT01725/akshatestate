@@ -89,7 +89,7 @@ p { color: var(--text-light); margin-bottom: 0.75rem; }
 .mobile-overlay { position: fixed; inset: 0; background: rgba(26, 21, 64, 0.4); opacity: 0; visibility: hidden; transition: all var(--transition); z-index: 998; }
 .mobile-overlay.active { opacity: 1; visibility: visible; }
 .hero { position: relative; min-height: 85vh; display: flex; align-items: center; padding-top: var(--header-h); background: linear-gradient(135deg, var(--navy) 0%, #2a2460 50%, var(--purple-dark) 100%); overflow: hidden; }
-.hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(26, 21, 64, 0.9) 0%, rgba(91, 76, 219, 0.75) 100%), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80') center/cover no-repeat; }
+.hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(26, 21, 64, 0.72) 0%, rgba(60, 48, 150, 0.52) 100%), url('../images/hero.webp') center/cover no-repeat; background-color: #2a2460; }
 .hero-content { position: relative; z-index: 2; padding: 3.5rem 0 4.5rem; text-align: center; color: var(--white); }
 .hero-content h1 { color: var(--white); margin-bottom: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; }
 .hero-content .hero-sub { font-size: clamp(0.9rem, 2vw, 1.05rem); color: rgba(255, 255, 255, 0.85); max-width: 480px; margin: 0 auto 2rem; }

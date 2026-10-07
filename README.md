@@ -248,3 +248,5 @@ The **Insights** tab turns your enquiries into numbers, for the last 30 days, 90
 ## property-details.html without a property
 
 `property-details.html?id=N` shows listing N. With no id, or an id that no longer exists, `renderPropertyPicker` in `js/search.js` shows a "Find Your Home" view instead of an error: quick filter chips (All homes, 1 RK, 1 BHK, Shop / Godown, Gurukul, Memnagar, Bachelors allowed), the current rental listings as cards, and a WhatsApp / call box. Styles are the `.picker-*` rules at the end of `css/style.css`. If you add a new area or listing type, add a chip to the `chips` list at the top of that function.
+
+The homepage hero picture is `images/hero.webp` (set in `.hero-bg` in `css/style.css`, with a dark purple overlay so the white text stays readable). To change it, replace that file; to make the picture brighter or darker, change the two `rgba(...)` overlay values on the `.hero-bg` line.
