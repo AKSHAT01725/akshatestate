@@ -16,6 +16,7 @@ js/                                                 main.js, search.js, properti
 images/                                             logo.png, og-image.png, icons/ (favicons) and admin/ (admin app icons)
 fonts/                                              Poppins (self-hosted)
 firebase/                                           firestore.rules (paste into the Firebase console; not used by the site)
+tools/                                              add-structured-data.js (run with Node after changing listings; see Structured data)
 favicon.ico, apple-touch-icon.png                   stay in the root (browsers look for them there)
 sw.js, robots.txt, sitemap.xml, 404.html, offline.html, .nojekyll               must stay in the root
 ```
@@ -222,3 +223,28 @@ Only the admin can be installed, and only after you sign in. The sign-in screen 
 - **How it is separated:** the admin has its own service worker (`admin/sw.js`, scope `/admin/` only), network first so you always get the latest admin; it never touches Firebase, EmailJS or the public pages. On iPhones the installed app keeps its own sign-in, so you sign in once inside it.
 - **Signing out** removes the install bar and the manifest from the page. To remove the app itself, uninstall it like any other app.
 
+### Insights tab (admin)
+
+The **Insights** tab turns your enquiries into numbers, for the last 30 days, 90 days or all time: how many came in, how many are still waiting for a reply, contacted and closed; enquiries per week for the last 12 weeks; the listings people ask about most (with a "View" button that opens those enquiries); where enquiries come from (property, visit request, WhatsApp, contact form, owners); how many reach Closed; and live listings that nobody has asked about (a hint to refresh their photos or price). It uses the enquiries already loaded for the Enquiries screen (your latest 300), so it adds no Firebase reads. It does not show reply times, because the admin does not record when an enquiry changed status.
+
+### Restore from a backup file (admin)
+
+**Download backup** saves all listings as a JSON file. **Restore backup** reads such a file and shows what it would do before anything is written: how many listings are new, which ones would change (and which fields), how many are already the same, and any entries it will skip because they are incomplete. By default it only adds and updates; a listing that is in Firebase but not in the file is left alone unless you tick "Also remove...". A fresh backup of the current listings is downloaded first (untick to skip). Restore also accepts older backup files, including dates written the old way.
+
+### Structured data (for Google)
+
+- **Business:** `index.html` and `contact.html` describe Akshat Estate as a `RealEstateAgent` with address (Gurukul Rd, Memnagar, 380052), phone, email, logo, Instagram, the areas you serve, and a map position. The map position was read from the Google Map on the contact page; check it is your office pin. Opening hours are deliberately not included, because they are not on the site yet.
+- **Each listing:** every page in `properties/` has `RealEstateListing` data (price, rent per month, bedrooms, bathrooms, floor area, furnishing, amenities, photos, area) and a breadcrumb trail. The live property page (`property-details.html`) writes the same data from Firebase and also says whether the listing is available or Rented. The static pages do **not** say available or rented, because they are not updated from the admin. Floor number, parking and "bachelors allowed" are left out until those values are confirmed.
+- **Keeping it current:** after you regenerate the pages in `properties/`, or change a listing in `js/properties.js`, run `node tools/add-structured-data.js` from the site root (needs Node 16 or newer, nothing to install). It rewrites the markup, can be run again safely, and warns if a page's visible text and the data disagree.
+- **Checking it:** paste a page address into Google's Rich Results Test or the Schema Markup Validator. Google does not show a special result for property listings, so this helps search engines understand the pages rather than adding stars or prices to search results.
+
+
+## Images
+
+- `images/areas/` has one photo per area page and homepage area card: `gurukul.webp`, `memnagar.webp`, `sola.webp`, `ahmedabad.webp`. The area pages show it behind the page title (`.page-header.has-photo` in `css/style.css`).
+- `images/blog/` has one image per blog article, named after the article (for example `blog/gurukul-vs-memnagar-rent.html` uses `images/blog/gurukul-vs-memnagar-rent.webp`). It is used at the top of the article, on the blog list page, on the homepage guide cards and in the article's structured data. To change one, replace the file with the same name. The sharing preview (`og:image`) still uses `images/og-image.png`, because some apps do not show WebP previews.
+- Property photos are still placeholders until you add real ones.
+
+## property-details.html without a property
+
+`property-details.html?id=N` shows listing N. With no id, or an id that no longer exists, `renderPropertyPicker` in `js/search.js` shows a "Find Your Home" view instead of an error: quick filter chips (All homes, 1 RK, 1 BHK, Shop / Godown, Gurukul, Memnagar, Bachelors allowed), the current rental listings as cards, and a WhatsApp / call box. Styles are the `.picker-*` rules at the end of `css/style.css`. If you add a new area or listing type, add a chip to the `chips` list at the top of that function.

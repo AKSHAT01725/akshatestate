@@ -17,24 +17,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "RealEstateAgent",
-    "name": "Akshat Estate",
-    "description": "Rental homes and real estate consultancy in Ahmedabad: flats for rent in Gurukul, Memnagar and Sola, plus buying and selling assistance. 20+ years of local experience.",
-    "url": "https://akshatestate.com/",
-    "telephone": "+91-8141293057",
-    "email": "akshatestate.ahd@gmail.com",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Ahmedabad",
-      "addressRegion": "Gujarat",
-      "addressCountry": "IN"
-    },
-    "areaServed": { "@type": "City", "name": "Ahmedabad" }
-  }
-  </script>
-  <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -131,6 +113,60 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="images/icons/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <script type="application/ld+json" id="ae-business-ld">
+  {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "@id": "https://akshatestate.com/#business",
+    "name": "Akshat Estate",
+    "description": "Rental homes and real estate consultancy in Ahmedabad: flats for rent in Gurukul, Memnagar and Sola, plus buying and selling assistance. 20+ years of local experience.",
+    "url": "https://akshatestate.com/",
+    "logo": "https://akshatestate.com/images/logo.png",
+    "image": "https://akshatestate.com/images/og-image.png",
+    "telephone": "+91-8141293057",
+    "email": "akshatestate.ahd@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Gurukul Rd, Memnagar",
+      "addressLocality": "Ahmedabad",
+      "addressRegion": "Gujarat",
+      "postalCode": "380052",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 23.0525066,
+      "longitude": 72.5330279
+    },
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Ahmedabad"
+      },
+      {
+        "@type": "Place",
+        "name": "Gurukul, Ahmedabad"
+      },
+      {
+        "@type": "Place",
+        "name": "Memnagar, Ahmedabad"
+      },
+      {
+        "@type": "Place",
+        "name": "Sola, Ahmedabad"
+      }
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-8141293057",
+      "contactType": "customer service",
+      "areaServed": "IN"
+    },
+    "sameAs": [
+      "https://www.instagram.com/akshatestate/"
+    ]
+  }
+  </script>
 </head>
 <body>
   <header class="header">
@@ -269,19 +305,19 @@
       </div>
       <div class="areas-grid">
         <a href="gurukul.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80" alt="Flats for rent in Gurukul, Ahmedabad" loading="lazy" decoding="async">
+          <img src="images/areas/gurukul.webp" alt="Flats for rent in Gurukul, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Gurukul</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="memnagar.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=600&q=80" alt="Flats for rent in Memnagar, Ahmedabad" loading="lazy" decoding="async">
+          <img src="images/areas/memnagar.webp" alt="Flats for rent in Memnagar, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Memnagar</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="sola.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80" alt="Flats for rent in Sola, Ahmedabad" loading="lazy" decoding="async">
+          <img src="images/areas/sola.webp" alt="Flats for rent in Sola, Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>Sola</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
         <a href="ahmedabad.html" class="area-card">
-          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Flats for rent across Ahmedabad" loading="lazy" decoding="async">
+          <img src="images/areas/ahmedabad.webp" alt="Flats for rent across Ahmedabad" loading="lazy" decoding="async">
           <div class="area-card-overlay"><h3>All Ahmedabad</h3><span>Flats for Rent <i class="fas fa-arrow-right"></i></span></div>
         </a>
       </div>
@@ -392,18 +428,18 @@
         <h2 class="section-heading">Renting in Ahmedabad, Explained</h2>
         <p class="section-subheading">Practical guides for tenants looking for a flat in Ahmedabad.</p>
       </div>
-      <div class="guide-grid">
-        <a href="blog/cost-to-rent-flat-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80" alt="How much does it cost to rent a flat in Ahmedabad" loading="lazy" decoding="async">
-          <div class="guide-card-body"><h3>How Much Does It Cost to Rent a Flat in Ahmedabad?</h3><p>What affects monthly rent and the other costs to plan for.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
+      <div class="home-guide-grid">
+        <a href="blog/cost-to-rent-flat-ahmedabad.html" class="home-guide-card">
+          <img src="images/blog/cost-to-rent-flat-ahmedabad.webp" alt="How much does it cost to rent a flat in Ahmedabad" loading="lazy" decoding="async">
+          <div class="home-guide-card-body"><h3>How Much Does It Cost to Rent a Flat in Ahmedabad?</h3><p>What affects monthly rent and the other costs to plan for.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
-        <a href="blog/furnished-flats-for-rent-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80" alt="Furnished flats for rent in Ahmedabad" loading="lazy" decoding="async">
-          <div class="guide-card-body"><h3>Furnished Flats for Rent in Ahmedabad</h3><p>Furnished, semi-furnished or unfurnished: what each usually includes.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
+        <a href="blog/furnished-flats-for-rent-ahmedabad.html" class="home-guide-card">
+          <img src="images/blog/furnished-flats-for-rent-ahmedabad.webp" alt="Furnished flats for rent in Ahmedabad" loading="lazy" decoding="async">
+          <div class="home-guide-card-body"><h3>Furnished Flats for Rent in Ahmedabad</h3><p>Furnished, semi-furnished or unfurnished: what each usually includes.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
-        <a href="blog/best-areas-to-rent-flat-ahmedabad.html" class="guide-card">
-          <img src="https://images.unsplash.com/photo-1560448204-e02f11c3be14?w=800&q=80" alt="Best areas to rent a flat in Ahmedabad" loading="lazy" decoding="async">
-          <div class="guide-card-body"><h3>Best Areas to Rent a Flat in Ahmedabad</h3><p>How to compare localities for work, family, budget and lifestyle.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
+        <a href="blog/best-areas-to-rent-flat-ahmedabad.html" class="home-guide-card">
+          <img src="images/blog/best-areas-to-rent-flat-ahmedabad.webp" alt="Best areas to rent a flat in Ahmedabad" loading="lazy" decoding="async">
+          <div class="home-guide-card-body"><h3>Best Areas to Rent a Flat in Ahmedabad</h3><p>How to compare localities for work, family, budget and lifestyle.</p><span class="blog-link-inline">Read guide <i class="fas fa-arrow-right"></i></span></div>
         </a>
       </div>
       <div class="text-center mt-3">

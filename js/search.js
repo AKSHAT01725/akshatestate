@@ -369,6 +369,88 @@ function initShortlistPage() {
   render();
 }
 
+/* ----------------------------------------------------------
+   property-details.html without a (valid) property id: instead of an error, show a small
+   "find your home" page: quick filter chips, the current rental listings as cards, and a
+   WhatsApp / call box for visitors who want us to suggest homes.
+   ---------------------------------------------------------- */
+function renderPropertyPicker(container, missingId) {
+  var gone = !!missingId; /* a link with an id that no longer exists vs. no id at all */
+  var h1 = document.querySelector(".page-header h1");
+  var crumb = document.querySelector(".page-header .breadcrumb span");
+  if (h1) h1.textContent = gone ? "Property Not Available" : "Find Your Home";
+  if (crumb) crumb.textContent = gone ? "Not available" : "Choose a property";
+  document.title = (gone ? "Property Not Available" : "Find Your Home") + " | Akshat Estate";
+
+  var chips = [
+    { key: "type", label: "All homes", all: true },
+    { key: "type", label: "1 RK", val: "1RK" },
+    { key: "type", label: "1 BHK", val: "1BHK" },
+    { key: "type", label: "Shop / Godown", val: "shop" },
+    { key: "area", label: "Gurukul", val: "Gurukul" },
+    { key: "area", label: "Memnagar", val: "Memnagar" },
+    { key: "bach", label: "Bachelors allowed", val: "1" }
+  ];
+  var state = { type: "", area: "", bach: "" };
+  var waMsg = (gone ? "Hello Akshat Estate, the property I was looking at is not available. " : "Hello Akshat Estate, I could not decide on a property. ") +
+    "Please share available rental options in Ahmedabad. My budget and requirement: ";
+
+  container.innerHTML =
+    '<div class="picker-intro">' +
+      '<h2>' + (gone ? "This property is no longer available" : "Pick a property to see its details") + '</h2>' +
+      '<p>' + (gone ? "It may have been rented out or removed. Here are the homes available now." : "Choose from our current rental listings below, or narrow them down with the quick filters.") + '</p>' +
+    '</div>' +
+    '<div class="picker-chips" id="picker-chips" role="group" aria-label="Quick filters">' +
+      chips.map(function (c, i) {
+        return '<button type="button" class="picker-chip' + (c.all ? " is-on" : "") + '" data-i="' + i + '">' + c.label + '</button>';
+      }).join("") +
+    '</div>' +
+    '<p class="picker-count" id="picker-count" aria-live="polite"></p>' +
+    '<div class="properties-grid" id="picker-grid"></div>' +
+    '<div class="picker-help">' +
+      '<div><h3>Not sure which one to choose?</h3><p>Tell us your budget and what you need. We will send matching homes and arrange a visit, daily 9 AM to 9 PM.</p></div>' +
+      '<div class="picker-help-actions">' +
+        '<a class="btn btn-whatsapp" href="' + getWhatsAppLink(waMsg) + '" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp us</a>' +
+        '<a class="btn btn-secondary" href="tel:+' + WHATSAPP_NUMBER + '"><i class="fas fa-phone"></i> Call us</a>' +
+        '<a class="btn btn-outline" href="properties.html">Browse all with filters</a>' +
+      '</div>' +
+    '</div>';
+
+  function draw() {
+    var f = { status: "rent" };
+    if (state.type === "shop") f.type = "shop"; else if (state.type) f.bedroomType = state.type;
+    if (state.area) f.location = state.area;
+    if (state.bach) f.bachelors = true;
+    var list = filterProperties(f);
+    var grid = document.getElementById("picker-grid");
+    var count = document.getElementById("picker-count");
+    count.textContent = list.length ? list.length + (list.length === 1 ? " home" : " homes") + " shown" : "";
+    grid.innerHTML = list.length ? list.map(renderPropertyCard).join("") :
+      '<div class="no-results" style="grid-column:1/-1"><i class="fas fa-home"></i><h3>No homes match these filters</h3><p>Try removing a filter, or message us and we will look for you.</p><button type="button" class="btn btn-primary mt-2" id="picker-clear">Show all homes</button></div>';
+  }
+
+  container.addEventListener("click", function (e) {
+    var chip = e.target.closest(".picker-chip");
+    if (chip) {
+      var c = chips[parseInt(chip.getAttribute("data-i"), 10)];
+      if (c.all) { state.type = ""; state.area = ""; state.bach = ""; }
+      else state[c.key] = state[c.key] === c.val ? "" : c.val; /* click again to switch a filter off */
+      container.querySelectorAll(".picker-chip").forEach(function (b, i) {
+        var d = chips[i];
+        b.classList.toggle("is-on", d.all ? !state.type && !state.area && !state.bach : state[d.key] === d.val);
+      });
+      draw();
+      return;
+    }
+    if (e.target.closest("#picker-clear")) {
+      state = { type: "", area: "", bach: "" };
+      container.querySelectorAll(".picker-chip").forEach(function (b, i) { b.classList.toggle("is-on", !!chips[i].all); });
+      draw();
+    }
+  });
+  draw();
+}
+
 function initPropertyDetails() {
   const container = document.getElementById("property-detail");
   if (!container || typeof getPropertyById !== "function") return;
@@ -376,7 +458,7 @@ function initPropertyDetails() {
   const property = getPropertyById(id);
 
   if (!property) {
-    container.innerHTML = '<div class="no-results" style="grid-column:1/-1"><i class="fas fa-home"></i><h3>Property not found</h3><p>This property may no longer be available.</p><a href="properties.html" class="btn btn-primary mt-2">Browse Properties</a></div>';
+    renderPropertyPicker(container, id);
     return;
   }
 
@@ -508,7 +590,7 @@ function initPropertyDetails() {
   if (waBtn && typeof aeAddMobileCtaBar === "function") aeAddMobileCtaBar(waBtn.href);
 }
 
-/* Search-engine tags for the property page, set from the listing (canonical link, description, RealEstateListing data) */
+/* Search-engine tags for the property page, set from the listing (canonical link, description, RealEstateListing data; see aeListingSchema in properties.js) */
 function aeDetailSeo(property) {
   try {
     const url = location.origin + location.pathname + "?id=" + encodeURIComponent(property.id);
@@ -519,17 +601,7 @@ function aeDetailSeo(property) {
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement("meta"); meta.name = "description"; document.head.appendChild(meta); }
     meta.content = desc;
-    const offer = property.status === "rent"
-      ? { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: isRented(property) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
-          priceSpecification: { "@type": "UnitPriceSpecification", price: property.price, priceCurrency: "INR", unitText: "MONTH" } }
-      : { "@type": "Offer", price: property.price, priceCurrency: "INR", availability: isRented(property) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock" };
-    const ld = {
-      "@context": "https://schema.org", "@type": "RealEstateListing",
-      name: property.title, url: url, description: desc,
-      address: { "@type": "PostalAddress", addressLocality: property.location + ", " + property.city, addressRegion: "Gujarat", addressCountry: "IN" },
-      offers: offer
-    };
-    if (/^https?:/i.test(property.image || "")) ld.image = property.image;
+    const ld = aeListingSchema(property, url, true);
     let tag = document.getElementById("ae-listing-ld");
     if (!tag) { tag = document.createElement("script"); tag.type = "application/ld+json"; tag.id = "ae-listing-ld"; document.head.appendChild(tag); }
     tag.textContent = JSON.stringify(ld);

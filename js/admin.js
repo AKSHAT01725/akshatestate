@@ -228,6 +228,7 @@ function render() {
   } else {
     empty.hidden = true;
   }
+  if (!$("#view-insights").hidden) renderInsights();
 }
 
 /* Reconfirm: a live listing counts as "checked" when it was saved or ticked within the last 30 days */
@@ -733,15 +734,19 @@ $("#seed-btn").addEventListener("click", async () => {
 $("#seed-skip").addEventListener("click", () => { state.startEmpty = true; render(); });
 
 /* ---------- Backup ---------- */
-$("#export-btn").addEventListener("click", () => {
-  const rows = state.list.map(({ updatedAt, ...rest }) => rest).sort((a, b) => a.id - b.id);
+function downloadBackup() {
+  const plain = (v) => (v && typeof v.toMillis === "function" ? new Date(v.toMillis()).toISOString() : v);
+  const rows = state.list
+    .map(({ updatedAt, ...rest }) => Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, plain(v)])))
+    .sort((x, y) => x.id - y.id);
   const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `akshat-estate-listings-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
+}
+$("#export-btn").addEventListener("click", downloadBackup);
 
 /* ==========================================================
    Enquiries
@@ -801,6 +806,7 @@ function startEnquiries() {
     }
     first = false;
     renderEnquiries();
+    if (!$("#view-insights").hidden) renderInsights();
   }, (err) => {
     console.error(err);
     enq.ready = false;
@@ -1029,8 +1035,11 @@ document.addEventListener("click", (ev) => {
 function showView(name) {
   $("#view-listings").hidden = name !== "listings";
   $("#view-enquiries").hidden = name !== "enquiries";
+  $("#view-insights").hidden = name !== "insights";
   $$(".nav-tab").forEach((t) => t.classList.toggle("is-active", t.dataset.view === name));
   if (name === "enquiries") renderEnquiries();
+  if (name === "insights") renderInsights();
+  window.scrollTo(0, 0);
 }
 $(".mainnav").addEventListener("click", (ev) => {
   const b = ev.target.closest("[data-view]");
@@ -1117,3 +1126,288 @@ $("#install-dismiss").addEventListener("click", () => {
   updateInstallBar();
 });
 
+
+/* ==========================================================
+   Insights
+   Counts what is already loaded for the Enquiries screen (your latest 300 enquiries), so it costs no extra reads.
+   ========================================================== */
+const ins = { range: "30" };
+const INS_WEEKS = 12;
+const DAY_MS = 864e5;
+const pct = (n, total) => (total ? Math.round((n / total) * 100) : 0);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function weekStart(ms) {            /* Monday 00:00 (local time) of the week containing ms */
+  const d = new Date(ms);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.getTime();
+}
+
+function renderInsights() {
+  const now = Date.now();
+  const all = enq.list.map((e) => ({ e, ms: toMs(e.createdAt) || now }));
+  const empty = $("#ins-empty"), body = $("#ins-body");
+  body.hidden = !all.length;
+  empty.hidden = !!all.length || !enq.ready;
+  if (!all.length) {
+    $("#ins-summary").textContent = enq.ready ? "No enquiries yet." : "Loading…";
+    empty.innerHTML = "<strong>Nothing to show yet</strong>Insights appear here as enquiries come in from your website.";
+    return;
+  }
+
+  const since = ins.range === "all" ? 0 : now - Number(ins.range) * DAY_MS;
+  const inRange = all.filter((x) => x.ms >= since).map((x) => x.e);
+  const total = inRange.length;
+  const by = { new: 0, contacted: 0, closed: 0 };
+  inRange.forEach((e) => { by[enqStatus(e)]++; });
+  const rangeLabel = ins.range === "all" ? "all time" : `last ${ins.range} days`;
+  $("#ins-summary").textContent = `${plural(total, "enquiry", "enquiries")} ${ins.range === "all" ? "in total" : `in the last ${ins.range} days`}.`;
+
+  /* tiles */
+  $("#ins-tiles").innerHTML = [
+    ["Enquiries", total, rangeLabel, ""],
+    ["Waiting for a reply", by.new, "still marked New", by.new ? "warn" : ""],
+    ["Contacted", by.contacted, `${pct(by.contacted, total)}% of enquiries`, ""],
+    ["Closed", by.closed, `${pct(by.closed, total)}% of enquiries`, ""]
+  ].map(([label, n, sub, cls]) => `<div class="tile ${cls}"><div class="tile-n">${n}</div><div class="tile-l">${esc(label)}</div><div class="tile-s">${esc(sub)}</div></div>`).join("");
+
+  /* enquiries per week: always the last 12 weeks */
+  const thisWeek = weekStart(now);
+  const starts = [];
+  for (let i = INS_WEEKS - 1; i >= 0; i--) { const d = new Date(thisWeek); d.setDate(d.getDate() - 7 * i); starts.push(d.getTime()); }
+  const counts = starts.map(() => 0);
+  all.forEach(({ ms }) => { const k = starts.indexOf(weekStart(ms)); if (k > -1) counts[k]++; });
+  const max = Math.max(1, ...counts);
+  const wk = $("#ins-weeks");
+  wk.setAttribute("aria-label", `Enquiries per week over the last ${INS_WEEKS} weeks: ${counts.join(", ")}`);
+  wk.innerHTML = starts.map((st, i) => {
+    const label = new Date(st).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    const h = counts[i] ? Math.max(6, Math.round((counts[i] / max) * 100)) : 0;
+    return `<div class="wk${i === starts.length - 1 ? " is-now" : ""}" title="Week of ${esc(label)}: ${plural(counts[i], "enquiry", "enquiries")}">
+      <span class="wk-n">${counts[i]}</span><div class="wk-track"><div class="wk-bar" style="height:${h}%"></div></div><span class="wk-l">${esc(label)}</span></div>`;
+  }).join("");
+
+  /* most asked-about listings */
+  const byProp = new Map();
+  inRange.forEach((e) => {
+    if (!e.propertyId) return;
+    const id = Number(e.propertyId);
+    const c = byProp.get(id) || { id, count: 0, title: e.propertyTitle || `Property ${id}` };
+    c.count++; byProp.set(id, c);
+  });
+  const ranked = [...byProp.values()].sort((a, b) => b.count - a.count || a.id - b.id);
+  const topMax = ranked[0] ? ranked[0].count : 1;
+  $("#ins-top").innerHTML = ranked.length ? ranked.slice(0, 8).map((r, i) => {
+    const p = state.list.find((x) => x.id === r.id);
+    const title = p ? p.title : r.title;
+    const flag = !p ? "Removed" : p.active === false ? "Hidden" : isRentedP(p) ? "Rented" : "";
+    return `<li class="rank-row"><span class="rank-pos">${i + 1}</span>
+      <div class="rank-main"><div class="rank-top"><span class="rank-name" title="${esc(title)}">${esc(title)}</span>${flag ? `<span class="chip st-closed">${flag}</span>` : ""}<span class="rank-n">${r.count}</span></div>
+      <div class="bar"><span style="width:${Math.round((r.count / topMax) * 100)}%"></span></div></div>
+      ${p ? `<button type="button" class="link-btn" data-ins-prop="${r.id}">View</button>` : ""}</li>`;
+  }).join("") : '<li class="rank-empty">No enquiries about a specific listing in this period.</li>';
+  const general = inRange.filter((e) => !e.propertyId).length;
+  $("#ins-top-note").textContent = general ? `${plural(general, "enquiry", "enquiries")} in this period ${general === 1 ? "was" : "were"} not about one listing (contact form, owners, area pages).` : "";
+
+  /* where they come from */
+  const src = {};
+  inRange.forEach((e) => { const k = srcLabel(e); src[k] = (src[k] || 0) + 1; });
+  const srcRows = Object.entries(src).sort((a, b) => b[1] - a[1]);
+  const sMax = srcRows[0] ? srcRows[0][1] : 1;
+  $("#ins-sources").innerHTML = srcRows.length ? srcRows.map(([k, n]) =>
+    `<li class="rank-row"><div class="rank-main"><div class="rank-top"><span class="rank-name">${esc(k)}</span><span class="rank-n">${n}</span></div><div class="bar alt"><span style="width:${Math.round((n / sMax) * 100)}%"></span></div></div></li>`).join("")
+    : '<li class="rank-empty">No enquiries in this period.</li>';
+
+  /* where they end up */
+  const followed = by.contacted + by.closed;
+  const seg = (k) => (by[k] ? `<span class="fun fun-${k}" style="flex:${by[k]}"></span>` : "");
+  $("#ins-funnel").innerHTML = total
+    ? `<div class="fun-bar" role="img" aria-label="New ${by.new}, contacted ${by.contacted}, closed ${by.closed}">${seg("new")}${seg("contacted")}${seg("closed")}</div>
+       <ul class="fun-legend">${["new", "contacted", "closed"].map((k) => `<li><span class="dot dot-${k}"></span><b>${by[k]}</b> ${STATUS_LABELS[k]} <span class="muted">${pct(by[k], total)}%</span></li>`).join("")}</ul>
+       <p class="ins-note">${followed} of ${total} ${total === 1 ? "enquiry has" : "enquiries have"} been followed up (${pct(followed, total)}%), and ${by.closed} reached Closed (${pct(by.closed, total)}%).</p>`
+    : '<p class="ins-note">No enquiries in this period.</p>';
+
+  /* live listings nobody has asked about (ignoring ones listed in the last 7 days) */
+  const asked = new Set(inRange.filter((e) => e.propertyId).map((e) => Number(e.propertyId)));
+  const quiet = state.loaded ? state.list.filter((p) => p.active !== false && !isRentedP(p) && !asked.has(p.id) && !(toMs(p.listedAt) > now - 7 * DAY_MS)) : [];
+  $("#ins-quiet-card").hidden = !quiet.length;
+  $("#ins-quiet-range").textContent = ins.range === "all" ? "ever" : `in the last ${ins.range} days`;
+  $("#ins-quiet").innerHTML = quiet.slice(0, 8).map((p) =>
+    `<li class="rank-row plain"><span class="rank-name" title="${esc(p.title)}">${esc(p.title)}</span><button type="button" class="link-btn" data-ins-edit="${p.id}">Edit</button></li>`).join("")
+    + (quiet.length > 8 ? `<li class="rank-empty">and ${quiet.length - 8} more</li>` : "");
+
+  const cap = $("#ins-cap");
+  cap.hidden = enq.list.length < 300;
+  cap.textContent = "Counting your latest 300 enquiries; older ones are not included.";
+}
+
+$("#ins-range").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-range]");
+  if (!b) return;
+  ins.range = b.dataset.range;
+  $$("#ins-range .seg-btn").forEach((x) => { const on = x === b; x.classList.toggle("is-on", on); x.setAttribute("aria-pressed", on); });
+  renderInsights();
+});
+$("#view-insights").addEventListener("click", (ev) => {
+  const v = ev.target.closest("[data-ins-prop]");
+  if (v) { const p = state.list.find((x) => x.id === Number(v.dataset.insProp)); if (p) showEnquiriesFor(p); return; }
+  const ed = ev.target.closest("[data-ins-edit]");
+  if (ed) { const p = state.list.find((x) => x.id === Number(ed.dataset.insEdit)); if (p) openDrawer(p); }
+});
+
+/* ==========================================================
+   Restore listings from a backup file (the file made by "Download backup")
+   Adds new listings and updates changed ones. Nothing is removed unless you tick the box.
+   ========================================================== */
+const RESTORE_ENUMS = { status: ["rent", "sale"], type: ["apartment", "bungalow", "office", "shop"], furnishing: ["unfurnished", "semi-furnished", "furnished"], areaUnit: ["sq.ft", "sq.yd", "sq.m"] };
+const rText = (v, max = 600) => String(v ?? "").replace(/[<>]/g, "").trim().slice(0, max);
+const rNum = (v) => (v === "" || v == null ? NaN : Number(v));
+const rUrl = (v) => { const t = rText(v, 1500); return /^https?:\/\//i.test(t) ? t : ""; };
+function rStampMs(v) {              /* accepts a Firestore timestamp, {seconds,nanoseconds}, a number, or a date string */
+  if (!v) return null;
+  if (typeof v.toMillis === "function") return v.toMillis();
+  if (typeof v.seconds === "number") return v.seconds * 1000 + Math.floor((v.nanoseconds || 0) / 1e6);
+  if (typeof v === "number" && v > 0) return v;
+  if (typeof v === "string" && !Number.isNaN(Date.parse(v))) return Date.parse(v);
+  return null;
+}
+
+/* Checks and tidies one listing from the file (same rules as the Add/Edit form) */
+function cleanRestoreItem(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { error: "not a listing" };
+  const id = Number(raw.id);
+  if (!Number.isInteger(id) || id < 1) return { error: "missing or invalid id" };
+  const fail = (reason) => ({ id, error: reason });
+  const title = rText(raw.title, 160); if (!title) return fail("no title");
+  if (!RESTORE_ENUMS.status.includes(raw.status)) return fail("status must be rent or sale");
+  const status = raw.status;
+  const price = rNum(raw.price); if (!(price > 0)) return fail("no price");
+  const area = rNum(raw.area); if (!(area > 0)) return fail("no area");
+  const location = rText(raw.location, 60); if (!location) return fail("no location");
+  const gallery = (Array.isArray(raw.gallery) ? raw.gallery : []).map(rUrl).filter(Boolean);
+  const image = rUrl(raw.image) || gallery[0] || ""; if (!image) return fail("no photo link");
+  const pick = (k, d) => (RESTORE_ENUMS[k].includes(raw[k]) ? raw[k] : d);
+  const data = {
+    id, title, status, type: pick("type", "apartment"), location, city: rText(raw.city, 60) || "Ahmedabad",
+    bedrooms: Math.max(0, rNum(raw.bedrooms) || 0), bathrooms: Math.max(0, rNum(raw.bathrooms) || 0),
+    area, areaUnit: pick("areaUnit", "sq.ft"), furnishing: pick("furnishing", "unfurnished"),
+    price, priceDisplay: rText(raw.priceDisplay, 40) || formatPrice(price, status),
+    image, gallery: [image, ...gallery.filter((u) => u !== image)],
+    description: rText(raw.description, 2000),
+    amenities: (Array.isArray(raw.amenities) ? raw.amenities : []).map((a) => rText(a, 40)).filter(Boolean),
+    featured: raw.featured === true, active: raw.active !== false,
+    homeFeatured: status === "rent" && raw.homeFeatured === true,
+    availability: raw.availability === "rented" ? "rented" : "available",
+    availableFrom: /^\d{4}-\d{2}-\d{2}$/.test(raw.availableFrom || "") ? raw.availableFrom : ""
+  };
+  if (rNum(raw.homeRank) > 0) data.homeRank = Number(raw.homeRank);
+  ["carpetArea", "carParking", "floorNo", "totalFloors"].forEach((k) => { const n = rNum(raw[k]); if (Number.isFinite(n) && n >= 0) data[k] = n; });
+  if (typeof raw.bachelorsAllowed === "boolean") data.bachelorsAllowed = raw.bachelorsAllowed;
+  if (raw.bedroomType === "1RK" || raw.bedroomType === "1ROOM") data.bedroomType = raw.bedroomType;
+  const confirmed = rStampMs(raw.confirmedAt); if (confirmed) data.confirmedAt = confirmed;
+  const listed = rStampMs(raw.listedAt); if (listed) data.listedAt = listed;
+  return { id, data };
+}
+const diffFields = (a, b) => [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+const writableListing = (data) => {
+  const out = { ...data, updatedAt: F.serverTimestamp() };
+  ["confirmedAt", "listedAt"].forEach((k) => { if (typeof out[k] === "number") out[k] = F.Timestamp.fromMillis(out[k]); });
+  return out;
+};
+
+let restorePlan = null;
+$("#restore-btn").addEventListener("click", () => {
+  if (!state.loaded) { toast("Wait for the listings to finish loading first.", true); return; }
+  $("#restore-file").click();
+});
+$("#restore-file").addEventListener("change", async (ev) => {
+  const file = ev.target.files && ev.target.files[0];
+  ev.target.value = "";                         /* lets you pick the same file again later */
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast("That file is too large to be a listings backup.", true); return; }
+  let parsed;
+  try { parsed = JSON.parse(await file.text()); }
+  catch (e) { toast("That file is not valid JSON, so it cannot be a backup.", true); return; }
+  const rows = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.listings) ? parsed.listings : null;
+  if (!rows || !rows.length) { toast("This does not look like a listings backup (expected a list of listings).", true); return; }
+  openRestoreDialog(file.name, rows);
+});
+
+function openRestoreDialog(fileName, rows) {
+  const byId = new Map(state.list.map((p) => [p.id, p]));
+  const incoming = new Map(), skipped = [];
+  let dupes = 0;
+  rows.forEach((raw, i) => {
+    const r = cleanRestoreItem(raw);
+    if (r.error) { skipped.push(r.id ? `#${r.id} (${r.error})` : `entry ${i + 1} (${r.error})`); return; }
+    if (incoming.has(r.id)) dupes++;
+    incoming.set(r.id, r.data);
+  });
+  const add = [], change = [], same = [];
+  incoming.forEach((data, id) => {
+    const cur = byId.get(id);
+    if (!cur) { add.push({ id, data }); return; }
+    const curClean = cleanRestoreItem(cur);
+    const fields = curClean.error ? ["(current copy is incomplete)"] : diffFields(curClean.data, data);
+    (fields.length ? change : same).push({ id, data, fields, title: cur.title });
+  });
+  const missing = state.list.filter((p) => !incoming.has(p.id));
+  restorePlan = { add, change, same, missing };
+
+  $("#restore-file-name").textContent = `${fileName}: ${plural(incoming.size, "listing", "listings")} found.`;
+  const lines = [];
+  if (add.length) lines.push(`<li><b>${add.length}</b> new, will be added</li>`);
+  if (change.length) {
+    lines.push(`<li><b>${change.length}</b> changed, will be updated<ul class="restore-changes">${change.slice(0, 6).map((c) => `<li>#${c.id} ${esc(c.title)}: ${esc(c.fields.slice(0, 4).join(", "))}${c.fields.length > 4 ? "…" : ""}</li>`).join("")}${change.length > 6 ? `<li>and ${change.length - 6} more</li>` : ""}</ul></li>`);
+  }
+  if (same.length) lines.push(`<li><b>${same.length}</b> already the same, left alone</li>`);
+  if (!lines.length) lines.push("<li>Nothing in this file differs from your current listings.</li>");
+  $("#restore-summary").innerHTML = lines.join("");
+  const sk = $("#restore-skipped");
+  const notes = [];
+  if (skipped.length) notes.push(`${plural(skipped.length, "entry was", "entries were")} skipped: ${skipped.slice(0, 3).join(", ")}${skipped.length > 3 ? ` and ${skipped.length - 3} more` : ""}.`);
+  if (dupes) notes.push(`${plural(dupes, "listing appears", "listings appear")} more than once; the last copy is used.`);
+  sk.hidden = !notes.length;
+  sk.textContent = notes.join(" ");
+  $("#restore-backup-first").checked = true;
+  $("#restore-delete").checked = false;
+  $("#restore-delete-wrap").hidden = !missing.length;
+  $("#restore-delete-label").textContent = `Also remove the ${plural(missing.length, "listing", "listings")} that ${missing.length === 1 ? "is" : "are"} not in this file`;
+  updateRestoreButton();
+  const d = $("#restore-dialog");
+  d.returnValue = "";
+  d.onclose = () => { if (d.returnValue === "ok") applyRestore(); };
+  d.showModal();
+}
+function updateRestoreButton() {
+  const n = restorePlan.add.length + restorePlan.change.length;
+  const del = $("#restore-delete").checked ? restorePlan.missing.length : 0;
+  $("#restore-ok").disabled = !n && !del;
+  $("#restore-ok").textContent = n ? `Restore ${plural(n, "listing", "listings")}` : del ? "Remove listings" : "Nothing to restore";
+}
+$("#restore-delete").addEventListener("change", updateRestoreButton);
+
+async function applyRestore() {
+  const plan = restorePlan;
+  if (!plan) return;
+  const removing = $("#restore-delete").checked ? plan.missing : [];
+  if ($("#restore-backup-first").checked && state.list.length) downloadBackup();
+  const ops = [...plan.add, ...plan.change].map(({ id, data }) => ["set", id, data]).concat(removing.map((p) => ["del", p.id]));
+  try {
+    for (let i = 0; i < ops.length; i += 400) {            /* Firestore allows 500 writes per batch */
+      const batch = F.writeBatch(db);
+      ops.slice(i, i + 400).forEach(([kind, id, data]) => { if (kind === "set") batch.set(ref(id), writableListing(data)); else batch.delete(ref(id)); });
+      await batch.commit();
+    }
+    clearSiteCache();
+    await loadAll();
+    const parts = [];
+    if (plan.add.length) parts.push(`${plan.add.length} added`);
+    if (plan.change.length) parts.push(`${plan.change.length} updated`);
+    if (removing.length) parts.push(`${removing.length} removed`);
+    toast(`Restored: ${parts.join(", ")}`);
+  } catch (err) {
+    console.error(err);
+    toast(friendlyError(err), true);
+  }
+}

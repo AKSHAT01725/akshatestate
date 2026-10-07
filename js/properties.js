@@ -476,6 +476,60 @@ function getFreshness(property) {
   }
   return out;
 }
+/* ----------------------------------------------------------
+   Structured data (schema.org) for ONE listing, for search engines.
+   Used by the property page (aeDetailSeo in search.js) and by tools/add-structured-data.js, which writes it into
+   the static pages in properties/, so both always describe a listing the same way.
+   Only facts that are reliably true go in: no floor number, parking or "bachelors allowed", because
+   older listings still carry placeholder values for those.
+   includeAvailability is false for the static pages: they are not refreshed when you mark a listing Rented,
+   so they must not claim "in stock".
+   ---------------------------------------------------------- */
+const AE_SITE_URL = "https://akshatestate.com";
+
+function aeListingSchema(p, url, includeAvailability) {
+  const city = p.city || "Ahmedabad";
+  const unit = p.areaUnit || "sq.ft";
+  const unitCodes = { "sq.ft": "FTK", "sq.yd": "YDK", "sq.m": "MTK" };
+  const kind = p.type === "apartment" ? "Apartment" : p.type === "bungalow" ? "House" : "Place";
+  const place = {
+    "@type": kind,
+    name: p.title,
+    address: { "@type": "PostalAddress", addressLocality: city, addressRegion: "Gujarat", addressCountry: "IN" },
+    containedInPlace: { "@type": "Place", name: p.location + ", " + city }
+  };
+  if (kind !== "Place") {
+    if (p.bedroomType === "1RK" || p.bedroomType === "1ROOM") place.numberOfRooms = 1;
+    else if (p.bedrooms > 0) place.numberOfBedrooms = p.bedrooms;
+    if (p.bathrooms > 0) place.numberOfBathroomsTotal = p.bathrooms;
+    if (p.area > 0 && unitCodes[unit]) place.floorSize = { "@type": "QuantitativeValue", value: p.area, unitCode: unitCodes[unit] };
+  } else if (p.area > 0) {
+    place.additionalProperty = [{ "@type": "PropertyValue", name: "Area", value: p.area, unitText: unit }];
+  }
+  const features = (p.amenities || []).map(function (a) { return { "@type": "LocationFeatureSpecification", name: a, value: true }; });
+  if (p.furnishing === "furnished" || p.furnishing === "semi-furnished") {
+    features.push({ "@type": "LocationFeatureSpecification", name: p.furnishing === "furnished" ? "Furnished" : "Semi-furnished", value: true });
+  }
+  if (features.length) place.amenityFeature = features;
+
+  const offer = {
+    "@type": "Offer", price: p.price, priceCurrency: "INR", url: url,
+    seller: { "@type": "RealEstateAgent", "@id": AE_SITE_URL + "/#business", name: "Akshat Estate", url: AE_SITE_URL + "/", telephone: "+91-8141293057" }
+  };
+  if (p.status === "rent") offer.priceSpecification = { "@type": "UnitPriceSpecification", price: p.price, priceCurrency: "INR", unitCode: "MON", unitText: "month" };
+  if (includeAvailability) {
+    offer.availability = isRented(p) ? "https://schema.org/OutOfStock" : "https://schema.org/InStock";
+    if (!isRented(p) && /^\d{4}-\d{2}-\d{2}$/.test(p.availableFrom || "") && new Date(p.availableFrom + "T00:00:00") > new Date()) offer.availabilityStarts = p.availableFrom;
+  }
+
+  const images = (p.gallery && p.gallery.length ? p.gallery : [p.image]).filter(function (u) { return /^https?:/i.test(u || ""); }).slice(0, 5);
+  const ld = { "@context": "https://schema.org", "@type": "RealEstateListing", "@id": url + "#listing", url: url, name: p.title, description: p.description || p.title };
+  if (images.length) ld.image = images;
+  ld.offers = offer;
+  ld.about = place;
+  return ld;
+}
+
 /* Rented / available-from. availableFrom is a date written YYYY-MM-DD; a date that has passed is ignored. */
 function isRented(p) { return !!p && p.availability === "rented"; }
 function futureAvailableFrom(p) {

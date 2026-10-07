@@ -385,3 +385,77 @@ button, .btn, .icon-btn, .tab, .nav-tab, .seg-btn, .switch { -webkit-tap-highlig
   .install-actions .btn { flex: 1; min-height: 44px; }
   .install-actions .link-btn { min-height: 44px; padding: 0 .75rem; }
 }
+
+/* ==========================================================
+   Insights
+   ========================================================== */
+.ins-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+.tile { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }
+.tile-n { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+.tile-l { font-size: .875rem; font-weight: 600; margin-top: .2rem; }
+.tile-s { font-size: .75rem; color: var(--text-muted); }
+.tile.warn { background: var(--amber-soft); border-color: #e6cd96; }
+.tile.warn .tile-n { color: var(--amber); }
+.ins-card { padding: 1.1rem 1.25rem 1.2rem; margin-bottom: 1rem; }
+.ins-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: .8rem; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.ins-note { font-size: .8125rem; color: var(--text-muted); font-weight: 400; margin: .6rem 0 0; }
+.ins-card h2 .ins-note { margin: 0; }
+.ins-two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem; }
+.ins-two > *, .ins-card { min-width: 0; }
+.ins-two .ins-card { margin-bottom: 1rem; }
+
+.weeks { display: flex; gap: .4rem; }
+.wk { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+.wk-n { font-size: .75rem; font-weight: 600; color: var(--text-light); height: 1rem; line-height: 1rem; }
+.wk-track { width: 100%; height: 120px; display: flex; align-items: flex-end; background: var(--bg); border-radius: 8px; overflow: hidden; }
+.wk-bar { width: 100%; background: var(--purple); border-radius: 6px 6px 0 0; }
+.wk.is-now .wk-bar { opacity: .6; }
+.wk-l { font-size: .6875rem; color: var(--text-muted); white-space: nowrap; }
+
+.rank { list-style: none; margin: 0; padding: 0; }
+.rank-row { display: flex; align-items: center; gap: .7rem; padding: .55rem 0; border-top: 1px solid var(--border); }
+.rank-row:first-child { border-top: 0; }
+.rank-pos { width: 1.4rem; text-align: center; font-weight: 700; font-size: .8125rem; color: var(--text-muted); flex: none; }
+.rank-main { flex: 1; min-width: 0; }
+.rank-top { display: flex; align-items: center; gap: .5rem; }
+.rank-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; font-weight: 500; }
+.rank-n { font-weight: 700; font-size: .9rem; }
+.bar { height: 6px; background: var(--bg); border-radius: 999px; margin-top: .35rem; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--purple); border-radius: 999px; }
+.bar.alt > span { background: #8f86e8; }
+.rank-empty { color: var(--text-muted); font-size: .875rem; padding: .35rem 0; }
+.rank .link-btn { flex: none; min-height: 36px; padding: 0 .4rem; }
+
+.fun-bar { display: flex; gap: 2px; height: 18px; border-radius: 999px; overflow: hidden; background: var(--bg); }
+.fun { display: block; height: 100%; }
+.fun-new { background: var(--purple); } .fun-contacted { background: #e0a43a; } .fun-closed { background: #9b97b0; }
+.fun-legend { list-style: none; display: flex; gap: .4rem 1.4rem; flex-wrap: wrap; margin: .85rem 0 0; padding: 0; font-size: .875rem; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: .35rem; }
+.dot-new { background: var(--purple); } .dot-contacted { background: #e0a43a; } .dot-closed { background: #9b97b0; }
+.muted { color: var(--text-muted); }
+#ins-range { align-self: flex-end; }
+
+@media (max-width: 700px) {
+  .ins-tiles { grid-template-columns: 1fr 1fr; }
+  .ins-two { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ins-card { padding: 1rem .95rem 1.05rem; }
+  .weeks { gap: .2rem; }
+  .wk-track { height: 100px; }
+  .wk:nth-child(odd) .wk-l { visibility: hidden; }     /* every second date label, so they never overlap */
+  #ins-range { width: 100%; }
+  #ins-range .seg-btn { flex: 1; min-height: 42px; }
+}
+
+/* ==========================================================
+   Restore from backup
+   ========================================================== */
+.confirm.restore { width: min(540px, calc(100% - 2rem)); }
+.restore-file { font-size: .875rem; color: var(--text-light); margin-bottom: .6rem; word-break: break-all; }
+.restore-list { list-style: none; margin: 0 0 .9rem; padding: 0; font-size: .9rem; }
+.restore-list > li { padding: .25rem 0; }
+.restore-changes { list-style: disc; margin: .3rem 0 0 1.2rem; padding: 0; font-size: .8125rem; color: var(--text-light); }
+.restore-skipped { font-size: .8125rem !important; background: var(--amber-soft); color: var(--amber) !important; border-radius: 10px; padding: .55rem .8rem; margin-bottom: .9rem !important; }
+.confirm.restore .check { font-size: .875rem; margin-bottom: .55rem; }
+#restore-delete-wrap span { color: var(--red); }
+@media (max-width: 700px) { .confirm.restore .btn { flex: 1; min-height: 46px; } }
+.confirm.restore .confirm-actions { margin-top: 1.1rem; }

@@ -550,14 +550,14 @@ p { color: var(--text-light); margin-bottom: 0.75rem; }
 .categories-grid.categories-grid-4 { grid-template-columns: repeat(4, 1fr); }
 
 /* Rental guides teaser */
-.guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
-.guide-card { display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--border-light); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all var(--transition); }
-.guide-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
-.guide-card img { width: 100%; height: 170px; object-fit: cover; }
-.guide-card-body { display: flex; flex-direction: column; flex: 1; padding: 1.15rem 1.25rem 1.3rem; }
-.guide-card h3 { font-size: 1rem; line-height: 1.4; margin-bottom: 0.4rem; }
-.guide-card p { font-size: 0.8125rem; line-height: 1.6; margin-bottom: 0.9rem; }
-.guide-card .blog-link-inline { margin-top: auto; font-size: 0.8125rem; font-weight: 600; color: var(--purple); }
+.home-guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.home-guide-card { display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; padding: 0; box-shadow: 0 8px 24px rgba(20,16,50,.05); transition: transform var(--transition), box-shadow var(--transition); text-decoration: none; color: inherit; }
+.home-guide-card:hover { transform: translateY(-5px); box-shadow: 0 14px 32px rgba(20,16,50,.11); }
+.home-guide-card img { display: block; width: 100%; height: 210px; object-fit: cover; }
+.home-guide-card-body { display: flex; flex-direction: column; flex: 1; padding: 1.35rem 1.5rem 1.5rem; }
+.home-guide-card h3 { font-size: 1rem; line-height: 1.4; margin-bottom: 0.4rem; }
+.home-guide-card p { font-size: 0.8125rem; line-height: 1.6; margin-bottom: 0.9rem; }
+.home-guide-card .blog-link-inline { margin-top: auto; font-size: 0.8125rem; font-weight: 600; color: var(--purple); }
 
 /* Trust / contact section */
 .trust-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 2.5rem; align-items: start; }
@@ -584,7 +584,7 @@ p { color: var(--text-light); margin-bottom: 0.75rem; }
   .rental-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rental-search-card .search-form { grid-template-columns: 1fr 1fr; }
   .rental-search-card .search-form .btn { grid-column: 1 / -1; }
-  .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .trust-grid { grid-template-columns: 1fr; gap: 1.75rem; }
 }
 @media (max-width: 768px) {
@@ -600,7 +600,7 @@ p { color: var(--text-light); margin-bottom: 0.75rem; }
 }
 @media (max-width: 600px) {
   .rental-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
-  .guide-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .home-guide-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
   .hero-actions .btn { width: 100%; max-width: 280px; }
 }
 
@@ -900,3 +900,26 @@ body.visit-open { overflow: hidden; }
 .guide-card p { margin: 0; font-size: 0.9rem; color: var(--text-light); line-height: 1.6; }
 .guide-area { margin-top: 2.25rem; }
 .guide-area h3 { margin: 0 0 0.6rem; }
+
+/* Area page header with a location photo */
+.page-header.has-photo { position: relative; background-color: #2a2147; background-size: cover; background-position: center; border-bottom: 0; color: #fff; padding-bottom: 2.25rem; }
+.page-header.has-photo::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,40,0.55) 0%, rgba(20,16,40,0.72) 100%); }
+.page-header.has-photo .container { position: relative; }
+.page-header.has-photo h1, .page-header.has-photo p, .page-header.has-photo .breadcrumb, .page-header.has-photo .breadcrumb a, .page-header.has-photo .breadcrumb span { color: #fff; }
+.page-header.has-photo p, .page-header.has-photo .breadcrumb { opacity: 0.92; }
+@media (min-width: 768px) { .page-header.has-photo { padding-bottom: 3.25rem; } }
+
+/* property-details.html with no property chosen: "find your home" view */
+.picker-intro { text-align: center; max-width: 640px; margin: 0 auto 1.5rem; }
+.picker-intro h2 { font-size: 1.5rem; margin-bottom: 0.4rem; }
+.picker-intro p { color: var(--text-light); margin: 0; }
+.picker-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; }
+.picker-chip { border: 1px solid var(--border); background: var(--white); color: var(--text-light); padding: 0.5rem 1rem; border-radius: 999px; font: 500 0.8125rem/1 inherit; font-family: inherit; cursor: pointer; transition: all var(--transition); }
+.picker-chip:hover { border-color: var(--purple); color: var(--purple); }
+.picker-chip.is-on { background: var(--purple); border-color: var(--purple); color: #fff; }
+.picker-count { text-align: center; font-size: 0.8125rem; color: var(--text-light); margin: 0 0 1.25rem; min-height: 1.2em; }
+.picker-help { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem; margin-top: 2.5rem; padding: 1.5rem 1.75rem; background: var(--white); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 8px 24px rgba(20,16,50,.05); }
+.picker-help h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+.picker-help p { margin: 0; font-size: 0.875rem; color: var(--text-light); max-width: 520px; }
+.picker-help-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+@media (max-width: 600px) { .picker-help { padding: 1.25rem; } .picker-help-actions { width: 100%; } .picker-help-actions .btn { flex: 1 1 100%; justify-content: center; } }
