@@ -266,3 +266,9 @@ These buttons no longer open WhatsApp. They ask for a mobile number (the name is
 ## Share buttons
 
 The share button (on property cards, the property page and the static pages) opens the phone's own share sheet (WhatsApp, Messages, email, Instagram and so on) with the property's title, price, place and link. Where the browser has no share sheet (most desktop browsers), it copies the link instead and shows "Link copied". Closing the share sheet does nothing. The code is the `[data-share-url]` handler near the end of `js/main.js`. The Copy link button on the shortlist page stays a copy button on purpose.
+
+## SEO notes
+
+- **Titles and descriptions:** every page has one H1, a title, a meta description and a canonical address on `https://akshatestate.com`. Each listing page has its own title and description (title, price, size, furnishing), made by the page generator, so listings with the same name no longer look identical to Google.
+- **Kept out of Google (`noindex`):** `admin`, `shortlist`, `404`, `offline`, `property-details.html` (a template filled from `?id=`; the static pages in `properties/` are the indexed ones), `properties/index.html` (a redirect), and the three 2 BHK rental pages (`2BHK-flats-for-rent-gurukul`, `2BHK-flats-for-rent-memnagar`, `2bhk-flats-for-rent`) because there are no 2 BHK rentals yet. When you add one, delete the `<meta name="robots" content="noindex, follow">` line from that page and add its address back to `sitemap.xml`.
+- **Sitemap:** `sitemap.xml` lists only indexable pages. After adding a listing, run the page generator, then `node tools/add-structured-data.js`, and add the new page to the sitemap.
