@@ -250,3 +250,11 @@ The **Insights** tab turns your enquiries into numbers, for the last 30 days, 90
 `property-details.html?id=N` shows listing N. With no id, or an id that no longer exists, `renderPropertyPicker` in `js/search.js` shows a "Find Your Home" view instead of an error: quick filter chips (All homes, 1 RK, 1 BHK, Shop / Godown, Gurukul, Memnagar, Bachelors allowed), the current rental listings as cards, and a WhatsApp / call box. Styles are the `.picker-*` rules at the end of `css/style.css`. If you add a new area or listing type, add a chip to the `chips` list at the top of that function.
 
 The homepage hero picture is `images/hero.webp` (set in `.hero-bg` in `css/style.css`, with a dark purple overlay so the white text stays readable). To change it, replace that file; to make the picture brighter or darker, change the two `rgba(...)` overlay values on the `.hero-bg` line.
+
+## Sale listing and real photos
+
+- **Listings:** `js/properties.js` now holds the 15 listings exported on 2026-10-07 (14 rentals in Gurukul and Memnagar, plus the 2 BHK flat for sale in Sola, id 44). `properties/` has one static page for each, and `sitemap.xml` includes them. After changing a listing, run `node tools/add-structured-data.js`. It may print a note that "₹50 Lakh" and 5000000 differ; that is only the way the price is written.
+- **Photos of the Sola flat:** `images/sola-sale-hall.webp` (cover), `images/sola-sale-room.webp` and `images/sola-sale-full.webp` (all rooms together).
+- **Blur rule:** stock placeholder photos (Unsplash links) stay blurred behind a "Request Image" button. Any other photo, such as your own uploads, shows clearly and has no Request button. This is decided in `isStockPhoto` in `js/properties.js`.
+- **In the admin:** the live site reads listings from Firebase, so the Sola listing's photo links there must be set to the three files. Once the domain is live, use `https://akshatestate.com/images/sola-sale-hall.webp` (cover) and put `.../sola-sale-room.webp` and `.../sola-sale-full.webp` in the extra photos box, one per line.
+- **Empty description:** a listing with no description simply shows no Description section.

@@ -389,16 +389,17 @@ function renderPropertyPicker(container, missingId) {
     { key: "type", label: "Shop / Godown", val: "shop" },
     { key: "area", label: "Gurukul", val: "Gurukul" },
     { key: "area", label: "Memnagar", val: "Memnagar" },
-    { key: "bach", label: "Bachelors allowed", val: "1" }
+    { key: "bach", label: "Bachelors allowed", val: "1" },
+    { key: "sale", label: "For sale", val: "1" }
   ];
-  var state = { type: "", area: "", bach: "" };
+  var state = { type: "", area: "", bach: "", sale: "" };
   var waMsg = (gone ? "Hello Akshat Estate, the property I was looking at is not available. " : "Hello Akshat Estate, I could not decide on a property. ") +
     "Please share available rental options in Ahmedabad. My budget and requirement: ";
 
   container.innerHTML =
     '<div class="picker-intro">' +
       '<h2>' + (gone ? "This property is no longer available" : "Pick a property to see its details") + '</h2>' +
-      '<p>' + (gone ? "It may have been rented out or removed. Here are the homes available now." : "Choose from our current rental listings below, or narrow them down with the quick filters.") + '</p>' +
+      '<p>' + (gone ? "It may have been rented out, sold or removed. Here are the homes available now." : "Choose from our current listings below, or narrow them down with the quick filters.") + '</p>' +
     '</div>' +
     '<div class="picker-chips" id="picker-chips" role="group" aria-label="Quick filters">' +
       chips.map(function (c, i) {
@@ -417,7 +418,7 @@ function renderPropertyPicker(container, missingId) {
     '</div>';
 
   function draw() {
-    var f = { status: "rent" };
+    var f = { status: state.sale ? "sale" : "rent" };
     if (state.type === "shop") f.type = "shop"; else if (state.type) f.bedroomType = state.type;
     if (state.area) f.location = state.area;
     if (state.bach) f.bachelors = true;
@@ -433,17 +434,17 @@ function renderPropertyPicker(container, missingId) {
     var chip = e.target.closest(".picker-chip");
     if (chip) {
       var c = chips[parseInt(chip.getAttribute("data-i"), 10)];
-      if (c.all) { state.type = ""; state.area = ""; state.bach = ""; }
+      if (c.all) { state.type = ""; state.area = ""; state.bach = ""; state.sale = ""; }
       else state[c.key] = state[c.key] === c.val ? "" : c.val; /* click again to switch a filter off */
       container.querySelectorAll(".picker-chip").forEach(function (b, i) {
         var d = chips[i];
-        b.classList.toggle("is-on", d.all ? !state.type && !state.area && !state.bach : state[d.key] === d.val);
+        b.classList.toggle("is-on", d.all ? !state.type && !state.area && !state.bach && !state.sale : state[d.key] === d.val);
       });
       draw();
       return;
     }
     if (e.target.closest("#picker-clear")) {
-      state = { type: "", area: "", bach: "" };
+      state = { type: "", area: "", bach: "", sale: "" };
       container.querySelectorAll(".picker-chip").forEach(function (b, i) { b.classList.toggle("is-on", !!chips[i].all); });
       draw();
     }
@@ -474,17 +475,15 @@ function initPropertyDetails() {
     return '<span class="amenity-pill active"><i class="fas fa-check"></i> ' + a + '</span>';
   }).join("");
   const galleryThumbs = property.gallery.map(function (img, i) {
-    return '<img src="' + img + '" alt="Gallery ' + (i + 1) + '" class="img-blur ' + (i === 0 ? 'active' : '') + '" data-src="' + img + '" loading="lazy">';
+    return '<img src="' + img + '" alt="Gallery ' + (i + 1) + '" class="' + blurClass(img) + ' ' + (i === 0 ? 'active' : '') + '" data-src="' + img + '" loading="lazy">';
   }).join("");
 
   container.innerHTML = `
     <div class="detail-layout">
       <div class="detail-main">
         <div class="detail-gallery">
-          <img src="${property.gallery[0]}" alt="${property.title}" id="gallery-main-img" class="img-blur">
-          <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
-            <i class="fas fa-camera"></i> Request Photos
-          </button>
+          <img src="${property.gallery[0]}" alt="${property.title}" id="gallery-main-img" class="${blurClass(property.gallery[0])}">
+          ${requestImageButton({ id: property.id, title: property.title, location: property.location, image: property.gallery[0] }, "request-image-btn", "Request Photos")}
         </div>
         <div class="gallery-thumbs">${galleryThumbs}</div>
         <div class="detail-tags">
@@ -501,10 +500,10 @@ function initPropertyDetails() {
         <div class="specs-card">
           ${renderSpecItems(getPropertyDetailRows(property))}
         </div>
-        <div class="detail-section">
+        ${property.description ? `<div class="detail-section">
           <h3>Description</h3>
           <p>${property.description}</p>
-        </div>
+        </div>` : ""}
         <div class="detail-section">
           <h3>Nearby Landmarks</h3>
           <p class="nearby-landmarks">${property.location}, Ahmedabad — contact us for exact address and site visit.</p>
@@ -553,7 +552,12 @@ function initPropertyDetails() {
 
   container.querySelectorAll(".gallery-thumbs img").forEach(function (thumb) {
     thumb.addEventListener("click", function () {
-      document.getElementById("gallery-main-img").src = this.getAttribute("data-src");
+      const src = this.getAttribute("data-src");
+      const main = document.getElementById("gallery-main-img");
+      main.src = src;
+      main.classList.toggle("img-blur", isStockPhoto(src));
+      const rq = container.querySelector(".detail-gallery .request-image-btn");
+      if (rq) rq.style.display = isStockPhoto(src) ? "" : "none";
       container.querySelectorAll(".gallery-thumbs img").forEach(function (t) { t.classList.remove("active"); });
       this.classList.add("active");
     });

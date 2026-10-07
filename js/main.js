@@ -1086,3 +1086,15 @@ document.addEventListener("DOMContentLoaded", function () {
     navigator.serviceWorker.register(AE_BASE + "sw.js").catch(function () {});
   });
 })();
+
+
+/* Photo thumbnails on the static property pages: click a thumbnail to show it in the large picture */
+document.addEventListener("click", function (e) {
+  var th = e.target.closest(".gallery-thumbs img[data-src]");
+  if (!th || document.getElementById("property-detail")) return; /* the live detail page has its own handler */
+  var main = document.getElementById("gallery-main-img");
+  if (!main) return;
+  main.src = th.getAttribute("data-src");
+  th.parentNode.querySelectorAll("img").forEach(function (i) { i.classList.remove("active"); });
+  th.classList.add("active");
+});

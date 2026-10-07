@@ -12,3 +12,4 @@
 12. properties/1rk-flat-for-rent-in-memnagar-2.html  -  1 RK Flat for Rent in Memnagar  (id 41)
 13. properties/1bhk-tenament-for-rent-in-memnagar-2.html  -  1 BHK Tenament for Rent in Memnagar  (id 42)
 14. properties/1bhk-tenament-for-rent-in-memnagar-3.html  -  1 BHK Tenament for Rent in Memnagar  (id 43)
+15. properties/2bhk-full-furnished-flat-for-sale-in-sola.html  -  2 BHK Full-Furnished Flat for Sale in Sola  (id 44)

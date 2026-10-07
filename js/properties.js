@@ -1,8 +1,8 @@
 /**
  * Akshat Estate - Property Data
- * 14 real rental listings (Gurukul and Memnagar), exported from the admin panel on 2026-10-03.
+ * 15 real listings (14 for rent in Gurukul and Memnagar, 1 for sale in Sola), exported from the admin panel on 2026-10-07.
  * This is the built-in fallback list. When Firebase has listings, the site uses those instead.
- * Images are placeholders until real photos are added.
+ * Photos starting with images/ are files in this site's images folder. Stock (Unsplash) photos are placeholders: they stay blurred behind a Request Image button.
  */
 
 const PROPERTIES = [
@@ -32,7 +32,8 @@ const PROPERTIES = [
     featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 12
+    homeRank: 4,
+    confirmedAt: 1791349902826
   },
   {
     id: 20,
@@ -60,7 +61,8 @@ const PROPERTIES = [
     featured: false,
     active: true,
     homeFeatured: false,
-    homeRank: 0
+    homeRank: 0,
+    confirmedAt: 1791349902826
   },
   {
     id: 27,
@@ -86,10 +88,12 @@ const PROPERTIES = [
     totalFloors: 3,
     carParking: 0,
     bachelorsAllowed: true,
+    availability: "available",
     featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 3
+    homeRank: 3,
+    confirmedAt: 1791349902826
   },
   {
     id: 31,
@@ -118,7 +122,8 @@ const PROPERTIES = [
     featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 10
+    homeRank: 1,
+    confirmedAt: 1791349902826
   },
   {
     id: 34,
@@ -144,9 +149,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 11
+    homeRank: 2,
+    confirmedAt: 1791349902826
   },
   {
     id: 35,
@@ -171,9 +178,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 13
+    homeRank: 6,
+    confirmedAt: 1791349902826
   },
   {
     id: 36,
@@ -198,9 +207,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
     homeFeatured: true,
-    homeRank: 14
+    homeRank: 7,
+    confirmedAt: 1791349902826
   },
   {
     id: 37,
@@ -225,8 +236,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: true,
+    homeRank: 9,
+    confirmedAt: 1791349902826
   },
   {
     id: 38,
@@ -251,8 +265,10 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 1,
     bachelorsAllowed: false,
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: false,
+    confirmedAt: 1791349902826
   },
   {
     id: 39,
@@ -276,10 +292,13 @@ const PROPERTIES = [
     amenities: ["Parking", "Security", "Water Supply", "AC"],
     floorNo: 1,
     totalFloors: 3,
-    carParking: 0,
+    carParking: 1,
     bachelorsAllowed: true,
+    availability: "available",
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: false,
+    confirmedAt: 1791349902826
   },
   {
     id: 40,
@@ -305,8 +324,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: false,
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: true,
+    homeRank: 8,
+    confirmedAt: 1791349902826
   },
   {
     id: 41,
@@ -332,8 +354,11 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: true,
+    homeRank: 5,
+    confirmedAt: 1791349902826
   },
   {
     id: 42,
@@ -358,8 +383,10 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: false,
+    confirmedAt: 1791349902827
   },
   {
     id: 43,
@@ -384,8 +411,41 @@ const PROPERTIES = [
     totalFloors: 2,
     carParking: 0,
     bachelorsAllowed: true,
+    availability: "available",
+    featured: false,
     active: true,
-    homeFeatured: false
+    homeFeatured: false,
+    confirmedAt: 1791349902827
+  },
+  {
+    id: 44,
+    title: "2 BHK Full-Furnished Flat for Sale in Sola",
+    type: "apartment",
+    status: "sale",
+    bedrooms: 2,
+    bathrooms: 2,
+    area: 1000,
+    areaUnit: "sq.ft",
+    carpetArea: 1000,
+    location: "Sola",
+    city: "Ahmedabad",
+    furnishing: "furnished",
+    price: 5000000,
+    priceDisplay: "₹50 Lakh",
+    image: "images/sola-sale-hall.webp",
+    gallery: ["images/sola-sale-hall.webp", "images/sola-sale-room.webp", "images/sola-sale-full.webp"],
+    description: "",
+    amenities: ["Parking", "Lift", "Security", "Power Backup", "Water Supply", "Balcony", "Garden", "AC"],
+    floorNo: 2,
+    totalFloors: 5,
+    carParking: 1,
+    bachelorsAllowed: false,
+    availability: "available",
+    availableFrom: "2026-11-15",
+    active: true,
+    homeFeatured: false,
+    listedAt: 1791349902828,
+    confirmedAt: 1791349902828
   }
 ];
 
@@ -522,7 +582,7 @@ function aeListingSchema(p, url, includeAvailability) {
     if (!isRented(p) && /^\d{4}-\d{2}-\d{2}$/.test(p.availableFrom || "") && new Date(p.availableFrom + "T00:00:00") > new Date()) offer.availabilityStarts = p.availableFrom;
   }
 
-  const images = (p.gallery && p.gallery.length ? p.gallery : [p.image]).filter(function (u) { return /^https?:/i.test(u || ""); }).slice(0, 5);
+  const images = (p.gallery && p.gallery.length ? p.gallery : [p.image]).map(function (u) { u = String(u || ""); return /^https?:/i.test(u) ? u : (u && !/^[a-z][a-z0-9+.\-]*:/i.test(u) ? AE_SITE_URL + "/" + u.replace(/^\/+/, "") : ""); }).filter(Boolean).slice(0, 5);
   const ld = { "@context": "https://schema.org", "@type": "RealEstateListing", "@id": url + "#listing", url: url, name: p.title, description: p.description || p.title };
   if (images.length) ld.image = images;
   ld.offers = offer;
@@ -561,6 +621,16 @@ function freshnessHTML(property) {
   return '<div class="fresh-line">' + (a ? '<span class="fresh-avail">' + a + "</span>" : "") + (f.isNew ? '<span class="fresh-new">New</span>' : "") + (f.updated ? '<span class="fresh-upd"><i class="far fa-clock" aria-hidden="true"></i> ' + f.updated + "</span>" : "") + "</div>";
 }
 
+/* Stock placeholder photos stay blurred behind a "Request Image" button; real photos (your own uploads) show clearly */
+function isStockPhoto(url) { return /^https?:\/\/images\.unsplash\.com\//i.test(String(url || "")); }
+function blurClass(url) { return isStockPhoto(url) ? "img-blur" : ""; }
+function requestImageButton(property, cls, label) {
+  if (!isStockPhoto(property.image)) return "";
+  return `<button type="button" class="${cls}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
+          <i class="fas fa-camera"></i> ${label}
+        </button>`;
+}
+
 function renderPropertyCard(property) {
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
@@ -571,11 +641,9 @@ function renderPropertyCard(property) {
   return `
     <article class="property-card${rentedClass(property)}" data-id="${property.id}">
       <div class="property-image">
-        <img src="${property.image}" alt="${property.title} in ${property.location}, Ahmedabad" class="img-blur" loading="lazy" width="400" height="220">
+        <img src="${property.image}" alt="${property.title} in ${property.location}, Ahmedabad" class="${blurClass(property.image)}" loading="lazy" width="400" height="220">
         <span class="property-badge badge ${badgeClass}">${badgeText}</span>
-        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
-          <i class="fas fa-camera"></i> Request Image
-        </button>
+        ${requestImageButton(property, "request-image-btn", "Request Image")}
         <span class="img-type-label">${typeLabel}</span>
         <button class="property-favorite" aria-label="Add to favorites" data-id="${property.id}">
           <i class="far fa-heart"></i>
@@ -619,11 +687,9 @@ function renderPropertyHCard(property) {
   return `
     <article class="property-hcard${rentedClass(property)}" data-id="${property.id}">
       <div class="property-hcard-img">
-        <img src="${property.image}" alt="${property.title}" class="img-blur" loading="lazy">
+        <img src="${property.image}" alt="${property.title}" class="${blurClass(property.image)}" loading="lazy">
         <span class="property-badge badge ${badgeClass}" style="position:absolute;top:0.75rem;left:0.75rem;z-index:3">${badgeText}</span>
-        <button class="request-image-btn" type="button" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
-          <i class="fas fa-camera"></i> Request Image
-        </button>
+        ${requestImageButton(property, "request-image-btn", "Request Image")}
         <span class="img-type-label">${typeLabel}</span>
         <div class="property-hcard-actions">
           <button class="icon-btn property-favorite" data-id="${property.id}" aria-label="Favorite"><i class="far fa-heart"></i></button>
@@ -663,7 +729,7 @@ function renderPropertyHCard(property) {
    ========================================================== */
 
 /* Homepage "Featured Rental Properties" (edit this list to change what is featured) */
-const FEATURED_RENTAL_IDS = [27, 31, 34, 3, 35, 36];
+const FEATURED_RENTAL_IDS = [31, 34, 27, 3, 41, 35, 36, 40, 37];
 
 function escapeAttr(str) {
   return String(str)
@@ -763,7 +829,7 @@ function getPropertyDetailRows(property) {
   if (property.bathrooms > 0) rows.push(["Bathrooms", property.bathrooms]);
   rows.push(["Furnishing", formatFurnishing(property.furnishing)]);
   rows.push(["Listed By", "Verified User"]);
-  if (isHome) rows.push(["Bachelors Allowed", x.bachelorsAllowed ? "Yes" : "No"]);
+  if (isHome && property.status !== "sale") rows.push(["Bachelors Allowed", x.bachelorsAllowed ? "Yes" : "No"]);
   rows.push(["Carpet Area", x.carpetArea + " " + unit]);
   rows.push(["Floor No", x.floorNo]);
   rows.push(["Total Floors", x.totalFloors]);
@@ -797,11 +863,9 @@ function renderRentalCard(property) {
     <article class="rental-card${rentedClass(property)}" data-id="${property.id}">
       <div class="rental-card-img">
         <a class="rental-card-link" href="${detailUrl}" tabindex="-1" aria-hidden="true">
-          <img src="${property.image}" alt="${escapeAttr(property.title)}" class="img-blur" loading="lazy" width="400" height="280" draggable="false">
+          <img src="${property.image}" alt="${escapeAttr(property.title)}" class="${blurClass(property.image)}" loading="lazy" width="400" height="280" draggable="false">
         </a>
-        <button type="button" class="request-image-btn" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
-          <i class="fas fa-camera"></i> Request Image
-        </button>
+        ${requestImageButton(property, "request-image-btn", "Request Image")}
         <button type="button" class="rental-fav property-favorite" data-id="${property.id}" title="Save to shortlist" aria-label="Save to shortlist"><i class="far fa-heart"></i></button>
         <button type="button" class="rental-share btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
       </div>
