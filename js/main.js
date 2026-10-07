@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initHoneypots();
   initContactForm();
   initVisitBooking();
+  initPhotoRequest();
   initWhatsAppLead();
   initOwnerForm();
   initSmoothScroll();
@@ -664,6 +665,120 @@ function initWhatsAppLead() {
   });
 }
 
+/* ----------------------------------------------------------
+   Request Image / Request Photos: asks for a mobile number (name is optional), then saves the request
+   to the admin panel (Enquiries, requirement "Photo request") and emails it. Nothing opens in WhatsApp:
+   you reply with the photos yourself. Any button with data-photo-open (+ data-photo-id / data-photo-title).
+   ---------------------------------------------------------- */
+var AE_PHOTO_LAST_KEY = "ae_photo_last";   /* "propertyId:time": the same property is not saved twice within a minute */
+
+function aeClosePhotoDialog() {
+  var m = document.getElementById("photo-modal");
+  if (!m) return;
+  m.remove();
+  document.body.classList.remove("visit-open");
+  if (window.aePhotoReturnFocus && window.aePhotoReturnFocus.focus) window.aePhotoReturnFocus.focus();
+}
+
+function aeOpenPhotoDialog(prop, opener) {
+  aeClosePhotoDialog();
+  window.aePhotoReturnFocus = opener || null;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(AE_WA_CONTACT_KEY) || "{}") || {}; } catch (err) {}
+  var m = document.createElement("div");
+  m.id = "photo-modal";
+  m.className = "visit-modal";
+  m.innerHTML =
+    '<div class="visit-backdrop" data-photo-close></div>' +
+    '<div class="visit-card" role="dialog" aria-modal="true" aria-labelledby="photo-title">' +
+    '<button type="button" class="visit-x" data-photo-close aria-label="Close"><i class="fas fa-xmark"></i></button>' +
+    '<h3 id="photo-title">Request photos</h3>' +
+    '<p class="visit-prop"></p>' +
+    '<form id="photo-form">' +
+    '<div class="form-group"><label for="photo-phone">Your mobile number</label><input type="tel" id="photo-phone" name="phone" required inputmode="tel" autocomplete="tel" placeholder="e.g. 98250 12345"></div>' +
+    '<div class="form-group"><label for="photo-name">Your name (optional)</label><input type="text" id="photo-name" name="name" autocomplete="name"></div>' +
+    '<p class="visit-hours"><i class="far fa-image"></i> Leave your number and we will send you the photos of this property.</p>' +
+    '<button type="submit" class="btn btn-primary btn-block"><i class="fas fa-camera"></i> Send my request</button>' +
+    '</form></div>';
+  m.querySelector(".visit-prop").textContent = prop.title || "This property";
+  var form = m.querySelector("#photo-form");
+  form.setAttribute("data-photo-id", String(prop.id || ""));
+  form.setAttribute("data-photo-title", prop.title || "");
+  m.querySelector("#photo-phone").value = saved.phone || "";
+  m.querySelector("#photo-name").value = saved.name || "";
+  document.body.appendChild(m);
+  document.body.classList.add("visit-open");
+  aeAddHoneypot(form);
+  if (saved.phone) form.setAttribute("data-ae-t", String(Date.now() - 5000)); /* a remembered number can be submitted at once */
+  setTimeout(function () { var f = m.querySelector(saved.phone ? "button[type=submit]" : "#photo-phone"); if (f) f.focus(); }, 30);
+}
+
+function initPhotoRequest() {
+  document.addEventListener("click", function (e) {
+    var opener = e.target.closest("[data-photo-open]");
+    if (opener) {
+      e.preventDefault();
+      e.stopPropagation();
+      aeOpenPhotoDialog({
+        id: parseInt(opener.getAttribute("data-photo-id"), 10) || 0,
+        title: opener.getAttribute("data-photo-title") || ""
+      }, opener);
+      return;
+    }
+    if (e.target.closest("[data-photo-close]")) aeClosePhotoDialog();
+  }, true);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") aeClosePhotoDialog(); });
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!form || form.id !== "photo-form") return;
+    e.preventDefault();
+    var val = function (k) { return form.elements[k] ? String(form.elements[k].value || "").trim() : ""; };
+    var phone = val("phone"), name = val("name");
+    if (phone.replace(/\D/g, "").length < 10) {
+      setFormStatus(form, "error", "Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    var id = parseInt(form.getAttribute("data-photo-id"), 10) || 0;
+    var title = form.getAttribute("data-photo-title") || "";
+    try { localStorage.setItem(AE_WA_CONTACT_KEY, JSON.stringify({ name: name, phone: phone })); } catch (err) {}
+
+    function finish(text) {
+      form.innerHTML = "";
+      var p = document.createElement("p");
+      p.className = "form-status is-success";
+      p.textContent = text;
+      var c = document.createElement("button");
+      c.type = "button"; c.className = "btn btn-outline btn-block"; c.setAttribute("data-photo-close", ""); c.textContent = "Close"; c.style.marginTop = "1rem";
+      form.appendChild(p); form.appendChild(c);
+    }
+    var thanks = "Thank you" + (name ? ", " + name : "") + ". We have your request and will send the photos to " + phone + " shortly.";
+    var recent = false;
+    try {
+      var last = (localStorage.getItem(AE_PHOTO_LAST_KEY) || "").split(":");
+      recent = Number(last[0]) === id && Date.now() - Number(last[1]) < 60000;
+    } catch (err) {}
+    if (aeIsBot(form) || recent) { finish(thanks); return; }   /* bots and repeat taps: no new enquiry */
+
+    var btn = form.querySelector('[type="submit"]');
+    if (btn) { btn.textContent = "Sending..."; btn.disabled = true; }
+    var data = {
+      source: "property", name: name || "Photo request visitor", phone: phone,
+      requirement: "Photo request", message: "Asked for photos of: " + (title || "a property"),
+      page: location.pathname.slice(-150)
+    };
+    if (id) data.propertyId = id;
+    if (title) data.propertyTitle = title;
+    aeSubmitLead("Photo request", data, null, id ? aePropertyForLead(id, title) : null).then(function () {
+      try { localStorage.setItem(AE_PHOTO_LAST_KEY, id + ":" + Date.now()); } catch (err) {}
+      finish(thanks);
+    }).catch(function () {
+      if (btn) { btn.textContent = "Send my request"; btn.disabled = false; }
+      setFormStatus(form, "error", "Sorry, we could not send your request. Please call +91 81412 93057.");
+    });
+  });
+}
+
 function initContactForm() {
   document.addEventListener("submit", function (e) {
     var form = e.target;
@@ -934,14 +1049,6 @@ document.addEventListener("click", function (e) {
   });
 });
 
-/* "Request Image" buttons are <button>s, so open their WhatsApp message on click */
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest("button[data-whatsapp]");
-  if (!btn) return;
-  e.preventDefault();
-  e.stopPropagation();
-  window.open(getWhatsAppLink(btn.getAttribute("data-whatsapp-msg")), "_blank", "noopener");
-});
 
 /* Property photos: block right-click, dragging, long-press save and text selection on the images.
    (Deterrent only: the browser still has to download the image to show it, so anyone technical can find the file.) */

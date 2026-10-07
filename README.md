@@ -258,3 +258,7 @@ The homepage hero picture is `images/hero.webp` (set in `.hero-bg` in `css/style
 - **Blur rule:** stock placeholder photos (Unsplash links) stay blurred behind a "Request Image" button. Any other photo, such as your own uploads, shows clearly and has no Request button. This is decided in `isStockPhoto` in `js/properties.js`.
 - **In the admin:** the live site reads listings from Firebase, so the Sola listing's photo links there must be set to the three files. Once the domain is live, use `https://akshatestate.com/images/sola-sale-hall.webp` (cover) and put `.../sola-sale-room.webp` and `.../sola-sale-full.webp` in the extra photos box, one per line.
 - **Empty description:** a listing with no description simply shows no Description section.
+
+## Request Image / Request Photos
+
+These buttons no longer open WhatsApp. They ask for a mobile number (the name is optional), then save a "Photo request" to the admin panel's Enquiries tab (with the property attached) and email it to you through EmailJS. Your reply with the photos is sent by you, from the Enquiries tab (the WhatsApp button there opens a ready message to that number). The code is `aeOpenPhotoDialog` / `initPhotoRequest` in `js/main.js`; a button only needs `data-photo-open`, `data-photo-id` and `data-photo-title`. The same number is remembered on that phone for the next request. Real photos have no Request button, only the blurred stock placeholders do.

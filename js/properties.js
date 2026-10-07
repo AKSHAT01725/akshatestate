@@ -626,7 +626,7 @@ function isStockPhoto(url) { return /^https?:\/\/images\.unsplash\.com\//i.test(
 function blurClass(url) { return isStockPhoto(url) ? "img-blur" : ""; }
 function requestImageButton(property, cls, label) {
   if (!isStockPhoto(property.image)) return "";
-  return `<button type="button" class="${cls}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPhotoRequestMessage(property))}">
+  return `<button type="button" class="${cls}" data-photo-open data-photo-id="${property.id}" data-photo-title="${escapeAttr(property.title)}">
           <i class="fas fa-camera"></i> ${label}
         </button>`;
 }
