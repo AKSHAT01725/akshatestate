@@ -262,3 +262,7 @@ The homepage hero picture is `images/hero.webp` (set in `.hero-bg` in `css/style
 ## Request Image / Request Photos
 
 These buttons no longer open WhatsApp. They ask for a mobile number (the name is optional), then save a "Photo request" to the admin panel's Enquiries tab (with the property attached) and email it to you through EmailJS. Your reply with the photos is sent by you, from the Enquiries tab (the WhatsApp button there opens a ready message to that number). The code is `aeOpenPhotoDialog` / `initPhotoRequest` in `js/main.js`; a button only needs `data-photo-open`, `data-photo-id` and `data-photo-title`. The same number is remembered on that phone for the next request. Real photos have no Request button, only the blurred stock placeholders do.
+
+## Share buttons
+
+The share button (on property cards, the property page and the static pages) opens the phone's own share sheet (WhatsApp, Messages, email, Instagram and so on) with the property's title, price, place and link. Where the browser has no share sheet (most desktop browsers), it copies the link instead and shows "Link copied". Closing the share sheet does nothing. The code is the `[data-share-url]` handler near the end of `js/main.js`. The Copy link button on the shortlist page stays a copy button on purpose.

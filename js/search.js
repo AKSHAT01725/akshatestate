@@ -530,6 +530,7 @@ function initPropertyDetails() {
           <a href="tel:+918141293057" class="btn btn-secondary btn-block" style="margin-top:0.5rem"><i class="fas fa-phone"></i> Call +91 81412 93057</a>
           <p class="open-status" data-open-status hidden></p>
           <button type="button" class="btn btn-primary btn-block" data-visit-open data-visit-id="${property.id}" data-visit-title="${escapeAttr(property.title)}" style="margin-top:0.5rem"><i class="far fa-calendar-check"></i> Book a visit</button>
+          <button type="button" class="btn btn-outline btn-block btn-share" data-share-url="self" style="margin-top:0.5rem"><i class="fas fa-share-nodes"></i> Share</button>
           <button type="button" class="btn btn-outline btn-block property-favorite detail-save" data-id="${property.id}" style="margin-top:0.5rem"><i class="far fa-heart"></i> <span>Save to shortlist</span></button>
           <div class="sidebar-divider"><span>or send an inquiry</span></div>
           <form id="contact-form">

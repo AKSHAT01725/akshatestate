@@ -1014,7 +1014,6 @@ function initPhoneLinks() {
 }
 
 
-/* Share buttons on property cards: copy the property's page link so it can be pasted anywhere (WhatsApp, SMS, email...) */
 function copyToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(text);
@@ -1031,22 +1030,46 @@ function copyToClipboard(text) {
   });
 }
 
+/* What to share: the property's title, price and place, plus its page link */
+function aeShareData(btn) {
+  let url = btn.getAttribute("data-share-url");
+  if (!url || url === "self") url = location.href.split("#")[0];
+  const holder = btn.closest("[data-id]");
+  const id = parseInt((holder && holder.getAttribute("data-id")) || document.body.getAttribute("data-property-id") || new URLSearchParams(location.search).get("id"), 10);
+  const prop = (id && typeof getPropertyById === "function") ? getPropertyById(id) : null;
+  if (prop) return { title: prop.title, text: prop.title + " - " + prop.priceDisplay + ", " + prop.location + ", Ahmedabad", url: url };
+  const t = btn.getAttribute("data-share-title") || document.title.split("|")[0].trim();
+  return { title: t, text: t, url: url };
+}
+
+/* Share buttons: open the phone's share sheet (WhatsApp, Messages, email, Instagram...) when the browser has one;
+   otherwise (most desktop browsers) copy the link so it can be pasted anywhere */
 document.addEventListener("click", function (e) {
   const btn = e.target.closest("[data-share-url]");
   if (!btn) return;
   e.preventDefault();
   e.stopPropagation();
-  const url = btn.getAttribute("data-share-url");
+  const data = aeShareData(btn);
   const original = btn.innerHTML;
   const iconOnly = btn.classList.contains("btn-share-icon");
-  copyToClipboard(url).then(function () {
-    btn.innerHTML = iconOnly ? '<i class="fas fa-check"></i>' : '<i class="fas fa-check"></i> Link copied';
-    btn.classList.add("is-copied");
-  }, function () {
-    window.prompt("Copy this link:", url);
-  }).then(function () {
-    setTimeout(function () { btn.innerHTML = original; btn.classList.remove("is-copied"); }, 2000);
-  });
+  function copyInstead() {
+    copyToClipboard(data.url).then(function () {
+      btn.innerHTML = iconOnly ? '<i class="fas fa-check"></i>' : '<i class="fas fa-check"></i> Link copied';
+      btn.classList.add("is-copied");
+    }, function () {
+      window.prompt("Copy this link:", data.url);
+    }).then(function () {
+      setTimeout(function () { btn.innerHTML = original; btn.classList.remove("is-copied"); }, 2000);
+    });
+  }
+  if (typeof navigator.share === "function") {
+    navigator.share(data).catch(function (err) {
+      if (err && err.name === "AbortError") return;   /* the visitor closed the share sheet: nothing to do */
+      copyInstead();
+    });
+    return;
+  }
+  copyInstead();
 });
 
 

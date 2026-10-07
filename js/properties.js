@@ -671,7 +671,7 @@ function renderPropertyCard(property) {
         <div class="property-actions">
           <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Details</a>
           <a href="#" class="btn btn-whatsapp btn-sm" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-          <button type="button" class="btn btn-outline btn-sm btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
+          <button type="button" class="btn btn-outline btn-sm btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Share this property" aria-label="Share this property"><i class="fas fa-share-nodes"></i></button>
         </div>
       </div>
     </article>
@@ -716,7 +716,7 @@ function renderPropertyHCard(property) {
         <div class="property-hcard-cta">
           <a href="property-details.html?id=${property.id}" class="btn btn-outline btn-sm">View Property</a>
           <a href="#" class="btn btn-whatsapp btn-sm" data-wa-lead-id="${property.id}" data-wa-lead-title="${escapeAttr(property.title)}" data-whatsapp data-whatsapp-msg="${escapeAttr(getPropertyWhatsAppMessage(property))}"><i class="fab fa-whatsapp"></i> WhatsApp Inquiry</a>
-          <button type="button" class="btn btn-outline btn-sm btn-share" data-share-url="${escapeAttr(getPropertyUrl(property))}" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i> Share</button>
+          <button type="button" class="btn btn-outline btn-sm btn-share" data-share-url="${escapeAttr(getPropertyUrl(property))}" aria-label="Share this property"><i class="fas fa-share-nodes"></i> Share</button>
         </div>
       </div>
     </article>
@@ -867,7 +867,7 @@ function renderRentalCard(property) {
         </a>
         ${requestImageButton(property, "request-image-btn", "Request Image")}
         <button type="button" class="rental-fav property-favorite" data-id="${property.id}" title="Save to shortlist" aria-label="Save to shortlist"><i class="far fa-heart"></i></button>
-        <button type="button" class="rental-share btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Copy link to share" aria-label="Copy link to this property"><i class="fas fa-share-nodes"></i></button>
+        <button type="button" class="rental-share btn-share btn-share-icon" data-share-url="${escapeAttr(getPropertyUrl(property))}" title="Share this property" aria-label="Share this property"><i class="fas fa-share-nodes"></i></button>
       </div>
       <div class="rental-card-body">
         <div class="rental-price">${property.priceDisplay}<span> / month</span></div>
