@@ -463,7 +463,7 @@ function initPropertyDetails() {
     return;
   }
 
-  document.title = property.title + " in " + property.location + " | Akshat Estate";
+  document.title = aeTitleAt(property) + " | Akshat Estate";
   aeDetailSeo(property);
   const badgeClass = property.status === "sale" ? "badge-sale" : "badge-rent";
   const badgeText = property.status === "sale" ? "For Sale" : "For Rent";
@@ -471,9 +471,6 @@ function initPropertyDetails() {
   const bathsText = property.bathrooms > 0 ? property.bathrooms : "N/A";
   const typeLabel = property.type.charAt(0).toUpperCase() + property.type.slice(1);
   const waMessage = getPropertyWhatsAppMessage(property);
-  const amenitiesHTML = property.amenities.map(function (a) {
-    return '<span class="amenity-pill active"><i class="fas fa-check"></i> ' + a + '</span>';
-  }).join("");
   const galleryThumbs = property.gallery.map(function (img, i) {
     return '<img src="' + img + '" alt="Gallery ' + (i + 1) + '" class="' + blurClass(img) + ' ' + (i === 0 ? 'active' : '') + '" data-src="' + img + '" loading="lazy">';
   }).join("");
@@ -598,7 +595,7 @@ function initPropertyDetails() {
 /* Search-engine tags for the property page, set from the listing (canonical link, description, RealEstateListing data; see aeListingSchema in properties.js) */
 function aeDetailSeo(property) {
   try {
-    const url = location.origin + location.pathname + "?id=" + encodeURIComponent(property.id);
+    const url = location.origin + (/\.html$/.test(location.pathname) ? location.pathname : location.pathname + ".html") + "?id=" + encodeURIComponent(property.id);
     let canon = document.querySelector('link[rel="canonical"]');
     if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
     canon.href = url;

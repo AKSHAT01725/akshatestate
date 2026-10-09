@@ -545,6 +545,12 @@ function getFreshness(property) {
    includeAvailability is false for the static pages: they are not refreshed when you mark a listing Rented,
    so they must not claim "in stock".
    ---------------------------------------------------------- */
+/* A listing title such as "1 BHK Tenament for Rent in Gurukul" already names the area, so " in <area>" is only added when the title does not. */
+function aeTitleAt(p) {
+  var t = String(p.title || ""), loc = String(p.location || "");
+  return !loc || t.toLowerCase().indexOf(loc.toLowerCase()) > -1 ? t : t + " in " + loc;
+}
+
 const AE_SITE_URL = "https://akshatestate.com";
 
 function aeListingSchema(p, url, includeAvailability) {
@@ -641,7 +647,7 @@ function renderPropertyCard(property) {
   return `
     <article class="property-card${rentedClass(property)}" data-id="${property.id}">
       <div class="property-image">
-        <img src="${property.image}" alt="${property.title} in ${property.location}, Ahmedabad" class="${blurClass(property.image)}" loading="lazy" width="400" height="220">
+        <img src="${property.image}" alt="${aeTitleAt(property)}, Ahmedabad" class="${blurClass(property.image)}" loading="lazy" width="400" height="220">
         <span class="property-badge badge ${badgeClass}">${badgeText}</span>
         ${requestImageButton(property, "request-image-btn", "Request Image")}
         <span class="img-type-label">${typeLabel}</span>
@@ -773,11 +779,6 @@ function getPropertyWhatsAppMessage(property) {
     "Hi, I'm interested in the " + getPropertyLabel(property) +
     (property.status === "sale" ? " for sale" : "") +
     " in " + property.location + " listed on Akshat Estate. Please share more details.";
-}
-
-function getPhotoRequestMessage(property) {
-  return getPropertyUrl(property) + "\n\n" +
-    "Hello Akshat Estate, please share photos for: " + property.title + " in " + property.location + ".";
 }
 
 function formatFurnishing(value) {

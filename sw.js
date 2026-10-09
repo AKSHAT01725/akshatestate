@@ -2,7 +2,7 @@
    Keeps the page shell, fonts and images for quick repeat visits and shows offline.html when
    there is no connection. Listings and enquiries always come live from the internet.
    Change VERSION whenever you want every visitor's saved copy cleared. */
-const VERSION = "ae-v8";
+const VERSION = "ae-v9";
 const CORE = ["offline.html", "css/style.css", "images/logo.png", "fonts/poppins-400.woff", "fonts/poppins-600.woff"];
 
 self.addEventListener("install", (event) => {

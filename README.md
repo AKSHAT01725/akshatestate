@@ -28,7 +28,7 @@ Rules of thumb: a new script goes in `js/`, a new stylesheet in `css/`, a new pi
 1. Put the contents of this folder in the root of your repository (the `index.html` must be at the top level).
 2. **Settings > Pages:** deploy from the `main` branch, folder `/ (root)`. Under *Custom domain* enter `akshatestate.com` and tick *Enforce HTTPS*. GitHub then creates a `CNAME` file in the repository; keep it there when you upload new versions.
 3. `.nojekyll` (already included) makes GitHub serve the files exactly as they are. `404.html` is shown automatically for unknown addresses.
-4. GitHub Pages file names are **case-sensitive** and extensions are optional: `about.html` is served at `/about`, and `1BHK-flats-for-rent-gurukul.html` must be linked with exactly that capitalisation.
+4. GitHub Pages file names are **case-sensitive** and extensions are optional: `about.html` is served at `/about`, and `1bhk-flats-for-rent-gurukul.html` must be linked with exactly that capitalisation.
 5. Add your live domain (and `<username>.github.io` if you test there) to Firebase **Authentication > Settings > Authorized domains**, and to the allowed origins in your EmailJS dashboard.
 6. Everything in the repository is public, including `firebase/firestore.rules` (it contains your admin email address) and this README. None of it contains secrets; the Firebase web keys are meant to be public.
 
@@ -270,5 +270,20 @@ The share button (on property cards, the property page and the static pages) ope
 ## SEO notes
 
 - **Titles and descriptions:** every page has one H1, a title, a meta description and a canonical address on `https://akshatestate.com`. Each listing page has its own title and description (title, price, size, furnishing), made by the page generator, so listings with the same name no longer look identical to Google.
-- **Kept out of Google (`noindex`):** `admin`, `shortlist`, `404`, `offline`, `property-details.html` (a template filled from `?id=`; the static pages in `properties/` are the indexed ones), `properties/index.html` (a redirect), and the three 2 BHK rental pages (`2BHK-flats-for-rent-gurukul`, `2BHK-flats-for-rent-memnagar`, `2bhk-flats-for-rent`) because there are no 2 BHK rentals yet. When you add one, delete the `<meta name="robots" content="noindex, follow">` line from that page and add its address back to `sitemap.xml`.
+- **Kept out of Google (`noindex`):** `admin`, `shortlist`, `404`, `offline`, `property-details.html` (a template filled from `?id=`; the static pages in `properties/` are the indexed ones), `properties/index.html` (a redirect), and the three 2 BHK rental pages (`2bhk-flats-for-rent-gurukul`, `2bhk-flats-for-rent-memnagar`, `2bhk-flats-for-rent`) because there are no 2 BHK rentals yet. When you add one, delete the `<meta name="robots" content="noindex, follow">` line from that page and add its address back to `sitemap.xml`.
 - **Sitemap:** `sitemap.xml` lists only indexable pages. After adding a listing, run the page generator, then `node tools/add-structured-data.js`, and add the new page to the sitemap.
+
+## URL rules (keep these when adding pages)
+
+- Every page file name is **lowercase** (GitHub Pages is case-sensitive), for example `1bhk-flats-for-rent-gurukul.html`.
+- Every canonical, `og:url`, sitemap entry and schema URL uses the **`.html`** form, for example `https://akshatestate.com/about.html`. The home page is `https://akshatestate.com/`.
+- `404.html` sends any old link with capital letters to the lowercase address.
+- Small phones (320 to 400 px): the header logo and "List Property Free" button shrink; below 351 px the button is hidden (the same link is in the menu). Stacked layouts use `minmax(0, 1fr)` so long text such as an email address can never widen the page.
+- Area category pages (1 RK / 1 Room / 1 BHK in Gurukul and Memnagar) are linked from the Gurukul and Memnagar pages ("Browse by size"), from the matching all-Ahmedabad category pages ("by Area"), and from each other ("More Rentals in ..."). The two 2 BHK area pages stay noindex and are not linked, because there are no 2 BHK rentals yet. Link them when listings exist.
+
+## Cleanup notes
+
+- Removed 40 unused CSS rules (about 4.4 KB: old testimonials, filter sidebar, area link grid, unused badges and amenity pills) and two unused JS blocks (`getPhotoRequestMessage`, an unused `amenitiesHTML` variable).
+- Blog pages now load only `main.js` (the three tool pages also load `rental-tools.js`). They no longer load `properties.js` and `search.js`, which they never used. If you ever add listings or a property search to a blog page, add those two script tags back in the same order: `properties.js`, `main.js`, `search.js`.
+- `tools/add-structured-data.js` is a Node helper you run yourself. No page loads it, so you can leave it out when uploading the site.
+- `sw.js` VERSION is `ae-v9`. Bump it when you want every visitor's saved copy cleared.
