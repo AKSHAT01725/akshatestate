@@ -287,3 +287,11 @@ The share button (on property cards, the property page and the static pages) ope
 - Blog pages now load only `main.js` (the three tool pages also load `rental-tools.js`). They no longer load `properties.js` and `search.js`, which they never used. If you ever add listings or a property search to a blog page, add those two script tags back in the same order: `properties.js`, `main.js`, `search.js`.
 - `tools/add-structured-data.js` is a Node helper you run yourself. No page loads it, so you can leave it out when uploading the site.
 - `sw.js` VERSION is `ae-v9`. Bump it when you want every visitor's saved copy cleared.
+
+## Homepage hero
+- The search sits inside the hero: Area, BHK, Budget and Search. Type and Furnishing are behind "More filters". The form works without JavaScript (it submits to `rent.html`); with JS it stores `ae_filters` and redirects.
+- The "N rentals available now" line is counted live from the listings (active, not rented, not available from a future date). It stays hidden until listings load, so it never shows a wrong number.
+- The "20+ years of local experience" eyebrow and the 9 AM to 9 PM visit timing are fixed text. Edit them in `index.html` if they change.
+- Phones load `images/hero-800.webp` (about 31 KB). Larger screens load `images/hero.webp`. Both are preloaded with media conditions.
+- WhatsApp and Call buttons sit under the search. The cookie notice is a thin bar on phones.
+- `.rental-card-img` is now positioned so "Request Image" pills stay inside their cards.

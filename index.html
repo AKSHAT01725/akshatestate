@@ -13,7 +13,7 @@
   <meta name="twitter:card" content="summary_large_image">
   
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preload" href="images/hero.webp" as="image" type="image/webp" fetchpriority="high"><link rel="preload" href="fonts/poppins-400.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="fonts/poppins-600.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="images/hero.webp" as="image" type="image/webp" media="(min-width: 769px)" fetchpriority="high"><link rel="preload" href="images/hero-800.webp" as="image" type="image/webp" media="(max-width: 768px)" fetchpriority="high"><link rel="preload" href="fonts/poppins-400.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="fonts/poppins-600.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
@@ -197,86 +197,78 @@
     <a href="list-your-property.html" class="btn btn-primary">List Property <span class="free-highlight">Free</span></a>
   </nav>
 
-  <section class="hero hero-rental">
+  <section class="hero hero-rental" id="search">
     <div class="hero-bg" role="img" aria-label="Apartment homes for rent in Ahmedabad"></div>
     <div class="container">
       <div class="hero-content">
-        <span class="section-label" style="color:#c7d2fe">Akshat Estate</span>
-        <h1>Rental Homes &amp; Real Estate in Ahmedabad</h1>
-        <p class="hero-sub">Flats and apartments for rent in Gurukul, Memnagar, Sola and across the city, with local help from first enquiry to move-in.</p>
-        <div class="hero-actions">
-          <a href="rent.html" class="btn btn-white btn-lg"><i class="fas fa-key"></i> Browse Rentals</a>
-          <a href="#" data-whatsapp data-whatsapp-msg="Hi, I'm looking for a flat for rent in Ahmedabad. Please share available options." class="btn btn-whatsapp btn-lg"><i class="fab fa-whatsapp"></i> WhatsApp Us</a>
-        </div>
-        <div class="hero-badges">
-          <span><i class="fas fa-award"></i> 20+ years of local experience</span>
-          <span><i class="fas fa-map-marker-alt"></i> Gurukul &middot; Memnagar &middot; Sola</span>
-          <span><i class="fab fa-whatsapp"></i> Quick WhatsApp enquiries</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 1. RENTAL SEARCH -->
-  <section class="rental-search-section" id="search" aria-labelledby="rental-search-title">
-    <div class="container">
-      <div class="rental-search-card">
-        <div class="rental-search-head">
-          <h2 id="rental-search-title">Find Your Next Rental Home</h2>
-          <p>Search flats and apartments for rent across Ahmedabad.</p>
-        </div>
-        <form id="rental-search-form" class="search-form" role="search">
-          <div class="search-field">
-            <label for="rs-location">Location / Area</label>
-            <select id="rs-location" name="location">
-              <option value="all">All Areas</option>
-              <option value="Gurukul">Gurukul</option>
-              <option value="Memnagar">Memnagar</option>
-              <option value="Sola">Sola</option>
-            </select>
+        <p class="hero-eyebrow"><i class="fas fa-award" aria-hidden="true"></i> 20+ years of local experience</p>
+        <h1>Find a rental home in Gurukul, Memnagar &amp; Sola</h1>
+        <p class="hero-sub">Flats and apartments for rent across Ahmedabad<span class="hero-sub-more">, with local help from first enquiry to move-in</span>.</p>
+        <form id="rental-search-form" class="hero-search" role="search" aria-label="Search rental homes" action="rent.html" method="get">
+          <div class="hero-search-row">
+            <div class="hs-field">
+              <label for="rs-location">Area</label>
+              <select id="rs-location" name="location">
+                <option value="all">All Areas</option>
+                <option value="Gurukul">Gurukul</option>
+                <option value="Memnagar">Memnagar</option>
+                <option value="Sola">Sola</option>
+              </select>
+            </div>
+            <div class="hs-field">
+              <label for="rs-bhk">BHK</label>
+              <select id="rs-bhk" name="bedrooms">
+                <option value="all">Any</option>
+                <option value="1RK">1 RK</option>
+                <option value="1ROOM">1 Room</option>
+                <option value="1">1 BHK</option>
+                <option value="2">2 BHK</option>
+                <option value="3">3 BHK</option>
+              </select>
+            </div>
+            <div class="hs-field">
+              <label for="rs-budget">Budget (₹ / month)</label>
+              <select id="rs-budget" name="maxPrice">
+                <option value="">Any Budget</option>
+                <option value="15000">Under ₹15,000</option>
+                <option value="20000">Under ₹20,000</option>
+                <option value="30000">Under ₹30,000</option>
+                <option value="50000">Under ₹50,000</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary hs-submit"><i class="fas fa-search" aria-hidden="true"></i> Search</button>
           </div>
-          <div class="search-field">
-            <label for="rs-type">Property Type</label>
-            <select id="rs-type" name="type">
-              <option value="all">All Types</option>
-              <option value="apartment">Flat / Apartment</option>
-              <option value="office">Office</option>
-              <option value="shop">Shop / Godown</option>
-            </select>
+          <div class="hero-search-extra" id="rs-extra" hidden>
+            <div class="hs-field">
+              <label for="rs-type">Property type</label>
+              <select id="rs-type" name="type">
+                <option value="all">All Types</option>
+                <option value="apartment">Flat / Apartment</option>
+                <option value="office">Office</option>
+                <option value="shop">Shop / Godown</option>
+              </select>
+            </div>
+            <div class="hs-field">
+              <label for="rs-furnishing">Furnishing</label>
+              <select id="rs-furnishing" name="furnishing">
+                <option value="all">Any</option>
+                <option value="furnished">Furnished</option>
+                <option value="semi-furnished">Semi-furnished</option>
+                <option value="unfurnished">Unfurnished</option>
+              </select>
+            </div>
           </div>
-          <div class="search-field">
-            <label for="rs-bhk">BHK</label>
-            <select id="rs-bhk" name="bedrooms">
-              <option value="all">Any</option>
-              <option value="1RK">1 RK</option>
-              <option value="1ROOM">1 Room</option>
-              <option value="1">1 BHK</option>
-              <option value="2">2 BHK</option>
-              <option value="3">3 BHK</option>
-            </select>
-          </div>
-          <div class="search-field">
-            <label for="rs-budget">Budget (₹ / month)</label>
-            <select id="rs-budget" name="maxPrice">
-              <option value="">Any Budget</option>
-              <option value="10000">Under ₹10,000</option>
-              <option value="15000">Under ₹15,000</option>
-              <option value="20000">Under ₹20,000</option>
-              <option value="30000">Under ₹30,000</option>
-              <option value="50000">Under ₹50,000</option>
-            </select>
-          </div>
-          <div class="search-field">
-            <label for="rs-furnishing">Furnishing</label>
-            <select id="rs-furnishing" name="furnishing">
-              <option value="all">Any</option>
-              <option value="furnished">Furnished</option>
-              <option value="semi-furnished">Semi-furnished</option>
-              <option value="unfurnished">Unfurnished</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search Rentals</button>
+          <button type="button" class="hero-more" id="rs-more" aria-expanded="false" aria-controls="rs-extra"><span>More filters</span> <i class="fas fa-chevron-down" aria-hidden="true"></i></button>
         </form>
+        <div class="hero-contact">
+          <a href="#" data-whatsapp data-whatsapp-msg="Hi, I'm looking for a flat for rent in Ahmedabad. Please share available options." class="btn btn-whatsapp"><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp us</a>
+          <a href="tel:+918141293057" class="btn btn-hero-call"><i class="fas fa-phone" aria-hidden="true"></i> Call us</a>
+        </div>
+        <ul class="hero-proof" aria-label="At a glance">
+          <li class="hero-live" id="hero-live" hidden><span class="live-dot" aria-hidden="true"></span><span id="hero-live-text"></span></li>
+          <li class="hp-area"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Gurukul &middot; Memnagar &middot; Sola</li>
+          <li><i class="far fa-clock" aria-hidden="true"></i> <span>Visits <span class="hp-more">daily, </span>9 AM to 9 PM</span></li>
+        </ul>
       </div>
     </div>
   </section>

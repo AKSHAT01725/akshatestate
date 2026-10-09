@@ -13,8 +13,10 @@ function rebindWhatsApp(root) {
  */
 
 document.addEventListener("DOMContentLoaded", function () {
+  /* the search form needs no listing data, so it works at once instead of waiting for Firebase */
+  initHeroSearch();
   function start() {
-    initHeroSearch();
+    initHeroLiveCount();
     initListingsPage();
     initFeaturedProperties();
     initFeaturedRentals();
@@ -44,6 +46,16 @@ function initPropertyCardClicks() {
 function initHeroSearch() {
   const form = document.getElementById("rental-search-form") || document.getElementById("hero-search-form");
   if (!form) return;
+  /* "More filters" shows Property type and Furnishing */
+  const more = document.getElementById("rs-more"), extra = document.getElementById("rs-extra");
+  if (more && extra) {
+    more.addEventListener("click", function () {
+      const open = extra.hidden;
+      extra.hidden = !open;
+      more.setAttribute("aria-expanded", String(open));
+      more.querySelector("span").textContent = open ? "Fewer filters" : "More filters";
+    });
+  }
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     const val = function (name) { return form.querySelector('[name="' + name + '"]')?.value; };
@@ -61,6 +73,18 @@ function initHeroSearch() {
     try { sessionStorage.setItem("ae_filters", JSON.stringify(pending)); } catch (err) {}
     window.location.href = "rent.html";
   });
+}
+
+/* Hero proof strip: "N rentals available now", counted from the live listings (not rented, not starting later) */
+function initHeroLiveCount() {
+  const li = document.getElementById("hero-live"), txt = document.getElementById("hero-live-text");
+  if (!li || !txt || typeof PROPERTIES === "undefined") return;
+  const n = PROPERTIES.filter(function (p) {
+    return p.status === "rent" && p.active !== false && !isRented(p) && !futureAvailableFrom(p);
+  }).length;
+  if (!n) return;
+  txt.textContent = n + (n === 1 ? " rental" : " rentals") + " available now";
+  li.hidden = false;
 }
 
 function initFeaturedRentals() {
@@ -171,6 +195,13 @@ function initListingsPage() {
         '<p>Try removing a filter, or tell us what you need and we will look for it.</p>' +
         '<div class="no-results-actions"><a href="' + reqHref + '" class="btn btn-primary">Tell us what you need</a>' +
         '<a href="#" class="btn btn-whatsapp" data-whatsapp data-whatsapp-msg="' + escapeAttr(waText) + '"><i class="fab fa-whatsapp"></i> WhatsApp Us</a></div></div>';
+      /* Show other available homes so the page is never empty */
+      const baseRenderer = typeof renderPropertyHCard === "function" ? renderPropertyHCard : renderPropertyCard;
+      const others = filterProperties({ status: current.status, location: current.location, sort: "" }).slice(0, 6);
+      const more = others.length ? others : filterProperties({ status: current.status, sort: "" }).slice(0, 6);
+      if (more.length) {
+        container.innerHTML += '<h3 class="no-results-more">Other homes available now</h3><div class="property-list">' + more.map(baseRenderer).join("") + '</div>';
+      }
       rebindWhatsApp(container);
     } else {
       const renderer = typeof renderPropertyHCard === "function" ? renderPropertyHCard : renderPropertyCard;
