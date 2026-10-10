@@ -1006,17 +1006,6 @@ window.propertiesReady = (function () {
     });
   }
 
-  /* Analytics (Firebase), loaded after the page is interactive */
-  window.addEventListener("load", function () {
-    setTimeout(function () {
-      getFirebaseApp().then(function (ctx) {
-        return import(ctx.base + "firebase-analytics.js").then(function (an) {
-          return an.isSupported().then(function (ok) { if (ok) an.getAnalytics(ctx.app); });
-        });
-      }).catch(function () {});
-    }, 1500);
-  });
-
   var cached = readCache();
   if (cached && cached.age < FRESH_MS) { apply(cached.list); return Promise.resolve(true); }
 

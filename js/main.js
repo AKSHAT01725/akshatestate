@@ -3,6 +3,39 @@
  * Phone / WhatsApp: 8141293057
  */
 
+/* ----------------------------------------------------------
+   Google Analytics (GA4). Loaded after the page is ready, on the live site only
+   (not on localhost, file:// or the admin page). aeTrack() records key actions.
+   ---------------------------------------------------------- */
+var AE_GA_ID = "G-5VRCW3RJ9B";
+window.dataLayer = window.dataLayer || [];
+window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+var AE_GA_ON = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !/admin/i.test(location.pathname);
+function aeTrack(name, params) {
+  if (!AE_GA_ON) return;
+  try { window.gtag("event", name, params || {}); } catch (e) {}
+}
+if (AE_GA_ON) {
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "https://www.googletagmanager.com/gtag/js?id=" + AE_GA_ID;
+      document.head.appendChild(s);
+      window.gtag("js", new Date());
+      window.gtag("config", AE_GA_ID);
+    }, 800);
+  });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a, button");
+    if (!a) return;
+    var href = a.getAttribute("href") || "";
+    if (a.hasAttribute("data-whatsapp") || /wa\.me|whatsapp/i.test(href)) aeTrack("whatsapp_click", { page: location.pathname });
+    else if (/^tel:/i.test(href)) aeTrack("phone_click", { page: location.pathname });
+    else if (a.hasAttribute("data-share-url") || a.classList.contains("share-btn")) aeTrack("share", { page: location.pathname });
+  }, true);
+}
+
 const WHATSAPP_NUMBER = "918141293057";
 const PHONE_NUMBER = "8141293057";
 
@@ -317,7 +350,7 @@ function aeSubmitLead(label, data, detailsOverride, property) {
       failures++;
       if (failures === 2 && !settled) { settled = true; reject(new Error("Could not save or email the enquiry")); }
     }
-    aeSaveInquiry(data).then(function () { ok("saved"); }, function (e) { fail("Saving enquiry", e); });
+    aeSaveInquiry(data).then(function () { aeTrack("generate_lead", { lead_type: label }); ok("saved"); }, function (e) { fail("Saving enquiry", e); });
     aeSendEmail(label, data, detailsOverride, property).then(function () { ok("emailed"); }, function (e) { fail("Emailing enquiry", e); });
   });
 }
