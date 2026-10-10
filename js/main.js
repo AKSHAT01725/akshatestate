@@ -18,6 +18,8 @@ function aeTrack(name, params) {
 if (AE_GA_ON) {
   window.addEventListener("load", function () {
     setTimeout(function () {
+      /* the homepage already has the tag in its HTML: do not add it twice */
+      if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
       var s = document.createElement("script");
       s.async = true;
       s.src = "https://www.googletagmanager.com/gtag/js?id=" + AE_GA_ID;
