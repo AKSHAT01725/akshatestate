@@ -909,3 +909,28 @@ body.visit-open { overflow: hidden; }
 }
 
 .no-results-more { margin: 2rem 0 1rem; font-size: 1.125rem; }
+
+/* ---------- Mobile menu (drawer) ---------- */
+.mobile-nav { max-width: 320px; width: 86%; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: calc(var(--header-h) + 0.75rem) 1.1rem 1.25rem; border-left: 1px solid var(--border); }
+.mobile-nav a { display: flex; align-items: center; min-height: 52px; padding: 0 0.9rem; border-bottom: 0; border-radius: 12px; font-size: 1rem; font-weight: 500; color: var(--text); }
+.mobile-nav a:hover { background: var(--purple-soft); color: var(--purple); }
+.mobile-nav a.active, .mobile-nav a.nav-rent.active { background: var(--purple-soft); color: var(--purple); font-weight: 600; }
+.mobile-nav a.nav-rent { background: transparent; color: var(--text); font-weight: 500; padding: 0 0.9rem; margin: 0; border-radius: 12px; }
+.mobile-nav .mobile-shortlist { margin-top: 0.4rem; padding-top: 0; color: #e11d48; font-weight: 600; }
+.mobile-nav .mobile-shortlist:hover { background: #fff1f4; color: #e11d48; }
+.mobile-nav a.btn { justify-content: center; margin-top: 1.1rem; min-height: 50px; padding: 0 1rem; border-radius: 12px; background: var(--purple); color: #fff; font-size: 0.9375rem; font-weight: 600; box-shadow: 0 8px 20px rgba(91, 76, 219, 0.28); }
+.mobile-nav a.btn:hover { background: var(--purple-dark); color: #fff; }
+.mobile-nav-contact { margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--text-light); line-height: 1.6; }
+.mobile-nav-contact a { display: inline; min-height: 0; padding: 0; border-radius: 0; font-size: 0.9375rem; font-weight: 600; color: var(--purple); background: none; }
+.mobile-nav-contact a:hover { background: none; text-decoration: underline; }
+.mobile-nav-contact span { display: block; }
+
+/* ---------- Header List Property button (phones) ---------- */
+@media (max-width: 992px) {
+  .header .nav { margin-left: auto; margin-right: 0.5rem; }
+  .header .nav-cta { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 1rem; line-height: 1; border-radius: 10px; }
+}
+@media (max-width: 400px) {
+  .header .nav { margin-right: 0.25rem; }
+  .header .nav-cta { height: 38px; padding: 0 0.75rem; }
+}

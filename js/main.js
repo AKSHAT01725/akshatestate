@@ -58,6 +58,22 @@ function initMobileNav() {
     mobileNav.classList.contains("active") ? closeNav() : openNav();
   });
   if (overlay) overlay.addEventListener("click", closeNav);
+  /* highlight the current page */
+  if (!mobileNav.querySelector("a.active")) {
+    const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    mobileNav.querySelectorAll("a[href]").forEach(function (a) {
+      const f = (a.getAttribute("href") || "").split("#")[0].split("?")[0].toLowerCase();
+      if (f && !a.classList.contains("btn") && (f === here || (here === "index_live.html" && f === "index.html"))) a.classList.add("active");
+    });
+  }
+  /* contact block at the bottom of the drawer */
+  if (!mobileNav.querySelector(".mobile-nav-contact")) {
+    const c = document.createElement("div");
+    c.className = "mobile-nav-contact";
+    c.innerHTML = '<span>Call us</span><a href="tel:+918141293057">+91 81412 93057</a><span>Visits 9 AM to 9 PM</span>';
+    mobileNav.appendChild(c);
+  }
+  mobileNav.addEventListener("keydown", function (e) { if (e.key === "Escape") closeNav(); });
   mobileNav.querySelectorAll("a").forEach(function (link) {
     link.addEventListener("click", closeNav);
   });
