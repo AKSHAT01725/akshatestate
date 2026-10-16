@@ -693,7 +693,7 @@ function renderPropertyHCard(property) {
   return `
     <article class="property-hcard${rentedClass(property)}" data-id="${property.id}">
       <div class="property-hcard-img">
-        <img src="${property.image}" alt="${property.title}" class="${blurClass(property.image)}" loading="lazy">
+        <img src="${property.image}" alt="${property.title}" class="${blurClass(property.image)}" loading="lazy" width="400" height="280" decoding="async">
         <span class="property-badge badge ${badgeClass}" style="position:absolute;top:0.75rem;left:0.75rem;z-index:3">${badgeText}</span>
         ${requestImageButton(property, "request-image-btn", "Request Image")}
         <span class="img-type-label">${typeLabel}</span>

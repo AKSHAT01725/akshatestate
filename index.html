@@ -22,7 +22,8 @@
   
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preload" href="images/hero.webp" as="image" type="image/webp" media="(min-width: 769px)" fetchpriority="high"><link rel="preload" href="images/hero-800.webp" as="image" type="image/webp" media="(max-width: 768px)" fetchpriority="high"><link rel="preload" href="fonts/poppins-400.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="fonts/poppins-600.woff" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
 {
@@ -205,6 +206,7 @@
     <a href="list-your-property.html" class="btn btn-primary">List Property <span class="free-highlight">Free</span></a>
   </nav>
 
+  <main id="main-content">
   <section class="hero hero-rental" id="search">
     <div class="hero-bg" role="img" aria-label="Apartment homes for rent in Ahmedabad"></div>
     <div class="container">
@@ -515,6 +517,8 @@
       </div>
     </div>
   </section>
+
+    </main>
 
   <footer class="footer">
     <div class="container">

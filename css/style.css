@@ -934,3 +934,15 @@ body.visit-open { overflow: hidden; }
   .header .nav { margin-right: 0.25rem; }
   .header .nav-cta { height: 38px; padding: 0 0.75rem; }
 }
+
+
+/* Performance and accessibility refinements (October 2026) */
+:root { --text-light: #5f5973; --text-muted: #69637d; }
+.rv-dot { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px; width: 24px; min-width: 24px; height: 24px; min-height: 24px; padding: 0; background: transparent; border-radius: 999px; }
+.rv-dot::after { content: ""; display: block; width: 8px; height: 8px; border-radius: 999px; background: #d5d5de; transition: width 0.2s, background 0.2s; }
+.rv-dot.is-on { width: 40px; flex-basis: 40px; background: transparent; }
+.rv-dot.is-on::after { width: 26px; background: var(--purple); }
+.rv-dot:focus-visible { outline: 2px solid var(--purple-dark); outline-offset: 2px; }
+/* Reserve space for the home-page cards while the data-driven cards are rendered. */
+#featured-rentals { min-height: 24rem; }
+@media (max-width: 600px) { #featured-rentals { min-height: 72rem; } }
