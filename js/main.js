@@ -26,7 +26,7 @@ if (AE_GA_ON) {
       document.head.appendChild(s);
       window.gtag("js", new Date());
       window.gtag("config", AE_GA_ID);
-    }, 800);
+    }, 2500);
   });
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a, button");
