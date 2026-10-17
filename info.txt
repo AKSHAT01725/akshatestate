@@ -276,7 +276,7 @@ The share button (on property cards, the property page and the static pages) ope
 ## URL rules (keep these when adding pages)
 
 - Every page file name is **lowercase** (GitHub Pages is case-sensitive), for example `1bhk-flats-for-rent-gurukul.html`.
-- Every canonical, `og:url`, sitemap entry and schema URL uses the **`.html`** form, for example `https://akshatestate.com/about.html`. The home page is `https://akshatestate.com/`.
+- Every canonical, `og:url`, sitemap entry and schema URL uses the **`.html`** form, for example `https://akshatestate.com/about`. The home page is `https://akshatestate.com/`.
 - `404.html` sends any old link with capital letters to the lowercase address.
 - Small phones (320 to 400 px): the header logo and "List Property Free" button shrink; below 351 px the button is hidden (the same link is in the menu). Stacked layouts use `minmax(0, 1fr)` so long text such as an email address can never widen the page.
 - Area category pages (1 RK / 1 Room / 1 BHK in Gurukul and Memnagar) are linked from the Gurukul and Memnagar pages ("Browse by size"), from the matching all-Ahmedabad category pages ("by Area"), and from each other ("More Rentals in ..."). The two 2 BHK area pages stay noindex and are not linked, because there are no 2 BHK rentals yet. Link them when listings exist.
@@ -295,3 +295,9 @@ The share button (on property cards, the property page and the static pages) ope
 - Phones load `images/hero-800.webp` (about 31 KB). Larger screens load `images/hero.webp`. Both are preloaded with media conditions.
 - WhatsApp and Call buttons sit under the search. The cookie notice is a thin bar on phones.
 - `.rental-card-img` is now positioned so "Request Image" pills stay inside their cards.
+
+CLEAN URLS
+- Pages are linked and listed without .html: /about, /rent, /blog/cost-to-rent-flat-ahmedabad (GitHub Pages serves about.html at /about).
+- Old .html addresses still load; on the live site the address bar switches to the clean URL automatically, and canonical tags point to the clean one.
+- blog/ , properties/ and admin/ are folders, so their listing pages live at blog/index.html and properties/index.html (URLs /blog/ and /properties/). blog.html, properties.html and admin.html in the root only forward old links.
+- When you add a page, link it as /page-name (no .html) and use https://akshatestate.com/page-name in canonical, og:url and the sitemap.
