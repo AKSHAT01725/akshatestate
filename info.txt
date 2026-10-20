@@ -301,3 +301,14 @@ CLEAN URLS
 - Old .html addresses still load; on the live site the address bar switches to the clean URL automatically, and canonical tags point to the clean one.
 - blog/ , properties/ and admin/ are folders, so their listing pages live at blog/index.html and properties/index.html (URLs /blog/ and /properties/). blog.html, properties.html and admin.html in the root only forward old links.
 - When you add a page, link it as /page-name (no .html) and use https://akshatestate.com/page-name in canonical, og:url and the sitemap.
+
+
+== Speed notes (Oct 2026) ==
+- Icons: Font Awesome is no longer loaded from cdnjs. css/icons.css holds only the 48 icons the site uses (inline SVG masks) and loads without blocking paint;
+  the space-reserving base rules live in css/style.css between "icons:start" and "icons:end". Using a new icon? Run: npm i --no-save @fortawesome/fontawesome-free@6.5.1 && node tools/build-icons.js
+  (admin/ still uses the CDN version on purpose).
+- Photos: card photos from Unsplash are requested small + compressed (aeImg / aeImgAttrs in js/properties.js). Your own photos are not touched. Area cards use images/areas/NAME-400.webp and -560.webp.
+- Analytics (Google Analytics) now loads on the visitor's first tap/scroll/key press, or after 12 s, whichever comes first.
+- The hero "N rentals available now" line reserves its space so the page no longer jumps when listings load.
+- Not changed on purpose: js/properties.js and js/search.js stay readable so you can edit them (PageSpeed's "minify JavaScript" hint is about these two).
+- Needs hosting settings, not code: cache lifetime (GitHub Pages fixes it at 10 minutes), HSTS/CSP/COOP/XFO headers. A free Cloudflare proxy in front of the site can set these.
